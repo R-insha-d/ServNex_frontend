@@ -215,7 +215,7 @@ export default function RestaurantList() {
                                 <div
                                     key={restaurant.id}
                                     className="hotel-card"
-                                    style={{ height: "310px" }}
+                                    style={{ height: "330px" }}
                                 >
                                     <div className="row g-0">
                                         {/* IMAGE */}
@@ -228,7 +228,7 @@ export default function RestaurantList() {
                                                 alt={restaurant.name}
                                                 className="w-100 object-fit-cover hotel-image"
                                                 style={{
-                                                    height: "310px",
+                                                    minHeight: "330px",
                                                 }}
                                             />
                                             <div className={`hotel-type-badge ${badgeInfo.class}`}>
@@ -272,7 +272,7 @@ export default function RestaurantList() {
                                                         overflow: "hidden",
                                                     }}
                                                 >
-                                                    {restaurant.description}
+                                                    {restaurant.description.slice(0, 235)}...
                                                 </p>
 
                                                 {/* PRICE + BUTTON */}
@@ -288,12 +288,9 @@ export default function RestaurantList() {
 
                                                     <Link
                                                         to={`/restaurant/${restaurant.id}`}
-                                                        className="servnex-btn"
+                                                        className="explore-btns"
                                                     >
-                                                        <span className="d-flex align-items-center">
-                                                            See Details
-                                                            <ArrowRight size={18} className="ms-2" />
-                                                        </span>
+                                                        <span>See Details ›</span>
                                                     </Link>
                                                 </div>
                                             </div>

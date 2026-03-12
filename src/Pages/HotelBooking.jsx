@@ -90,13 +90,11 @@ const S = {
         borderRadius: "50%",
     },
     body: {
-        maxWidth: "1400px",
-        margin: "0 auto",
-        padding: "40px 20px",
+        width: "100%",
     },
     bookingCard: {
         backgroundColor: "#fff",
-        borderRadius: "28px",
+        borderRadius: "0 0 28px 28px",
         overflow: "hidden",
         boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
         display: "flex",
@@ -554,12 +552,12 @@ export default function HotelBooking() {
 
             <div style={{
                 ...S.body,
-                padding: isMobile ? "0px" : "40px 20px",
-                maxWidth: isMobile ? "100%" : "1400px"
+                padding: isMobile ? "0px" : "0",
+                maxWidth: isMobile ? "100%" : "100%"
             }}>
                 <div style={{
                     ...S.bookingCard,
-                    borderRadius: isMobile ? "0px" : "28px",
+                    borderRadius: isMobile ? "0px" : "0 0 28px 28px",
                     border: isMobile ? "none" : S.bookingCard.border
                 }}>
                     {/* Hero Section */}

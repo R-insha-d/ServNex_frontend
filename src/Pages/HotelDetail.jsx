@@ -532,7 +532,7 @@ export default function HotelDetails() {
 
         const elements = document.querySelectorAll("[data-reveal-id]");
         elements.forEach(el => observer.observe(el));
-        
+
         return () => observer.disconnect();
     }, [loading]);
 
@@ -690,7 +690,7 @@ export default function HotelDetails() {
             </header>
 
             {/* ── Hero Carousel ── */}
-            <div 
+            <div
                 data-reveal-id="hero"
                 className={`reveal ${revealed['hero'] ? 'active' : ''}`}
                 style={{ ...S.heroWrap, height: heroHeight }}
@@ -753,7 +753,7 @@ export default function HotelDetails() {
             </div>
 
             {/* ── Info bar ── */}
-            <div 
+            <div
                 data-reveal-id="info-bar"
                 className={`reveal ${revealed['info-bar'] ? 'active' : ''}`}
                 style={{ ...S.infoBar, gap: isMobile ? "20px" : S.infoBar.gap, padding: isMobile ? "20px 1.5rem" : S.infoBar.padding }}
@@ -793,7 +793,7 @@ export default function HotelDetails() {
                             ? { padding: "24px 0", textAlign: "center" }
                             : { ...S.luxuryLeftPanel, textAlign: "left" }
                         }>
-                            <div 
+                            <div
                                 data-reveal-id="luxury-title"
                                 className={`reveal ${revealed['luxury-title'] ? 'active' : ''}`}
                             >
@@ -812,18 +812,18 @@ export default function HotelDetails() {
                                 <h2 style={{ ...S.sectionTitle, textAlign: isMobile ? "left" : "left", fontSize: isMobile ? "2.5rem" : S.sectionTitle.fontSize }}>
                                     {hotel.name} </h2>
                             </div>
-                            <p 
+                            <p
                                 data-reveal-id="luxury-desc"
                                 className={`reveal ${revealed['luxury-desc'] ? 'active' : ''}`}
-                                style={{ ...S.descText, margin: isMobile ? "0 auto 16px" : S.descText.margin, textAlign: isMobile ? "justify" : "left" }} 
+                                style={{ ...S.descText, margin: isMobile ? "0 auto 16px" : S.descText.margin, textAlign: isMobile ? "justify" : "left" }}
                             >
                                 {hotel.description}
                             </p>
 
                             {Array.isArray(hotel.nearby_attractions) && hotel.nearby_attractions.length > 0 && (
                                 <div style={{ marginTop: "24px" }}>
-                                    <div style={{ fontSize: "0.85rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#667eeaff", marginBottom: "8px" }}>
-                                        Nearby
+                                    <div style={{ fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.08em", color: "#667eeaff", marginBottom: "8px" }}>
+                                        Nearby Places
                                     </div>
                                     <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                                         {hotel.nearby_attractions.map((place, idx) => (
@@ -868,12 +868,12 @@ export default function HotelDetails() {
                         </div>
 
                         {/* Right: map card — rounded corners, subtle shadow */}
-                        <div 
+                        <div
                             data-reveal-id="luxury-map"
                             style={isMobile
-                            ? { display: "flex", justifyContent: "center", width: "100%" }
-                            : S.luxuryRightPanel
-                        } className={`reveal ${revealed['luxury-map'] ? 'active' : ''}`}>
+                                ? { display: "flex", justifyContent: "center", width: "100%" }
+                                : S.luxuryRightPanel
+                            } className={`reveal ${revealed['luxury-map'] ? 'active' : ''}`}>
                             <div
                                 className="map-card-hover"
                                 style={{
@@ -896,7 +896,7 @@ export default function HotelDetails() {
             </section>
 
             {/* ── Available Rooms Section ── */}
-            <section 
+            <section
                 data-reveal-id="rooms"
                 className={`reveal ${revealed['rooms'] ? 'active' : ''}`}
                 style={{ ...S.luxurySection, backgroundColor: "#FFFFFF", padding: "80px 0 100px" }}

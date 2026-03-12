@@ -192,50 +192,7 @@ function Landing() {
                 </div>
             </section>
 
-            {/* ================= STATS SECTION ================= */}
-            <section className="stats-section text-center">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-md-3"><h2>10K+</h2><p>Happy Users</p></div>
-                        <div className="col-md-3"><h2>500+</h2><p>Service Providers</p></div>
-                        <div className="col-md-3"><h2>25+</h2><p>Cities</p></div>
-                        <div className="col-md-3"><h2>99%</h2><p>Satisfaction Rate</p></div>
-                    </div>
-                </div>
-            </section>
 
-            {/* ================= TESTIMONIAL SECTION ================= */}
-            <section className="testimonial-section py-5">
-                <div className="container text-center">
-                    <h2 className="section-title mb-5">What It Works</h2>
-                    <div className="row g-4 justify-content-center">
-                        <div className="col-lg-4 col-md-6">
-                            <div className="testimonial-card">
-                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Kate Singh" />
-                                <h5>Kate Singh</h5>
-                                <div className="stars">★★★★★</div>
-                                <p>"ServNex made booking everything so seamless and stress-free. Highly recommended!"</p>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6">
-                            <div className="testimonial-card">
-                                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Ana Oliveira" />
-                                <h5>Ana Oliveira</h5>
-                                <div className="stars">★★★★★</div>
-                                <p>"I found a great salon nearby within minutes. Totally recommend!"</p>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6">
-                            <div className="testimonial-card">
-                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="John Matthews" />
-                                <h5>John Matthews</h5>
-                                <div className="stars">★★★★★</div>
-                                <p>"Amazing platform with incredible customer support. Five stars!"</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <Footer />
         </>
