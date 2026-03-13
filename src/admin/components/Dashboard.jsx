@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import AxiosInstance from "../../Component/AxiosInstance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import HotelProfileStepper from "./HotelProfileStepper";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -357,7 +357,7 @@ export default function Dashboard() {
         >
           <h4 className="fw-bold mb-4">ServNex Business</h4>
           <div className="flex-grow-1">
-            {["dashboard", "rooms", "bookings", "gallery", "nearby"].map((tab) => (
+            {["dashboard", "profile", "rooms", "bookings", "gallery", "nearby"].map((tab) => (
               <button
                 key={tab}
                 className="btn w-100 text-start mb-2"
@@ -405,6 +405,11 @@ export default function Dashboard() {
           </div>
 
           <div className="p-4">
+
+            {/* PROFILE TAB */}
+            {activeTab === "profile" && (
+              <HotelProfileStepper hotel={myHotel} fetchMyHotel={fetchMyHotel} theme={theme} />
+            )}
 
             {/* DASHBOARD TAB */}
             {activeTab === "dashboard" && (

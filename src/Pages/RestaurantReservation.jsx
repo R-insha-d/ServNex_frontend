@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { FaPlus, FaMinus } from "react-icons/fa";
-import { AppBar, Toolbar, Typography } from "@mui/material";
-import { Bell } from "lucide-react";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
+import StarIcon from "@mui/icons-material/Star";
+import { Bell, Download } from "lucide-react";
+import Button from "@mui/material/Button";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
 
@@ -23,9 +25,18 @@ export default function RestaurantReservation() {
     const [specialRequests, setSpecialRequests] = useState("");
     const [error, setError] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [isReserving, setIsReserving] = useState(false);
+    const [newResvId, setNewResvId] = useState(null);
+    const [resvDetails, setResvDetails] = useState(null);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     const tablesNeeded = Math.ceil(guests / 4);
+    const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * (guests / 2) : 0;
+    const convenienceFee = guests * 15;
+    const totalCost = subtotal + convenienceFee;
 
     useEffect(() => {
         if (!restaurant) {
@@ -56,7 +67,7 @@ export default function RestaurantReservation() {
         setError(null);
 
         try {
-            const totalCost = Number(restaurant.average_cost_for_two) * (guests / 2);
+            // totalCost is pre-calculated at component level
 
             // 1. Create Reservation
             const resResponse = await AxiosInstance.post(
@@ -95,8 +106,10 @@ export default function RestaurantReservation() {
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
                         });
+                        setNewResvId(reservationId);
+                        setResvDetails(resResponse.data);
                         toast.success("Payment Successful! Reservation Confirmed.");
-                        navigate("/my-bookings");
+                        setShowSuccessPopup(true);
                     } catch (err) {
                         toast.error("Payment verification failed. Please contact support.");
                     }
@@ -135,6 +148,70 @@ export default function RestaurantReservation() {
         } finally {
             setIsReserving(false);
         }
+    };
+
+    const handleReviewSubmit = async () => {
+        if (!newResvId) return;
+        setIsSubmittingReview(true);
+        try {
+            await AxiosInstance.post("api/reviews/", {
+                reservation: newResvId,
+                rating: reviewRating,
+                comment: reviewComment
+            });
+            toast.success("Thank you for your review!");
+            navigate(`/restaurant/${id}`);
+        } catch (err) {
+            toast.error("Failed to submit review.");
+            navigate(`/restaurant/${id}`);
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
+    const handleDownloadReceipt = () => {
+        if (!resvDetails) return;
+        
+        const printWindow = window.open('', '_blank');
+        const content = `
+            <html>
+                <head>
+                    <title>Reservation Receipt - ${restaurant.name}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+                        .header { border-bottom: 2px solid #3a86ff; padding-bottom: 20px; margin-bottom: 30px; }
+                        .details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                        .item { margin-bottom: 15px; }
+                        .label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }
+                        .val { font-size: 1.1rem; margin-top: 5px; }
+                        .total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }
+                        .price { font-size: 2rem; color: #3a86ff; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>ServNex Restaurants</h1>
+                        <p>Table Reservation Confirmation</p>
+                    </div>
+                    <div class="details">
+                        <div class="item"><div class="label">Restaurant</div><div class="val">${restaurant.name}</div></div>
+                        <div class="item"><div class="label">Reservation ID</div><div class="val">#SNX-RES-${resvDetails.id}</div></div>
+                        <div class="item"><div class="label">Date</div><div class="val">${date}</div></div>
+                        <div class="item"><div class="label">Time</div><div class="val">${time}</div></div>
+                        <div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div>
+                        <div class="item"><div class="label">Location</div><div class="val">${restaurant.area}, ${restaurant.city}</div></div>
+                    </div>
+                    <div class="total">
+                        <div class="label">Amount Paid</div>
+                        <div class="price">₹${(Number(restaurant.average_cost_for_two) * (guests / 2)).toLocaleString()}</div>
+                    </div>
+                    <p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for booking with ServNex. Please present this receipt at the restaurant.</p>
+                </body>
+            </html>
+        `;
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.print();
     };
 
     return (
@@ -222,6 +299,158 @@ export default function RestaurantReservation() {
                                 Go Back
                             </button>
                         </div>
+                    </div>
+                </>
+            )}
+
+            {/* SUCCESS POPUP MODAL */}
+            {showSuccessPopup && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        onClick={() => navigate("/my-bookings")}
+                        style={{
+                            position: "fixed", top: 0, left: 0,
+                            width: "100%", height: "100%",
+                            background: "rgba(0,0,0,0.5)",
+                            zIndex: 9998,
+                            backdropFilter: "blur(5px)",
+                        }}
+                    />
+                    {/* Modal */}
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: "50%", left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            zIndex: 9999,
+                            background: "white",
+                            borderRadius: "24px",
+                            padding: "48px 32px",
+                            maxWidth: "440px",
+                            width: "90%",
+                            textAlign: "center",
+                            boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
+                        }}
+                    >
+                        {/* Success Icon */}
+                        <div style={{
+                            width: 80, height: 80,
+                            borderRadius: "50%",
+                            background: "#f0fdf4",
+                            display: "flex", alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto 24px",
+                            fontSize: "2.5rem",
+                            border: "2px solid #22c55e",
+                        }}>
+                            ✅
+                        </div>
+
+                        <h3 style={{ color: "#166534", fontWeight: 800, marginBottom: 12, fontFamily: "'Poppins', sans-serif" }}>
+                            Reservation Confirmed!
+                        </h3>
+
+                        <p style={{ color: "#4b5563", fontSize: "1rem", lineHeight: 1.6, marginBottom: 24 }}>
+                            Your table at <strong>{restaurant?.name}</strong> is booked successfully. We look forward to serving you!
+                        </p>
+
+                        {resvDetails && (
+                            <div style={{ 
+                                background: "#f8fafc", 
+                                padding: "16px", 
+                                borderRadius: "16px", 
+                                marginBottom: "24px", 
+                                textAlign: "left",
+                                border: "1px solid #e2e8f0"
+                            }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                                    <p style={{ margin: 0, fontWeight: 700, fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase" }}>Reservation Summary</p>
+                                    <Button 
+                                        size="small" 
+                                        startIcon={<Download size={14} />}
+                                        onClick={handleDownloadReceipt}
+                                        sx={{ textTransform: "none", fontSize: "0.75rem", borderRadius: "8px" }}
+                                    >
+                                        Receipt
+                                    </Button>
+                                </div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: "0.7rem", color: "#64748b" }}>Booking ID</p>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: "0.85rem" }}>#SNX-${resvDetails.id}</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: "0.7rem", color: "#64748b" }}>Date & Time</p>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: "0.85rem" }}>{date} at {time}</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: "0.7rem", color: "#64748b" }}>Guests</p>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: "0.85rem" }}>{guests} Persons</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: "0.7rem", color: "#64748b" }}>Total Paid</p>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: "0.85rem", color: "#166534" }}>₹{(Number(restaurant.average_cost_for_two) * (guests / 2)).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ background: "#f8fafc", padding: "20px", borderRadius: "16px", marginBottom: "32px", border: "1px dashed #cbd5e1" }}>
+                            <p style={{ margin: "0 0 12px 0", fontWeight: 700, fontSize: "0.85rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                Rate Your Booking Experience
+                            </p>
+                            <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "16px" }}>
+                                {[1, 2, 3, 4, 5].map(s => (
+                                    <IconButton 
+                                        key={s} 
+                                        onClick={() => setReviewRating(s)}
+                                        sx={{ p: 0.5 }}
+                                    >
+                                        <StarIcon 
+                                            sx={{ 
+                                                color: s <= reviewRating ? "#fbbf24" : "#e5e7eb", 
+                                                fontSize: 32 
+                                            }} 
+                                        />
+                                    </IconButton>
+                                ))}
+                            </div>
+                            <textarea
+                                placeholder="Your thoughts..."
+                                value={reviewComment}
+                                onChange={e => setReviewComment(e.target.value)}
+                                style={{
+                                    width: "100%", padding: "10px", borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: "0.9rem", resize: "none", height: "80px", outline: "none"
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleReviewSubmit}
+                            disabled={isSubmittingReview}
+                            style={{
+                                width: "100%",
+                                background: "linear-gradient(135deg, #3a86ff 0%, #1e63d0 100%)",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "14px",
+                                padding: "16px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                fontSize: "1rem",
+                                boxShadow: "0 10px 20px rgba(30,99,208,0.2)",
+                                transition: "all 0.3s ease",
+                            }}
+                        >
+                            {isSubmittingReview ? "Submitting..." : "Submit Review & Go to Dashboard"}
+                        </button>
+                        <button 
+                            onClick={() => navigate("/my-bookings")}
+                            style={{ background: "none", border: "none", color: "#64748b", marginTop: 15, fontSize: "0.9rem", cursor: "pointer", fontWeight: 600 }}
+                        >
+                            Skip for now
+                        </button>
                     </div>
                 </>
             )}
@@ -325,16 +554,24 @@ export default function RestaurantReservation() {
                         </div>
 
                         {/* TOTAL COST */}
-                        <div className="card border-0 shadow-sm rounded-4 p-3 bg-light mb-4">
+                        <div className="card border-0 shadow-sm rounded-4 p-4 bg-light mb-4">
+                            <h6 className="fw-bold mb-3 text-uppercase" style={{ fontSize: "0.8rem", color: "#64748b", letterSpacing: "0.05em" }}>Price Summary</h6>
+                            <div className="d-flex justify-content-between mb-2">
+                                <span className="text-muted">Dining for {guests} {guests === 1 ? 'Guest' : 'Guests'}</span>
+                                <span className="fw-semibold">₹{subtotal.toLocaleString()}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                                <span className="text-muted">Convenience Fee</span>
+                                <span className="fw-semibold">₹{convenienceFee.toLocaleString()}</span>
+                            </div>
+                            <hr className="my-3" style={{ opacity: 0.1 }} />
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h5 className="fw-bold mb-1">Estimated Cost</h5>
-                                    <small className="text-muted">
-                                        Average for {guests} {guests === 1 ? 'guest' : 'guests'}
-                                    </small>
+                                    <h5 className="fw-bold mb-0">Total Estimated Cost</h5>
+                                    <small className="text-muted">Incl. of all taxes</small>
                                 </div>
                                 <h3 className="fw-bold text-primary mb-0">
-                                    ₹{(Number(restaurant.average_cost_for_two) * (guests / 2)).toLocaleString()}
+                                    ₹{totalCost.toLocaleString()}
                                 </h3>
                             </div>
                         </div>

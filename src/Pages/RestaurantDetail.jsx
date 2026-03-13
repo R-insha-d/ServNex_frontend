@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import AxiosInstance from "../Component/AxiosInstance";
+import { toast } from "react-toastify";
 import {
     AppBar, Toolbar, Card, CardContent, Typography, Box,
     Button, Chip, Modal, useMediaQuery, Divider, CircularProgress, IconButton
 } from "@mui/material";
 
-import { Bell, Calendar, MapPin, Utensils, Hotel } from "lucide-react";
+import { Bell, Calendar, MapPin, Utensils, Hotel, Bike, Wind, ShoppingBag, Music, Accessibility, Monitor, Baby, Star, Soup, Disc, Crown, PartyPopper } from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -26,11 +27,13 @@ export default function RestaurantDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const isMobile = useMediaQuery("(max-width:768px)");
+    const isTablet = useMediaQuery("(max-width:1024px)");
 
     const [restaurant, setRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [reviews, setReviews] = useState([]);
 
     const [open, setOpen] = useState(false);
     const [reservationDate, setReservationDate] = useState(() => new Date().toISOString().split("T")[0]);
@@ -39,11 +42,27 @@ export default function RestaurantDetail() {
     const [timeMinute, setTimeMinute] = useState(() => String(new Date().getMinutes()).padStart(2, "0"));
     const [timePeriod, setTimePeriod] = useState(() => getInitTime().initPeriod);
 
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [eligibleResvId, setEligibleResvId] = useState(null);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
     useEffect(() => {
         setLoading(true);
-        axios.get(`http://127.0.0.1:8000/api/restaurants/${id}/`)
-            .then(res => { setRestaurant(res.data); setLoading(false); })
-            .catch(err => { setError(err.message || "Failed to load restaurant"); setLoading(false); });
+        const fetchRestaurant = AxiosInstance.get(`api/restaurants/${id}/`);
+        const fetchReviews = AxiosInstance.get(`api/restaurants/${id}/reviews/`);
+        
+        Promise.all([fetchRestaurant, fetchReviews])
+            .then(([res1, res2]) => {
+                setRestaurant(res1.data);
+                setReviews(Array.isArray(res2.data) ? res2.data : []);
+                setLoading(false);
+            })
+            .catch(err => {
+                setError(err.message || "Failed to load restaurant data");
+                setLoading(false);
+            });
     }, [id]);
 
     const images = restaurant ? [
@@ -77,6 +96,56 @@ export default function RestaurantDetail() {
 
     const handleOpenModal = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const handleWriteReviewClick = async () => {
+        const token = localStorage.getItem("access");
+        if (!token) {
+            toast.error("Please login to write a review");
+            navigate("/auth");
+            return;
+        }
+        try {
+            const res = await AxiosInstance.get(`api/eligible-reservation/?restaurant_id=${id}`);
+            if (res.data.id) {
+                setEligibleResvId(res.data.id);
+                setReviewModalOpen(true);
+            } else {
+                toast.info("A confirmed reservation is required to leave a review.");
+            }
+        } catch (err) {
+            toast.error("Error checking eligibility.");
+        }
+    };
+
+    const handleReviewSubmit = async () => {
+        if (!eligibleResvId) return;
+        setIsSubmittingReview(true);
+        try {
+            const res = await AxiosInstance.post("api/reviews/", {
+                reservation: eligibleResvId,
+                rating: reviewRating,
+                comment: reviewComment
+            });
+            toast.success("Thank you for your review!");
+            setReviewModalOpen(false);
+            
+            // Real-time update
+            const newReview = { ...res.data, user_name: "You", created_at: new Date().toISOString() };
+            const updatedReviews = [newReview, ...reviews];
+            setReviews(updatedReviews);
+            
+            const sum = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+            const avg = (sum / updatedReviews.length).toFixed(1);
+            setRestaurant(prev => ({ ...prev, average_rating: avg, reviews_count: updatedReviews.length }));
+            
+            setReviewRating(5);
+            setReviewComment("");
+        } catch (err) {
+            toast.error("Failed to submit review.");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
 
     const handleReservation = () => {
         if (!reservationDate) { alert("Please select a date"); return; }
@@ -339,8 +408,8 @@ export default function RestaurantDetail() {
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
                     <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
-                    <strong>{restaurant.rating || "4.8"}</strong>&nbsp;
-                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>(876 reviews)</span>
+                    <strong>{restaurant.average_rating || restaurant.rating || "4.8"}</strong>&nbsp;
+                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({restaurant.reviews_count || "876"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto" }}>
@@ -418,46 +487,122 @@ export default function RestaurantDetail() {
                             </div>
                         </div>
                     </div>
+                    {/* ── REVIEWS SECTION ── */}
+                    <div
+                        data-reveal-id="reviews"
+                        className={`reveal ${revealed['reviews'] ? 'active' : ''}`}
+                        style={{ marginTop: "60px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 25px rgba(0,0,0,0.03)" }}
+                    >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", flexWrap: "wrap", gap: "15px" }}>
+                            <div>
+                                <h3 style={{ fontSize: "1.6rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "5px" }}>
+                                    Guest Reviews
+                                </h3>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                                        {[1, 2, 3, 4, 5].map(s => (
+                                            <StarIcon key={s} sx={{ color: s <= (restaurant?.average_rating || 0) ? "#f59e0b" : "#d1d5db", fontSize: 20 }} />
+                                        ))}
+                                    </div>
+                                    <span style={{ fontWeight: 600, color: "#2c1810" }}>{restaurant?.average_rating || "New"}</span>
+                                    <span style={{ color: "#888", fontSize: "0.9rem" }}>({reviews?.length || 0} reviews)</span>
+                                </div>
+                            </div>
+                            <Button
+                                variant="outlined"
+                                onClick={handleWriteReviewClick}
+                                sx={{ borderRadius: "10px", textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
+                            >
+                                Write a Review
+                            </Button>
+                        </div>
+
+                        {!Array.isArray(reviews) || reviews.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
+                                <div style={{ fontSize: "3rem", marginBottom: "10px" }}>💬</div>
+                                <p>No reviews yet for this restaurant. Be the first to share your experience!</p>
+                            </div>
+                        ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+                                {reviews.map((rev, idx) => (
+                                    <div key={rev.id || idx} style={{ borderBottom: idx === reviews.length - 1 ? "none" : "1px solid #f0f0f0", paddingBottom: "25px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#667eaf", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.1rem" }}>
+                                                    {(rev.user_name || "G")[0].toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 600, color: "#2c1810" }}>{rev.user_name || "Verified Guest"}</div>
+                                                    <div style={{ fontSize: "0.8rem", color: "#888" }}>
+                                                        {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
+                                                {Array.from({ length: 5 }, (_, i) => (
+                                                    <StarIcon key={i} sx={{ color: i < rev.rating ? "#f59e0b" : "#d1d5db", fontSize: 16 }} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {rev.comment && (
+                                            <p style={{ color: "#444", lineHeight: 1.6, fontSize: "0.95rem", margin: 0, paddingLeft: "52px" }}>
+                                                "{rev.comment}"
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </section>
 
             <div className="container my-5 px-lg-5">
                 <Card className="premium-card overflow-hidden">
                     <CardContent className="p-5">
-                        <div className="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h1 style={{ fontSize: "2.4rem", fontWeight: 700, color: "#2d3436", marginBottom: "8px" }}>
-                                    {restaurant.name}
-                                </h1>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#636e72", mb: 2 }}>
-                                    <MapPin size={18} />
-                                    <Typography variant="body1">{restaurant.area}, {restaurant.city}</Typography>
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            {restaurant.total_tables > 0 && (
+                                <Box sx={{
+                                    background: restaurant.total_tables < 3 ? "rgba(255, 152, 0, 0.1)" : "rgba(76, 175, 80, 0.1)",
+                                    color: restaurant.total_tables < 3 ? "#ef6c00" : "#2e7d32",
+                                    padding: "10px 24px",
+                                    borderRadius: "50px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 1.5,
+                                    fontFamily: "'Poppins', sans-serif",
+                                    fontWeight: 700,
+                                    fontSize: "0.85rem",
+                                    letterSpacing: "0.1em",
+                                    border: `1px solid ${restaurant.total_tables < 3 ? "rgba(255, 152, 0, 0.2)" : "rgba(76, 175, 80, 0.2)"}`,
+                                    backdropFilter: "blur(10px)",
+                                    animation: "pulse 2s infinite ease-in-out"
+                                }}>
+                                    <span style={{
+                                        width: "8px",
+                                        height: "8px",
+                                        borderRadius: "50%",
+                                        background: restaurant.total_tables < 3 ? "#ef6c00" : "#2e7d32",
+                                        boxShadow: `0 0 10px ${restaurant.total_tables < 3 ? "#ef6c00" : "#2e7d32"}`
+                                    }}></span>
+                                    HURRY! ONLY {restaurant.total_tables} {restaurant.total_tables === 1 ? 'TABLE' : 'TABLES'} LEFT.
                                 </Box>
-                            </div>
-                            <div
-                                className="smooth-grad-btn"
+                            )}
+
+                            <div className="smooth-grad-btn"
                                 style={{
                                     ...S.bookBtn,
                                     width: "auto",
-                                    padding: "6px 20px",
+                                    padding: "6px 15px",
                                     marginTop: 0,
                                     fontSize: "0.85rem",
                                     maxHeight: "36px",
-                                    background: "linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)",
                                     backdropFilter: "blur(10px)",
-                                }}
-                            >
-                                {restaurant.badge || "Restaurant"}
-                            </div>
-                        </div>
-
-                        <div className="d-flex align-items-center gap-3 mb-4">
-                            <div className="info-tag">
-                                <Utensils size={14} />
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.1em",
+                                }}>
+                                <Utensils size={14} className="me-2" />
                                 {restaurant.cuisine_type}
-                            </div>
-                            <div className="info-tag">
-                                {restaurant.price_range || "₹₹₹"}
                             </div>
                         </div>
 
@@ -465,41 +610,93 @@ export default function RestaurantDetail() {
 
                         <div className="mb-4">
                             <span className="price-main">₹{Number(restaurant.average_cost_for_two).toLocaleString()}</span>
-                            <span style={{ color: "#636e72", marginLeft: "10px", fontSize: "1.1rem" }}>For Table</span>
+                            <span style={{ color: "#636e72", marginLeft: "10px", fontSize: "1.1rem" }}>For Slot</span>
+                            <div>
+                                <p style={{ color: "#636e72", fontSize: "0.9rem", width: "fit-content", backgroundColor: "rgba(76, 175, 80, 0.1)", padding: "5px 16px", borderRadius: "50px", marginBottom: "8px" }}>This amount will be deducted from your bill</p>
+                                <p style={{ color: "#ef6c00", fontSize: "0.9rem", width: "fit-content", backgroundColor: "rgba(255, 152, 0, 0.1)", padding: "5px 16px", borderRadius: "50px" }}>No Refund for cancellation</p>
+                            </div>
                         </div>
 
-                        {/* Restaurant Information Grid */}
+                        {/* Features Section */}
                         <Box sx={{
-                            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)",
-                            backdropFilter: "blur(10px)", borderRadius: "20px", p: 4, mb: 4
+                            background: "rgba(255, 255, 255, 0.6)",
+                            backdropFilter: "blur(20px)",
+                            borderRadius: "32px",
+                            p: { xs: 3, md: 5 },
+                            mb: 4,
+                            border: "1px solid rgba(102, 126, 234, 0.15)",
+                            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.05)"
                         }}>
-                            <Typography variant="h6" fontWeight="700" color="#2d3436" gutterBottom mb={3}>
-                                Restaurant Information
+                            <Typography variant="h5" sx={{
+                                fontFamily: "'Poppins', sans-serif",
+                                fontWeight: 600,
+                                color: "#2d3436",
+                                mb: 4,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5
+                            }}>
+                                <span style={{ width: "8px", height: "32px", background: "linear-gradient(to bottom, #667eea, #764ba2)", borderRadius: "4px" }}></span>
+                                Features
                             </Typography>
-                            <Box sx={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 3 }}>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, pb: 2, borderBottom: "1px solid #e0e0e0" }}>
-                                    <Utensils size={20} color="#1e63d0" />
-                                    <Typography variant="body1" color="#2d3436"><strong>Cuisine:</strong> {restaurant.cuisine_type}</Typography>
-                                </Box>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, pb: 2, borderBottom: "1px solid #e0e0e0" }}>
-                                    <span style={{ fontSize: "1.2rem", color: "#1e63d0" }}>₹</span>
-                                    <Typography variant="body1" color="#2d3436"><strong>Price Range:</strong> {restaurant.price_range || "₹₹₹"}</Typography>
-                                </Box>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, pb: 2, borderBottom: "1px solid #e0e0e0" }}>
-                                    <Hotel size={20} color="#1e63d0" />
-                                    <Typography variant="body1" color="#2d3436"><strong>Total Tables:</strong> {restaurant.total_tables}</Typography>
-                                </Box>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, pb: 2, borderBottom: "1px solid #e0e0e0" }}>
-                                    <Bell size={20} color="#1e63d0" />
-                                    <Typography variant="body1" color="#2d3436"><strong>Total Tables:</strong> {restaurant.total_tables}</Typography>
-                                </Box>
+
+                            <Box sx={{
+                                display: "grid",
+                                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+                                gap: 3
+                            }}>
+                                {[
+                                    { name: "Home Delivery", icon: <Bike size={22} /> },
+                                    { name: "Air Condition", icon: <Wind size={22} /> },
+                                    { name: "Take-away", icon: <ShoppingBag size={22} /> },
+                                    { name: "Live Music", icon: <Music size={22} /> },
+                                    { name: "Wheelchair Accessible", icon: <Accessibility size={22} /> },
+                                    { name: "Live Sports Screening", icon: <Monitor size={22} /> },
+                                    { name: "Kids Allowed", icon: <Baby size={22} /> },
+                                    { name: "5-star dining", icon: <Star size={22} /> },
+                                    { name: "Buffet", icon: <Soup size={22} /> },
+                                    { name: "Thali", icon: <Disc size={22} /> },
+                                    { name: "Luxury Dining", icon: <Crown size={22} /> },
+                                    { name: "New Year Specials", icon: <PartyPopper size={22} /> }
+                                ].map((feature, idx) => (
+                                    <Box
+                                        key={idx}
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 2,
+                                            p: 2,
+                                            borderRadius: "16px",
+                                            transition: "all 0.3s ease",
+                                            "&:hover": {
+                                                background: "rgba(102, 126, 234, 0.08)",
+                                                transform: "translateY(-3px)"
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{
+                                            color: "#667eea",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            background: "rgba(102, 126, 234, 0.1)",
+                                            p: 1,
+                                            borderRadius: "12px"
+                                        }}>
+                                            {feature.icon}
+                                        </Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 500, color: "#444", fontSize: "0.95rem" }}>
+                                            {feature.name}
+                                        </Typography>
+                                    </Box>
+                                ))}
                             </Box>
                         </Box>
 
                         {/* Reservation Box */}
                         <Box sx={{
-                            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)",
-                            backdropFilter: "blur(10px)", borderRadius: "16px", p: 3
+                            background: "rgba(255, 255, 255, 0.6)",
+                            backdropFilter: "blur(20px)", borderRadius: "16px", p: 3
                         }}>
                             {restaurant.total_tables < 5 && restaurant.total_tables > 0 && (
                                 <div className="text-center mb-3">
@@ -570,6 +767,56 @@ export default function RestaurantDetail() {
                             Continue to Reservation
                         </Button>
                     </Box>
+                </Box>
+            </Modal>
+
+            {/* Review Modal */}
+            <Modal open={reviewModalOpen} onClose={() => setReviewModalOpen(false)}>
+                <Box sx={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: { xs: '90%', sm: 450 }, bgcolor: 'white', borderRadius: "24px", p: 4, outline: "none",
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.2)"
+                }}>
+                    <Typography variant="h5" fontWeight="700" mb={1} sx={{ fontFamily: "'Poppins', sans-serif" }}>
+                        Rate Your Experience
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={3}>
+                        How was your dining experience at {restaurant?.name}?
+                    </Typography>
+
+                    <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 3 }}>
+                        {[1, 2, 3, 4, 5].map(s => (
+                            <IconButton key={s} onClick={() => setReviewRating(s)}>
+                                <StarIcon sx={{ fontSize: 40, color: s <= reviewRating ? "#f59e0b" : "#d1d5db" }} />
+                            </IconButton>
+                        ))}
+                    </Box>
+
+                    <textarea
+                        placeholder="Write your review here..."
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        style={{
+                            width: "100%", height: "120px", padding: "15px", borderRadius: "15px",
+                            border: "1px solid #ddd", fontFamily: "inherit", fontSize: "0.95rem",
+                            resize: "none", outline: "none", marginBottom: "20px"
+                        }}
+                    />
+
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        onClick={handleReviewSubmit}
+                        disabled={isSubmittingReview}
+                        sx={{
+                            py: 1.5, borderRadius: "50px", textTransform: "none", fontWeight: 700,
+                            background: "linear-gradient(135deg, #1e63d0 0%, #3a86ff 100%)",
+                            boxShadow: "0 10px 20px rgba(30,99,208,0.3)",
+                            "&:hover": { transform: "translateY(-2px)" }
+                        }}
+                    >
+                        {isSubmittingReview ? "Submitting..." : "Post Review"}
+                    </Button>
                 </Box>
             </Modal>
         </div>

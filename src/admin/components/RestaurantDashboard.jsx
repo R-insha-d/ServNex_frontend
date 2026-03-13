@@ -521,12 +521,7 @@ export default function RestaurantDashboard() {
                       <label className="form-label small fw-semibold">Cuisine Type</label>
                       <input type="text" className="form-control" value={editForm.cuisine_type} onChange={(e) => setEditForm({ ...editForm, cuisine_type: e.target.value })} />
                     </div>
-                    <div className="col-md-4">
-                      <label className="form-label small fw-semibold">Price Range</label>
-                      <select className="form-select" value={editForm.price_range} onChange={(e) => setEditForm({ ...editForm, price_range: e.target.value })}>
-                        {priceRangeChoices.map((p) => <option key={p}>{p}</option>)}
-                      </select>
-                    </div>
+                    
                     <div className="col-md-6">
                       <label className="form-label small fw-semibold">Avg Cost for Two (Rs.)</label>
                       <input type="number" className="form-control" min="0" value={editForm.average_cost_for_two} onChange={(e) => setEditForm({ ...editForm, average_cost_for_two: e.target.value })} />
