@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import AxiosInstance from "../Component/AxiosInstance";
 import { Link } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs, Tab } from "@mui/material";
-import { Bell, Calendar, MapPin, Utensils, Hotel } from "lucide-react";
+import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs, Tab, Modal, IconButton } from "@mui/material";
+import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star } from "lucide-react";
 
 export default function MyBookings() {
     const [bookings, setBookings] = useState([]);
@@ -17,6 +17,9 @@ export default function MyBookings() {
     const [reviewComment, setReviewComment] = useState("");
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState("");
+    
+    // Details Modal state
+    const [detailsModal, setDetailsModal] = useState(null); // holds booking/reservation object
 
     useEffect(() => {
         setLoading(true);
@@ -51,34 +54,63 @@ export default function MyBookings() {
 
             if (isEditing) {
                 // UPDATE existing review
-                await AxiosInstance.patch(`api/reviews/${reviewPopup.review_data.id}/`, {
+                const apiUrl = reviewPopup.hotel 
+                    ? `api/hotel-reviews/${reviewPopup.review_data.id}/` 
+                    : `api/reviews/${reviewPopup.review_data.id}/`;
+                
+                await AxiosInstance.patch(apiUrl, {
                     rating: reviewRating,
                     comment: reviewComment,
                 });
             } else {
                 // CREATE new review
-                await AxiosInstance.post("api/reviews/", {
-                    reservation: reviewPopup.id,
-                    rating: reviewRating,
-                    comment: reviewComment,
-                });
+                if (reviewPopup.hotel) {
+                    await AxiosInstance.post("api/hotel-reviews/", {
+                        booking: reviewPopup.id,
+                        rating: reviewRating,
+                        comment: reviewComment,
+                    });
+                } else {
+                    await AxiosInstance.post("api/reviews/", {
+                        reservation: reviewPopup.id,
+                        rating: reviewRating,
+                        comment: reviewComment,
+                    });
+                }
             }
 
-            // Update local state so button changes to "Edit Review"
-            setReservations(prev => prev.map(r =>
-                r.id === reviewPopup.id
-                    ? {
-                        ...r,
-                        has_review: true,
-                        review_data: {
-                            ...r.review_data,
-                            rating: reviewRating,
-                            comment: reviewComment,
-                            created_at: r.review_data?.created_at || new Date().toISOString()
+            // Update local state
+            if (reviewPopup.hotel) {
+                setBookings(prev => prev.map(b =>
+                    b.id === reviewPopup.id
+                        ? {
+                            ...b,
+                            has_review: true,
+                            review_data: {
+                                ...b.review_data,
+                                rating: reviewRating,
+                                comment: reviewComment,
+                                created_at: b.review_data?.created_at || new Date().toISOString()
+                            }
                         }
-                    }
-                    : r
-            ));
+                        : b
+                ));
+            } else {
+                setReservations(prev => prev.map(r =>
+                    r.id === reviewPopup.id
+                        ? {
+                            ...r,
+                            has_review: true,
+                            review_data: {
+                                ...r.review_data,
+                                rating: reviewRating,
+                                comment: reviewComment,
+                                created_at: r.review_data?.created_at || new Date().toISOString()
+                            }
+                        }
+                        : r
+                ));
+            }
             setReviewPopup(null);
         } catch (err) {
             const data = err.response?.data;
@@ -87,6 +119,66 @@ export default function MyBookings() {
         } finally {
             setReviewLoading(false);
         }
+    };
+
+    const handleDownloadReceipt = (item) => {
+        const isHotel = !!item.hotel;
+        const printWindow = window.open('', '_blank');
+        
+        let detailsHtml = "";
+        if (isHotel) {
+            const h = item.hotel_details || {};
+            detailsHtml = `
+                <div class="item"><div class="label">Hotel</div><div class="val">${h.name || "ServNex Hotel"}</div></div>
+                <div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${item.id}</div></div>
+                <div class="item"><div class="label">Check In</div><div class="val">${item.check_in}</div></div>
+                <div class="item"><div class="label">Check Out</div><div class="val">${item.check_out}</div></div>
+                <div class="item"><div class="label">Room Type</div><div class="val">${item.room_type || "Standard"}</div></div>
+                <div class="item"><div class="label">Total Rooms</div><div class="val">${item.rooms_booked || 1}</div></div>
+            `;
+        } else {
+            detailsHtml = `
+                <div class="item"><div class="label">Restaurant</div><div class="val">${item.restaurant_name}</div></div>
+                <div class="item"><div class="label">Reservation ID</div><div class="val">#SNX-RES-${item.id}</div></div>
+                <div class="item"><div class="label">Date</div><div class="val">${item.reservation_date}</div></div>
+                <div class="item"><div class="label">Time</div><div class="val">${item.reservation_time}</div></div>
+                <div class="item"><div class="label">Guests</div><div class="val">${item.number_of_guests}</div></div>
+                <div class="item"><div class="label">Location</div><div class="val">${item.restaurant_area || ""}, ${item.restaurant_city || ""}</div></div>
+            `;
+        }
+
+        const content = `
+            <html>
+                <head>
+                    <title>Receipt - ${isHotel ? "Hotel Booking" : "Restaurant Reservation"}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+                        .header { border-bottom: 2px solid ${isHotel ? "#667eea" : "#3a86ff"}; padding-bottom: 20px; margin-bottom: 30px; }
+                        .details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                        .item { margin-bottom: 15px; }
+                        .label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }
+                        .val { font-size: 1.1rem; margin-top: 5px; }
+                        .footer { margin-top: 50px; font-size: 0.8rem; color: #888; border-top: 1px solid #eee; pt: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>ServNex ${isHotel ? "Hotels" : "Restaurants"}</h1>
+                        <p>Official Confirmation Receipt</p>
+                    </div>
+                    <div class="details">
+                        ${detailsHtml}
+                    </div>
+                    <div class="footer">
+                        <p>Thank you for choosing ServNex. This is an electronically generated confirmation for your reference.</p>
+                        <p>Status: ${item.status.toUpperCase()}</p>
+                    </div>
+                </body>
+            </html>
+        `;
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.print();
     };
 
     const getImageUrl = (url) => {
@@ -147,7 +239,7 @@ export default function MyBookings() {
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <h6 className="fw-bold mb-0">⭐ Leave a Review</h6>
-                                <small className="text-muted">{reviewPopup.restaurant_name}</small>
+                                <small className="text-muted">{reviewPopup.hotel ? reviewPopup.hotel_details?.name : reviewPopup.restaurant_name}</small>
                             </div>
                             <button onClick={() => setReviewPopup(null)} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontWeight: 700, color: "#374151" }}>✕</button>
                         </div>
@@ -264,8 +356,53 @@ export default function MyBookings() {
                                                     <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-in: {booking.check_in}</div>
                                                     <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-out: {booking.check_out}</div>
                                                 </Box>
-                                                <Link to={"/hotel/" + booking.hotel} className="text-decoration-none">
-                                                    <Button variant="outlined" fullWidth sx={{ mt: 3, borderRadius: 3, textTransform: "none" }}>View Property Again</Button>
+
+                                                {/* Show existing review if any */}
+                                                {booking.review_data && (
+                                                    <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "10px", padding: "8px 12px", marginTop: "12px" }}>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                                                            {Array.from({ length: 5 }, (_, i) => (
+                                                                <span key={i} style={{ color: i < booking.review_data.rating ? "#f59e0b" : "#d1d5db", fontSize: "0.9rem" }}>&#9733;</span>
+                                                            ))}
+                                                            <small className="text-muted ms-1">Your review</small>
+                                                        </div>
+                                                        {booking.review_data.comment && (
+                                                            <p style={{ fontSize: "0.8rem", color: "#0369a1", margin: 0 }}>"{booking.review_data.comment}"</p>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Review Button - only for completed bookings */}
+                                                {booking.status === "completed" && (
+                                                    <button
+                                                        onClick={() => openReviewPopup(booking)}
+                                                        style={{
+                                                            width: "100%",
+                                                            marginTop: "16px",
+                                                            padding: "8px",
+                                                            borderRadius: "10px",
+                                                            border: "none",
+                                                            background: booking.has_review ? "#f0fdf4" : "#2563eb",
+                                                            color: booking.has_review ? "#16a34a" : "white",
+                                                            fontWeight: 600,
+                                                            fontSize: "0.85rem",
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        {booking.has_review ? "⭐ Edit Your Review" : "⭐ Write a Review"}
+                                                    </button>
+                                                )}
+
+                                                <Button 
+                                                    variant="outlined" 
+                                                    fullWidth 
+                                                    onClick={() => setDetailsModal(booking)}
+                                                    sx={{ mt: 2, borderRadius: 3, textTransform: "none", borderColor: "#667eea", color: "#667eea" }}
+                                                >
+                                                    Booking Details
+                                                </Button>
+                                                <Link to={"/hotel/" + booking.hotel} className="text-decoration-none d-block text-center mt-2">
+                                                    <small style={{ color: "#667eea", fontSize: "0.75rem", fontWeight: 600 }}>View Property Again</small>
                                                 </Link>
                                             </CardContent>
                                         </Card>
@@ -371,10 +508,16 @@ export default function MyBookings() {
                                                 </button>
                                             )}
 
-                                            <Link to={"/restaurant/" + reservation.restaurant} className="text-decoration-none">
-                                                <Button variant="outlined" fullWidth sx={{ borderRadius: 3, textTransform: "none", fontSize: "0.85rem" }}>
-                                                    View Restaurant
-                                                </Button>
+                                            <Button 
+                                                variant="outlined" 
+                                                fullWidth 
+                                                onClick={() => setDetailsModal(reservation)}
+                                                sx={{ mt: 2, borderRadius: 3, textTransform: "none", borderColor: "#3a86ff", color: "#3a86ff", fontSize: "0.85rem" }}
+                                            >
+                                                Reservation Details
+                                            </Button>
+                                            <Link to={"/restaurant/" + reservation.restaurant} className="text-decoration-none d-block text-center mt-2">
+                                                <small style={{ color: "#3a86ff", fontSize: "0.75rem", fontWeight: 600 }}>View Restaurant Again</small>
                                             </Link>
                                         </CardContent>
                                     </Card>
@@ -384,6 +527,96 @@ export default function MyBookings() {
                     )
                 )}
             </div>
+
+            {/* ── DETAILS MODAL ── */}
+            <Modal open={!!detailsModal} onClose={() => setDetailsModal(null)}>
+                <Box sx={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: { xs: '90%', sm: 450 }, bgcolor: 'white', borderRadius: "24px", p: 4, outline: "none",
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.2)"
+                }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
+                        <div>
+                            <Typography variant="h5" fontWeight="700" sx={{ color: detailsModal?.hotel ? "#667eea" : "#3a86ff" }}>
+                                {detailsModal?.hotel ? "Booking Summary" : "Reservation Summary"}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                #{detailsModal?.hotel ? "SNX-HTL" : "SNX-RES"}-{detailsModal?.id}
+                            </Typography>
+                        </div>
+                        <IconButton onClick={() => setDetailsModal(null)} size="small" sx={{ bgcolor: "#F5F5F5" }}>
+                            <X size={18} />
+                        </IconButton>
+                    </div>
+
+                    <Box sx={{ background: "#f8fafc", p: 2.5, borderRadius: "16px", border: "1px solid #e2e8f0", mb: 3 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+                            <div style={{ gridColumn: "span 2" }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>
+                                    {detailsModal?.hotel ? "Hotel Name" : "Restaurant Name"}
+                                </Typography>
+                                <Typography variant="body1" fontWeight="600">
+                                    {detailsModal?.hotel_details?.name || detailsModal?.restaurant_name}
+                                </Typography>
+                            </div>
+                            
+                            {detailsModal?.hotel ? (
+                                <>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Check-In</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.check_in}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Check-Out</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.check_out}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Room Type</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.room_type || "Standard"}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Rooms</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.rooms_booked || 1}</Typography>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Date</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal?.reservation_date}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Time</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal?.reservation_time}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Guests</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal?.number_of_guests} Persons</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Status</Typography>
+                                        <Typography variant="body2" fontWeight="600" color="success.main">{detailsModal?.status}</Typography>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </Box>
+
+                    <Button 
+                        fullWidth 
+                        variant="contained" 
+                        startIcon={<Download size={18} />}
+                        onClick={() => handleDownloadReceipt(detailsModal)}
+                        sx={{ 
+                            py: 1.5, borderRadius: "12px", textTransform: "none", fontWeight: 700,
+                            bgcolor: detailsModal?.hotel ? "#667eea" : "#3a86ff",
+                            "&:hover": { bgcolor: detailsModal?.hotel ? "#5a6fd6" : "#2d75e0" }
+                        }}
+                    >
+                        Download PDF Receipt
+                    </Button>
+                </Box>
+            </Modal>
         </div>
     );
 }

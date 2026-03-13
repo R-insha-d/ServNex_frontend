@@ -15,6 +15,7 @@ import {
     useMediaQuery,
     Divider,
     CircularProgress,
+    IconButton,
 } from "@mui/material";
 
 import StarIcon from "@mui/icons-material/Star";
@@ -25,6 +26,28 @@ import RestaurantIcon from "@mui/icons-material/Restaurant";
 import PoolIcon from "@mui/icons-material/Pool";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
+import LocalBarIcon from "@mui/icons-material/LocalBar";
+import SpaIcon from "@mui/icons-material/Spa";
+import RoomServiceIcon from "@mui/icons-material/RoomService";
+import LocalLaundryServiceIcon from "@mui/icons-material/LocalLaundryService";
+import TvIcon from "@mui/icons-material/Tv";
+import KitchenIcon from "@mui/icons-material/Kitchen";
+import CheckIcon from "@mui/icons-material/Check";
+
+const amenityIconMap = {
+  "Wifi": <WifiIcon sx={{ color: "#667eeaff" }} />,
+  "Parking": <LocalParkingIcon sx={{ color: "#667eeaff" }} />,
+  "Restaurant": <RestaurantIcon sx={{ color: "#667eeaff" }} />,
+  "Pool": <PoolIcon sx={{ color: "#667eeaff" }} />,
+  "Gym": <FitnessCenterIcon sx={{ color: "#667eeaff" }} />,
+  "AC": <AcUnitIcon sx={{ color: "#667eeaff" }} />,
+  "Bar": <LocalBarIcon sx={{ color: "#667eeaff" }} />,
+  "Spa": <SpaIcon sx={{ color: "#667eeaff" }} />,
+  "Room Service": <RoomServiceIcon sx={{ color: "#667eeaff" }} />,
+  "Laundry": <LocalLaundryServiceIcon sx={{ color: "#667eeaff" }} />,
+  "TV": <TvIcon sx={{ color: "#667eeaff" }} />,
+  "Kitchen": <KitchenIcon sx={{ color: "#667eeaff" }} />,
+};
 
 /* ─── inline styles (no extra CSS file needed) ─── */
 const S = {
@@ -484,16 +507,25 @@ export default function HotelDetails() {
     const [checkStatus, setCheckStatus] = useState("input");
     const [checkIn, setCheckIn] = useState("");
     const [checkOut, setCheckOut] = useState("");
+    const [reviews, setReviews] = useState([]);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [eligibleBooking, setEligibleBooking] = useState(null);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     /* ── Fetch ── */
     useEffect(() => {
         setLoading(true);
         const fetchHotel = AxiosInstance.get(`api/hotels/${id}/`);
         const fetchRooms = AxiosInstance.get(`api/rooms/?hotel=${id}`);
-        Promise.all([fetchHotel, fetchRooms])
-            .then(([hotelRes, roomRes]) => {
+        const fetchReviews = AxiosInstance.get(`api/hotel-reviews/?hotel=${id}`);
+        
+        Promise.all([fetchHotel, fetchRooms, fetchReviews])
+            .then(([hotelRes, roomRes, reviewsRes]) => {
                 setHotel(hotelRes.data);
                 setRooms(roomRes.data);
+                setReviews(reviewsRes.data);
                 setLoading(false);
             })
             .catch(err => {
@@ -571,6 +603,68 @@ export default function HotelDetails() {
             }
         } catch {
             setCheckStatus("full");
+        }
+    };
+
+    const handleWriteReviewClick = async () => {
+        const token = localStorage.getItem("access");
+        if (!token) {
+            toast.error("Please login to write a review");
+            navigate("/auth");
+            return;
+        }
+
+        try {
+            const res = await AxiosInstance.get(`api/bookings/eligible_for_review/?hotel_id=${id}`);
+            if (res.data.id) {
+                setEligibleBooking(res.data);
+                setReviewModalOpen(true);
+            } else {
+                toast.info("A confirmed booking is required to leave a review.");
+            }
+        } catch (err) {
+            toast.error("Error checking eligibility.");
+        }
+    };
+
+    const handleReviewSubmit = async () => {
+        if (!eligibleBooking) return;
+        setIsSubmittingReview(true);
+        try {
+            const res = await AxiosInstance.post("api/hotel-reviews/", {
+                booking: eligibleBooking.id,
+                rating: reviewRating,
+                comment: reviewComment
+            });
+            
+            toast.success("Review submitted successfully!");
+            setReviewModalOpen(false);
+            
+            // REAL TIME UPDATE
+            const newReview = {
+                ...res.data,
+                user_name: "You",
+                created_at: new Date().toISOString()
+            };
+            
+            const updatedReviews = [newReview, ...(Array.isArray(reviews) ? reviews : [])];
+            setReviews(updatedReviews);
+            
+            const sum = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+            const avg = (sum / updatedReviews.length).toFixed(1);
+            
+            setHotel(prev => ({
+                ...prev,
+                average_rating: avg,
+                reviews_count: updatedReviews.length
+            }));
+            
+            setReviewRating(5);
+            setReviewComment("");
+        } catch (err) {
+            toast.error(err.response?.data?.non_field_errors?.[0] || "Submission failed");
+        } finally {
+            setIsSubmittingReview(false);
         }
     };
 
@@ -765,8 +859,8 @@ export default function HotelDetails() {
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
                     <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
-                    <strong>4.8</strong>&nbsp;
-                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>(876 reviews)</span>
+                    <strong>{hotel.average_rating || "4.8"}</strong>&nbsp;
+                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({hotel.reviews_count || "876"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto" }}>
@@ -840,32 +934,8 @@ export default function HotelDetails() {
                                 </div>
                             )}
 
-                            {/* Feature Row - Enhanced Style
-                            <div style={{
-                                ...S.featureRow,
-                                flexDirection: isMobile ? "column" : "row",
-                                gap: isMobile ? "40px" : S.featureRow.gap,
-                                alignItems: isMobile ? "center" : "flex-start"
-                            }}>
-                                <div style={{ ...S.featureItem, textAlign: isMobile ? "center" : "left" }} className="luxury-feature-item">
-                                    <div style={{ ...S.featureIconWrap, width: isMobile ? "70px" : "85px", height: isMobile ? "70px" : "85px" }} className="icon-wrap">⚖️</div>
-                                    <div style={{ fontWeight: 600, fontSize: "1.2rem", color: "#2c1810", marginBottom: "8px", whiteSpace: "nowrap" }}>Heritage Luxury</div>
-                                    <div style={{ fontSize: "0.9rem", color: "#667eeaff", fontStyle: "italic", fontWeight: 500, opacity: 0.8 }}>A Century of Grace</div>
-                                </div>
-                                {!isMobile && <div style={S.featureDivider} />}
-                                <div style={{ ...S.featureItem, textAlign: isMobile ? "center" : "left" }} className="luxury-feature-item">
-                                    <div style={{ ...S.featureIconWrap, width: isMobile ? "70px" : "85px", height: isMobile ? "70px" : "85px" }} className="icon-wrap">🏛️</div>
-                                    <div style={{ fontWeight: 600, fontSize: "1.2rem", color: "#2c1810", marginBottom: "8px" }}>Palatial Suites</div>
-                                    <div style={{ fontSize: "0.9rem", color: "#667eeaff", fontStyle: "italic", fontWeight: 500, opacity: 0.8 }}>Royal Indulgence</div>
-                                </div>
-                                {!isMobile && <div style={S.featureDivider} />}
-                                <div style={{ ...S.featureItem, textAlign: isMobile ? "center" : "left" }} className="luxury-feature-item">
-                                    <div style={{ ...S.featureIconWrap, width: isMobile ? "70px" : "85px", height: isMobile ? "70px" : "85px" }} className="icon-wrap">🍷</div>
-                                    <div style={{ fontWeight: 600, fontSize: "1.2rem", color: "#2c1810", marginBottom: "8px" }}>Fine Art Dining</div>
-                                    <div style={{ fontSize: "0.9rem", color: "#667eeaff", fontStyle: "italic", fontWeight: 500, opacity: 0.8, whiteSpace: "nowrap" }}>Curated Gastronomy</div>
-                                </div>
-                            </div> */}
                         </div>
+
 
                         {/* Right: map card — rounded corners, subtle shadow */}
                         <div
@@ -892,7 +962,117 @@ export default function HotelDetails() {
                             </div>
                         </div>
                     </div>
+
+                    <div 
+                        style={{ marginTop: "40px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
+                    >
+                        <div style={{ fontSize: "1.4rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "25px", display: "flex", alignItems: "center", gap: "10px" }}>
+                             Property Facilities
+                        </div>
+                        
+                        {(Array.isArray(hotel.amenities) && hotel.amenities.length > 0) || (typeof hotel.amenities === "string" && hotel.amenities.length > 2) ? (
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: isMobile ? "1fr 1fr" : isTablet ? "repeat(3, 1fr)" : "repeat(4, 1fr)",
+                                gap: "20px"
+                            }}>
+                                {(Array.isArray(hotel.amenities) 
+                                    ? hotel.amenities 
+                                    : hotel.amenities.split(",").map(a => a.trim()).filter(Boolean)
+                                ).map((amenity, idx) => (
+                                    <div key={idx} style={{ 
+                                        display: "flex", 
+                                        alignItems: "center", 
+                                        gap: "10px", 
+                                        fontSize: "0.95rem", 
+                                        color: "#444", 
+                                        fontWeight: 500,
+                                        padding: "10px 15px",
+                                        backgroundColor: "#fcfcfc",
+                                        borderRadius: "10px",
+                                        border: "1px solid #f0f0f0"
+                                    }}>
+                                        <span style={{ display: "flex", alignItems: "center" }}>
+                                            {amenityIconMap[amenity] || <CheckIcon sx={{ color: "#667eeaff", fontSize: 18 }} />}
+                                        </span>
+                                        {amenity}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ color: "#888", fontStyle: "italic", fontSize: "0.9rem" }}>
+                                Selected facilities will appear here once updated in the dashboard.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── REVIEWS SECTION ── */}
+                    <div 
+                        style={{ marginTop: "60px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 25px rgba(0,0,0,0.03)" }}
+                    >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", flexWrap: "wrap", gap: "15px" }}>
+                            <div>
+                                <h3 style={{ fontSize: "1.6rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "5px" }}>
+                                    Guest Reviews
+                                </h3>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                                        {[1, 2, 3, 4, 5].map(s => (
+                                            <StarIcon key={s} sx={{ color: s <= (hotel?.average_rating || 0) ? "#f59e0b" : "#d1d5db", fontSize: 20 }} />
+                                        ))}
+                                    </div>
+                                    <span style={{ fontWeight: 600, color: "#2c1810" }}>{hotel?.average_rating || "New"}</span>
+                                    <span style={{ color: "#888", fontSize: "0.9rem" }}>({reviews?.length || 0} reviews)</span>
+                                </div>
+                            </div>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={handleWriteReviewClick}
+                                    sx={{ borderRadius: "10px", textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
+                                >
+                                    Write a Review
+                                </Button>
+                        </div>
+
+                        {!Array.isArray(reviews) || reviews.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
+                                <div style={{ fontSize: "3rem", marginBottom: "10px" }}>💬</div>
+                                <p>No reviews yet for this property. Be the first to share your experience!</p>
+                            </div>
+                        ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+                                {Array.isArray(reviews) && reviews.map((rev, idx) => (
+                                    <div key={rev.id || idx} style={{ borderBottom: (reviews && idx === reviews.length - 1) ? "none" : "1px solid #f0f0f0", paddingBottom: "25px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#667eaf", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.1rem" }}>
+                                                    {(rev.user_name || "G")[0].toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 600, color: "#2c1810" }}>{rev.user_name || "Verified Guest"}</div>
+                                                    <div style={{ fontSize: "0.8rem", color: "#888" }}>
+                                                        {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
+                                                {Array.from({ length: 5 }, (_, i) => (
+                                                    <StarIcon key={i} sx={{ color: i < rev.rating ? "#f59e0b" : "#d1d5db", fontSize: 16 }} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {rev.comment && (
+                                            <p style={{ color: "#444", lineHeight: 1.6, fontSize: "0.95rem", margin: 0, paddingLeft: "52px" }}>
+                                                "{rev.comment}"
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
+
             </section>
 
             {/* ── Available Rooms Section ── */}
@@ -989,6 +1169,56 @@ export default function HotelDetails() {
                         </div>
                     )}
                 </div>
+            </Modal>
+
+            {/* Review Modal */}
+            <Modal open={reviewModalOpen} onClose={() => setReviewModalOpen(false)}>
+                <Box sx={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: { xs: '90%', sm: 450 }, bgcolor: 'white', borderRadius: "24px", p: 4, outline: "none",
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.2)"
+                }}>
+                    <Typography variant="h5" fontWeight="700" mb={1} sx={{ fontFamily: "'Poppins', sans-serif" }}>
+                        Rate Your Experience
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={3}>
+                        How was your stay at {hotel?.name}? {eligibleBooking?.room_type && `(${eligibleBooking.room_type})`}
+                    </Typography>
+
+                    <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 3 }}>
+                        {[1, 2, 3, 4, 5].map(s => (
+                            <IconButton key={s} onClick={() => setReviewRating(s)}>
+                                <StarIcon sx={{ fontSize: 40, color: s <= reviewRating ? "#f59e0b" : "#d1d5db" }} />
+                            </IconButton>
+                        ))}
+                    </Box>
+
+                    <textarea
+                        placeholder="Write your review here..."
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        style={{
+                            width: "100%", height: "120px", padding: "15px", borderRadius: "15px",
+                            border: "1px solid #ddd", fontFamily: "inherit", fontSize: "0.95rem",
+                            resize: "none", outline: "none", marginBottom: "20px"
+                        }}
+                    />
+
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        onClick={handleReviewSubmit}
+                        disabled={isSubmittingReview}
+                        sx={{
+                            py: 1.5, borderRadius: "50px", textTransform: "none", fontWeight: 700,
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            boxShadow: "0 10px 20px rgba(102,126,234,0.3)",
+                            "&:hover": { transform: "translateY(-2px)" }
+                        }}
+                    >
+                        {isSubmittingReview ? "Submitting..." : "Post Review"}
+                    </Button>
+                </Box>
             </Modal>
         </div>
     );

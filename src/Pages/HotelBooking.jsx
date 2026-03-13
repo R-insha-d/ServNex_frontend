@@ -8,12 +8,13 @@ import {
     IconButton,
     Modal,
     Box,
-    Button as MuiButton,
+    Button,
     useMediaQuery,
     CircularProgress,
     Divider,
 } from "@mui/material";
-import { XCircle, AlertCircle, Bell, MapPin, ArrowRight, Search, Filter, Globe, Minus, Plus } from "lucide-react";
+import { XCircle, AlertCircle, Bell, MapPin, ArrowRight, Search, Filter, Globe, Minus, Plus, Download } from "lucide-react";
+import StarIcon from "@mui/icons-material/Star";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
 
@@ -280,6 +281,12 @@ export default function HotelBooking() {
     const [showErrorModal, setShowErrorModal] = useState(false); // [NEW] Modal control
     const [isBooking, setIsBooking] = useState(false); // Loading state for button
     const [remainingRooms, setRemainingRooms] = useState(null); // [NEW] Store remaining rooms count
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // [NEW] Success Modal control
+    const [newBookingId, setNewBookingId] = useState(null);
+    const [bookingDetails, setBookingDetails] = useState(null);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     // Reactive logic: Auto-calculate rooms when guests change
     const updateGuests = (val) => {
@@ -363,7 +370,9 @@ export default function HotelBooking() {
 
     const nights = calculateNights();
     const pricePerNight = room ? Number(room.price) : Number(hotel.price); // Use room price if available
-    const totalCost = pricePerNight * (nights === 0 ? 1 : nights) * roomsBooked;
+    const subtotal = pricePerNight * (nights === 0 ? 1 : nights) * roomsBooked;
+    const tax = Math.round(subtotal * 0.12);
+    const totalCost = subtotal + tax;
 
     // [NEW] Handle Booking Submission with Razorpay
     const handleBooking = async () => {
@@ -423,8 +432,10 @@ export default function HotelBooking() {
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
                         });
+                        setNewBookingId(bookingId); // Store ID for review
+                        setBookingDetails(bookingRes.data);
                         toast.success("Payment Successful! Booking Confirmed.");
-                        navigate("/my-bookings");
+                        setShowSuccessModal(true);
                     } catch (err) {
                         toast.error("Payment verification failed. Please contact support.");
                     }
@@ -464,6 +475,70 @@ export default function HotelBooking() {
         } finally {
             setIsBooking(false);
         }
+    };
+
+    const handleReviewSubmit = async () => {
+        if (!newBookingId) return;
+        setIsSubmittingReview(true);
+        try {
+            await AxiosInstance.post("api/hotel-reviews/", {
+                booking: newBookingId,
+                rating: reviewRating,
+                comment: reviewComment
+            });
+            toast.success("Thank you for your review!");
+            navigate(`/hotel/${id}`);
+        } catch (err) {
+            toast.error("Failed to submit review.");
+            navigate(`/hotel/${id}`);
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
+    const handleDownloadReceipt = () => {
+        if (!bookingDetails) return;
+        
+        const printWindow = window.open('', '_blank');
+        const content = `
+            <html>
+                <head>
+                    <title>Booking Receipt - ${hotel.name}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+                        .header { border-bottom: 2px solid #667eea; padding-bottom: 20px; margin-bottom: 30px; }
+                        .details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                        .item { margin-bottom: 15px; }
+                        .label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }
+                        .val { font-size: 1.1rem; margin-top: 5px; }
+                        .total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }
+                        .price { font-size: 2rem; color: #667eea; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>ServNex Hotels</h1>
+                        <p>Booking Confirmation Reciept</p>
+                    </div>
+                    <div class="details">
+                        <div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div>
+                        <div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div>
+                        <div class="item"><div class="label">Check In</div><div class="val">${checkIn}</div></div>
+                        <div class="item"><div class="label">Check Out</div><div class="val">${checkOut}</div></div>
+                        <div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div>
+                        <div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div>
+                    </div>
+                    <div class="total">
+                        <div class="label">Total Amount Paid</div>
+                        <div class="price">₹${totalCost.toLocaleString()}</div>
+                    </div>
+                    <p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p>
+                </body>
+            </html>
+        `;
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.print();
     };
 
     return (
@@ -668,23 +743,29 @@ export default function HotelBooking() {
                         {/* Cost Summary Section */}
                         <div style={{
                             ...S.summaryCard,
-                            flexDirection: isMobile ? "column" : "row",
-                            alignItems: isMobile ? "flex-start" : "center",
-                            gap: isMobile ? "20px" : "0px",
-                            textAlign: isMobile ? "left" : "inherit"
+                            flexDirection: "column",
+                            alignItems: "stretch",
+                            gap: "16px",
+                            textAlign: "left"
                         }}>
-                            <div>
-                                <div style={{ color: "#7a6a4a", fontSize: "0.9rem", marginBottom: "4px" }}>
-                                    {nights} {nights === 1 ? 'night' : 'nights'} × {roomsBooked} {roomsBooked === 1 ? 'room' : 'rooms'}
-                                </div>
-                                <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>Total Investment</div>
+                            <div style={{ display: "flex", justifyContent: "space-between", color: "#7a6a4a", fontSize: "0.95rem" }}>
+                                <span>Room Price ({roomsBooked} {roomsBooked === 1 ? 'Room' : 'Rooms'} × {nights} {nights === 1 ? 'night' : 'nights'})</span>
+                                <span>₹{subtotal.toLocaleString()}</span>
                             </div>
-                            <div style={{
-                                fontSize: isMobile ? "1.8rem" : "2.2rem",
-                                fontWeight: 700,
-                                color: "#667eea"
-                            }}>
-                                ₹{totalCost.toLocaleString()}
+                            <div style={{ display: "flex", justifyContent: "space-between", color: "#7a6a4a", fontSize: "0.95rem" }}>
+                                <span>Taxes & Service Fees (12%)</span>
+                                <span>₹{tax.toLocaleString()}</span>
+                            </div>
+                            <Divider sx={{ my: 1, opacity: 0.1 }} />
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <span style={{ fontWeight: 700, fontSize: "1.2rem", color: "#2c1810" }}>Total Investment</span>
+                                <span style={{
+                                    fontSize: isMobile ? "1.8rem" : "2.2rem",
+                                    fontWeight: 700,
+                                    color: "#667eea"
+                                }}>
+                                    ₹{totalCost.toLocaleString()}
+                                </span>
                             </div>
                         </div>
 
@@ -744,6 +825,134 @@ export default function HotelBooking() {
                     </button>
                 </Box>
             </Modal>
+            {/* Success Popup Modal */}
+            <Modal
+                open={showSuccessModal}
+                onClose={() => navigate("/my-bookings")}
+                aria-labelledby="success-modal-title"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: { xs: '90%', sm: 500 },
+                    bgcolor: 'background.paper',
+                    boxShadow: "0 30px 80px rgba(0,0,0,0.2)",
+                    p: 5,
+                    borderRadius: "24px",
+                    textAlign: 'center',
+                    outline: 'none',
+                    border: "none"
+                }}>
+                    <AnimatedCheck />
+                    <Typography id="success-modal-title" variant="h4" component="h2" fontWeight="bold" sx={{ fontFamily: "'Playfair Display', serif", color: "#2e7d32", mb: 1 }}>
+                        Booking Confirmed!
+                    </Typography>
+                    <Typography sx={{ color: '#7a6a4a', fontSize: '1.1rem', mb: 3, fontFamily: "'Lato', sans-serif" }}>
+                        Your stay at <strong>{hotel?.name}</strong> has been successfully reserved.
+                    </Typography>
+
+                    {bookingDetails && (
+                        <Box sx={{ 
+                            background: "#f8fafc", 
+                            p: 2, 
+                            borderRadius: "16px", 
+                            mb: 3, 
+                            textAlign: "left",
+                            border: "1px solid #e2e8f0"
+                        }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                                <Typography variant="subtitle2" fontWeight="700" color="#64748b">BOOKING DETAILS</Typography>
+                                <Button 
+                                    size="small" 
+                                    startIcon={<Download size={14} />}
+                                    onClick={handleDownloadReceipt}
+                                    sx={{ textTransform: "none", fontSize: "0.75rem", borderRadius: "8px" }}
+                                >
+                                    Download Receipt
+                                </Button>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                                <div>
+                                    <Typography variant="caption" color="text.secondary">Order ID</Typography>
+                                    <Typography variant="body2" fontWeight="600">#SNX-${bookingDetails.id}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" color="text.secondary">Total Paid</Typography>
+                                    <Typography variant="body2" fontWeight="600" color="#2e7d32">₹{totalCost.toLocaleString()}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" color="text.secondary">Check-in</Typography>
+                                    <Typography variant="body2" fontWeight="600">{checkIn}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" color="text.secondary">Check-out</Typography>
+                                    <Typography variant="body2" fontWeight="600">{checkOut}</Typography>
+                                </div>
+                            </div>
+                        </Box>
+                    )}
+
+                    <Box sx={{ background: "#fdf8f3", p: 3, borderRadius: "16px", mb: 4 }}>
+                        <Typography variant="subtitle2" fontWeight="700" color="#8b6914" mb={1} sx={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                            Rate Your Booking Experience
+                        </Typography>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "16px" }}>
+                            {[1, 2, 3, 4, 5].map(s => (
+                                <IconButton key={s} onClick={() => setReviewRating(s)} sx={{ p: 0.5 }}>
+                                    <StarIcon sx={{ color: s <= reviewRating ? "#f59e0b" : "#d1d5db", fontSize: 32 }} />
+                                </IconButton>
+                            ))}
+                        </div>
+                        <textarea
+                            placeholder="Tell us about your experience..."
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            style={{
+                                width: "100%",
+                                padding: "12px",
+                                borderRadius: "12px",
+                                border: "1px solid #e0e0e0",
+                                fontFamily: "'Lato', sans-serif",
+                                fontSize: "0.9rem",
+                                minHeight: "80px",
+                                resize: "none",
+                                outline: "none",
+                                backgroundColor: "white"
+                            }}
+                        />
+                    </Box>
+
+                    <Button
+                        className="smooth-grad-btn"
+                        onClick={handleReviewSubmit}
+                        disabled={isSubmittingReview}
+                        fullWidth
+                        sx={{
+                            borderRadius: "50px",
+                            py: 2,
+                            fontWeight: 700,
+                            letterSpacing: "0.1em",
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            color: "white",
+                            boxShadow: "0 10px 20px rgba(102,126,234,0.15)",
+                            textTransform: "none",
+                            fontSize: "1rem",
+                            "&:hover": { transform: "translateY(-3px)", boxShadow: "0 15px 30px rgba(102,126,234,0.3)" }
+                        }}
+                    >
+                        {isSubmittingReview ? "SUBMITTING..." : "SUBMIT & GO TO DASHBOARD"}
+                    </Button>
+                    <Button
+                        onClick={() => navigate("/my-bookings")}
+                        sx={{ mt: 2, color: "#7a6a4a", textTransform: "none", fontWeight: 600 }}
+                    >
+                        Skip for now
+                    </Button>
+                </Box>
+            </Modal>
         </div>
+
     );
 }
