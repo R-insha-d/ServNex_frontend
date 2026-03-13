@@ -81,7 +81,13 @@ function Landing() {
                         </div>
 
                         <div className="col-lg-4 col-md-6">
-                            <div className="service-card text-center p-4">
+                            <div className="service-card text-center p-4 position-relative overflow-hidden">
+                                <div className="coming-soon-badge">
+                                    <div className="badge-track">
+                                        <span>Coming Soon</span>
+                                        <span>Coming Soon</span>
+                                    </div>
+                                </div>
                                 <img src={Saloon} className="service-icon mb-3" alt="" />
                                 <h4>Salons</h4>
                                 <p>Schedule appointments with top-rated stylists.</p>

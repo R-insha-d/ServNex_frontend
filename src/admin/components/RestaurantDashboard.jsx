@@ -177,9 +177,10 @@ export default function RestaurantDashboard() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap');
         .restaurant-dashboard { font-family: 'DM Sans', sans-serif; background: ${theme.light}; }
         .sidebar-brand { font-family: 'Playfair Display', serif; }
-        .sidebar-tab-btn { background: transparent; color: rgba(255,255,255,0.75); border: none; border-radius: 12px; padding: 10px 16px; width: 100%; text-align: left; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; cursor: pointer; }
-        .sidebar-tab-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        .sidebar-tab-btn.active { background: white; color: ${theme.primary}; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .sidebar-tab-btn { background: transparent; color: rgba(255,255,255,0.75); border: none; border-radius: 12px; padding: 10px 16px; width: 100%; text-align: left; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; }
+        .sidebar-tab-btn:hover { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
+        .sidebar-tab-btn.active { background: white; color: #667eea; font-weight: 600; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        .sidebar-tab-btn.active:hover { transform: none; }
         .stat-card { border-radius: 16px; border: none; padding: 20px 24px; transition: transform 0.2s ease; }
         .stat-card:hover { transform: translateY(-3px); }
         .reservation-card { border-radius: 14px; border: 1px solid #f0d9cc; background: white; transition: box-shadow 0.2s ease; }
@@ -204,7 +205,7 @@ export default function RestaurantDashboard() {
           {/* SIDEBAR */}
           <div
             className={"col-md-3 col-lg-2 text-white p-3 d-flex flex-column " + (sidebarOpen ? "d-block" : "d-none d-md-flex")}
-            style={{ background: "linear-gradient(160deg, " + theme.primary + " 0%, #9a3412 100%)", minHeight: "100vh" }}
+            style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", minHeight: "100vh" }}
           >
             <div className="mb-4 mt-2">
               <h4 className="sidebar-brand fw-bold mb-0" style={{ fontSize: "1.2rem" }}>🍽️ ServNex</h4>
@@ -230,7 +231,26 @@ export default function RestaurantDashboard() {
             </div>
             <div className="mt-auto pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
               <small style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", display: "block", marginBottom: "10px" }}>{myRestaurant.name}</small>
-              <button className="btn btn-danger w-100" style={{ borderRadius: "10px", fontWeight: 600 }}
+              <button className="btn w-100"
+                style={{
+                  background: "rgba(220,53,69,0.2)",
+                  border: "1px solid rgba(220,53,69,0.4)",
+                  color: "white",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "12px",
+                  padding: "12px",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  fontSize: "16px",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(220,53,69,0.4)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(220,53,69,0.2)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
                 onClick={() => { localStorage.clear(); navigate("/", { replace: true }); }}>
                 🚪 Logout
               </button>
@@ -272,7 +292,7 @@ export default function RestaurantDashboard() {
                           </p>
                         </div>
                         <div className="d-flex gap-2 flex-wrap">
-                          {myRestaurant.price_range && <span className="badge rounded-pill" style={{ background: theme.accent, color: "#7c2d12" }}>{myRestaurant.price_range}</span>}
+                          {myRestaurant.price_range && <span className="badge rounded-pill" style={{ background: theme.accent, color: "#7c2d12" }}></span>}
                           {myRestaurant.badge && <span className="badge rounded-pill bg-white" style={{ color: theme.primary }}>{myRestaurant.badge}</span>}
                         </div>
                       </div>
@@ -303,7 +323,7 @@ export default function RestaurantDashboard() {
                           {myRestaurant.total_tables && <div className="d-flex justify-content-between"><span className="text-muted">Total Tables</span><strong>{myRestaurant.total_tables}</strong></div>}
                           {myRestaurant.average_cost_for_two && <div className="d-flex justify-content-between"><span className="text-muted">Avg Cost for Two</span><strong>Rs.{myRestaurant.average_cost_for_two}</strong></div>}
                           {myRestaurant.cuisine_type && <div className="d-flex justify-content-between"><span className="text-muted">Cuisine</span><strong>{myRestaurant.cuisine_type}</strong></div>}
-                          {myRestaurant.price_range && <div className="d-flex justify-content-between"><span className="text-muted">Price Range</span><strong>{myRestaurant.price_range}</strong></div>}
+                          {/* {myRestaurant.price_range && <div className="d-flex justify-content-between"><span className="text-muted">Price Range</span><strong>{myRestaurant.price_range}</strong></div>} */}
                         </div>
                       </div>
                     </div>
