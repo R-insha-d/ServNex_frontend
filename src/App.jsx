@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import Landing from './Pages/Landing'
 import HotelList from './Pages/HotelList'
@@ -16,9 +16,9 @@ import Dashboard from './admin/components/Dashboard'
 import EditProfile from './Component/EditProfile'
 import RestaurantDashboard from './admin/components/RestaurantDashboard'
 import Auth from './Credentials/Auth'
+import OTPVerification from './Pages/OTPVerification'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Preloader from './Credentials/Preloader'
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("access");
@@ -26,21 +26,15 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const [preload, setPreload] = useState(true)
-  useEffect(() => {
-    setTimeout(() => {
-      setPreload(false)
-    }, 3000)
-  }, [])
-
   return (
     <>
       <Routes>
-        <Route path='/' element={preload ? <Preloader setPreload={setPreload} /> : <Landing />} />
+        <Route path='/' element={<Landing />} />
         <Route path='/auth' element={<Auth />} />
         <Route path='/login' element={<Login />} />
         <Route path='/login-business' element={<BusinessLogin />} />
         <Route path='/signup' element={<SignUp />} />
+        <Route path='/otp-verify' element={<OTPVerification />} />
         <Route path='/forgotpassword' element={<ForgotPassword />} />
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/edit-profile" element={<EditProfile />} />
