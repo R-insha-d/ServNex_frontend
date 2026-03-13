@@ -353,18 +353,35 @@ export default function Dashboard() {
         <div
           className={`col-md-3 col-lg-2 text-white p-3 d-flex flex-column ${sidebarOpen ? "d-block" : "d-none d-md-flex"
             }`}
-          style={{ background: theme.primary }}
+          style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
         >
           <h4 className="fw-bold mb-4">ServNex Business</h4>
           <div className="flex-grow-1">
             {["dashboard", "profile", "rooms", "bookings", "gallery", "nearby"].map((tab) => (
               <button
                 key={tab}
-                className="btn w-100 text-start mb-2"
+                className="btn w-100 text-start mb-2 px-3 py-2"
                 style={{
                   background: activeTab === tab ? "white" : "transparent",
-                  color: activeTab === tab ? theme.primary : "white",
-                  borderRadius: "10px",
+                  color: activeTab === tab ? "#667eea" : "rgba(255,255,255,0.9)",
+                  borderRadius: "12px",
+                  fontWeight: activeTab === tab ? "600" : "500",
+                  transition: "all 0.3s ease",
+                  border: "none",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== tab) {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+                    e.currentTarget.style.color = "white";
+                    e.currentTarget.style.transform = "translateX(5px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== tab) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.9)";
+                    e.currentTarget.style.transform = "translateX(0)";
+                  }
                 }}
                 onClick={() => {
                   setActiveTab(tab);
@@ -378,7 +395,25 @@ export default function Dashboard() {
 
           <div className="mt-auto pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
             <small style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", display: "block", marginBottom: "10px" }}>{myHotel.name}</small>
-            <button className="btn btn-danger w-100" style={{ borderRadius: "10px", fontWeight: 600 }}
+            <button className="btn w-100" 
+              style={{ 
+                background: "rgba(220,53,69,0.2)",
+                border: "1px solid rgba(220,53,69,0.4)",
+                color: "white",
+                backdropFilter: "blur(10px)",
+                borderRadius: "12px",
+                padding: "12px",
+                fontWeight: "600",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(220,53,69,0.4)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(220,53,69,0.2)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
               onClick={() => { localStorage.clear(); navigate("/", { replace: true }); }}>
               Logout
             </button>

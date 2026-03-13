@@ -7,7 +7,7 @@ import {
     Button, Chip, Modal, useMediaQuery, Divider, CircularProgress, IconButton
 } from "@mui/material";
 
-import { Bell, Calendar, MapPin, Utensils, Hotel, Bike, Wind, ShoppingBag, Music, Accessibility, Monitor, Baby, Star, Soup, Disc, Crown, PartyPopper } from "lucide-react";
+import { Bell, Calendar, MapPin, Utensils, Hotel } from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -216,19 +216,22 @@ export default function RestaurantDetail() {
         },
         heroDots: { position: "absolute", bottom: "35px", width: "100%", display: "flex", justifyContent: "center", gap: "12px", zIndex: 2 },
         bookBtn: {
-            width: "50%",
-            padding: "14px",
+            width: "auto",
+            minWidth: "280px",
+            padding: "18px 40px",
             borderRadius: "50px",
-            border: "1px solid rgba(102, 126, 234, 0.3)",
-            background: "#fff",
+            border: "1.5px solid rgba(102, 126, 234, 0.4)",
+            background: "rgba(255, 255, 255, 0.9)",
             color: "#667eea",
             fontFamily: "'Lato', sans-serif",
-            fontWeight: 700,
-            fontSize: "0.95rem",
-            letterSpacing: "0.08em",
+            fontWeight: 800,
+            fontSize: "1rem",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
             cursor: "pointer",
             transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow: "0 4px 12px rgba(102, 126, 234, 0.05)",
+            boxShadow: "0 12px 30px -10px rgba(102, 126, 234, 0.4), 0 4px 10px -2px rgba(102, 126, 234, 0.1)",
+            backdropFilter: "blur(10px)",
         },
     };
 
@@ -240,6 +243,11 @@ export default function RestaurantDetail() {
             />
             <style>
                 {`
+                    @keyframes pulse {
+                        0% { opacity: 1; transform: scale(1); }
+                        50% { opacity: 0.8; transform: scale(0.98); }
+                        100% { opacity: 1; transform: scale(1); }
+                    }
                     .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1); }
                     .reveal.active { opacity: 1; transform: translateY(0); }
                     .map-card-hover:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 40px 80px rgba(102, 126, 234, 0.15); }
@@ -310,8 +318,8 @@ export default function RestaurantDetail() {
                     }
                     .smooth-grad-btn:hover {
                         color: #fff !important;
-                        transform: translateY(-3px) scale(1.02);
-                        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.25) !important;
+                        transform: translateY(-5px) scale(1.02);
+                        box-shadow: 0 25px 50px -12px rgba(102, 126, 234, 0.5) !important;
                         border-color: transparent !important;
                     }
                     .smooth-grad-btn:hover::before {
@@ -437,7 +445,7 @@ export default function RestaurantDetail() {
                         }>
                             <div data-reveal-id="luxury-title" className={`reveal ${revealed['luxury-title'] ? 'active' : ''}`}>
                                 <h2 style={{ ...S.sectionTitle, textAlign: "left", fontSize: isMobile ? "2.5rem" : S.sectionTitle.fontSize }}>
-                                    {restaurant.name}
+                                    About Us
                                 </h2>
                             </div>
                             <p
