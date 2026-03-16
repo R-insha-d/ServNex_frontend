@@ -7,7 +7,11 @@ import {
     Button, Chip, Modal, useMediaQuery, Divider, CircularProgress, IconButton
 } from "@mui/material";
 
-import { Bell, Calendar, MapPin, Utensils, Hotel } from "lucide-react";
+import {
+    Bell, Calendar, MapPin, Utensils, Hotel,
+    Bike, Wind, ShoppingBag, Music, Accessibility, Monitor,
+    Baby, Star, Soup, Disc, Crown, PartyPopper
+} from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -208,7 +212,7 @@ export default function RestaurantDetail() {
         luxuryLeftPanel: { padding: "40px 48px 40px 0", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "flex-start", maxWidth: "560px" },
         luxuryRightPanel: { display: "flex", alignItems: "center", justifyContent: "flex-end" },
         sectionTitle: { fontFamily: "'Poppins', sans-serif", fontSize: "clamp(2.1rem, 6vw, 1.5rem)", fontWeight: 400, color: "#282828", marginBottom: "32px", lineHeight: 0.5, letterSpacing: "-0.02em" },
-        descText: { fontFamily: "'Inter', 'Roboto', 'Open Sans', sans-serif", fontSize: "1.05rem", color: "#555555", lineHeight: 1.8, marginBottom: "0", maxWidth: "540px" },
+        descText: { fontFamily: "'Inter', 'Roboto', 'Open Sans', sans-serif", fontSize: "1.05rem", color: "#555555", lineHeight: 1.8, marginBottom: "0", maxWidth: "540px", overflowWrap: "break-word", wordBreak: "break-word" },
         mapCard: {
             width: "100%", maxWidth: "700px", borderRadius: "32px", overflow: "hidden",
             boxShadow: "0 25px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.05)",
@@ -407,21 +411,27 @@ export default function RestaurantDetail() {
             <div
                 data-reveal-id="info-bar"
                 className={`reveal ${revealed['info-bar'] ? 'active' : ''}`}
-                style={{ ...S.infoBar, gap: isMobile ? "20px" : S.infoBar.gap, padding: isMobile ? "20px 1.5rem" : S.infoBar.padding }}
+                style={{ 
+                    ...S.infoBar, 
+                    flexDirection: isMobile ? "column" : "row",
+                    alignItems: "center",
+                    gap: isMobile ? "12px" : S.infoBar.gap,
+                    padding: isMobile ? "24px 1.5rem" : S.infoBar.padding 
+                }}
             >
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
-                    <LocationOnIcon style={{ ...S.infoIcon, fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
+                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
+                    <LocationOnIcon style={{ ...S.infoIcon, fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
                     {restaurant.area}, {restaurant.city}
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
-                    <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
+                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
+                    <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
                     <strong>{restaurant.average_rating || restaurant.rating || "4.8"}</strong>&nbsp;
                     <span style={{ fontWeight: 400, color: "#667eeaff" }}>({restaurant.reviews_count || "876"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto" }}>
-                    <span style={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>🍽️</span>
+                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto", justifyContent: "center" }}>
+                    <span style={{ fontSize: isMobile ? "1.2rem" : "1.4rem", marginRight: "8px" }}>🍽️</span>
                     Experience Gastronomy – Where every meal is a celebration.
                 </div>
             </div>
@@ -567,8 +577,15 @@ export default function RestaurantDetail() {
 
             <div className="container my-5 px-lg-5">
                 <Card className="premium-card overflow-hidden">
-                    <CardContent className="p-5">
-                        <div className="d-flex justify-content-between align-items-center mb-4">
+                    <CardContent sx={{ p: { xs: 2.5, sm: 4, md: 5 } }}>
+                        <Box sx={{
+                            display: "flex",
+                            flexDirection: { xs: "column", sm: "row" },
+                            justifyContent: "space-between",
+                            alignItems: { xs: "flex-start", sm: "center" },
+                            gap: 2,
+                            mb: 4
+                        }}>
                             {restaurant.total_tables > 0 && (
                                 <Box sx={{
                                     background: restaurant.total_tables < 3 ? "rgba(255, 152, 0, 0.1)" : "rgba(76, 175, 80, 0.1)",
@@ -584,7 +601,8 @@ export default function RestaurantDetail() {
                                     letterSpacing: "0.1em",
                                     border: `1px solid ${restaurant.total_tables < 3 ? "rgba(255, 152, 0, 0.2)" : "rgba(76, 175, 80, 0.2)"}`,
                                     backdropFilter: "blur(10px)",
-                                    animation: "pulse 2s infinite ease-in-out"
+                                    animation: "pulse 2s infinite ease-in-out",
+                                    whiteSpace: "nowrap"
                                 }}>
                                     <span style={{
                                         width: "8px",
@@ -600,30 +618,47 @@ export default function RestaurantDetail() {
                             <div className="smooth-grad-btn"
                                 style={{
                                     ...S.bookBtn,
+                                    minWidth: isMobile ? "200px" : "280px",
                                     width: "auto",
-                                    padding: "6px 15px",
+                                    padding: "8px 20px",
                                     marginTop: 0,
                                     fontSize: "0.85rem",
-                                    maxHeight: "36px",
+                                    maxHeight: "44px",
                                     backdropFilter: "blur(10px)",
                                     textTransform: "uppercase",
                                     letterSpacing: "0.1em",
+                                    display: "flex",
+                                    alignItems: "center"
                                 }}>
                                 <Utensils size={14} className="me-2" />
                                 {restaurant.cuisine_type}
                             </div>
-                        </div>
+                        </Box>
 
                         <Divider sx={{ mb: 4 }} />
 
-                        <div className="mb-4">
-                            <span className="price-main">₹{Number(restaurant.average_cost_for_two).toLocaleString()}</span>
-                            <span style={{ color: "#636e72", marginLeft: "10px", fontSize: "1.1rem" }}>For Slot</span>
-                            <div>
-                                <p style={{ color: "#636e72", fontSize: "0.9rem", width: "fit-content", backgroundColor: "rgba(76, 175, 80, 0.1)", padding: "5px 16px", borderRadius: "50px", marginBottom: "8px" }}>This amount will be deducted from your bill</p>
-                                <p style={{ color: "#ef6c00", fontSize: "0.9rem", width: "fit-content", backgroundColor: "rgba(255, 152, 0, 0.1)", padding: "5px 16px", borderRadius: "50px" }}>No Refund for cancellation</p>
-                            </div>
-                        </div>
+                        <Box sx={{ mb: 4 }}>
+                            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 1 }}>
+                                <span className="price-main">₹{Number(restaurant.average_cost_for_two).toLocaleString()}</span>
+                                <span style={{ color: "#636e72", fontSize: "1rem" }}>For Slot</span>
+                            </Box>
+                            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                                <Typography variant="body2" sx={{
+                                    color: "#636e72", fontSize: "0.85rem", width: "fit-content",
+                                    backgroundColor: "rgba(76, 175, 80, 0.1)", padding: "6px 16px",
+                                    borderRadius: "50px", lineHeight: 1.4
+                                }}>
+                                    This amount will be deducted from your bill
+                                </Typography>
+                                <Typography variant="body2" sx={{
+                                    color: "#ef6c00", fontSize: "0.85rem", width: "fit-content",
+                                    backgroundColor: "rgba(255, 152, 0, 0.1)", padding: "6px 16px",
+                                    borderRadius: "50px", lineHeight: 1.4
+                                }}>
+                                    No Refund for cancellation
+                                </Typography>
+                            </Box>
+                        </Box>
 
                         {/* Features Section */}
                         <Box sx={{

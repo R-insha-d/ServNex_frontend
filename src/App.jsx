@@ -16,35 +16,42 @@ import Dashboard from './admin/components/Dashboard'
 import EditProfile from './Component/EditProfile'
 import RestaurantDashboard from './admin/components/RestaurantDashboard'
 import Auth from './Credentials/Auth'
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import Preloader from './Credentials/Preloader'
+import CustomCursor from './Component/CustomCursor'
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("access");
   return token ? children : <Navigate to="/auth" replace />;
 };
 
+
 function App() {
+
   const [preload, setPreload] = useState(true)
+
   useEffect(() => {
     setTimeout(() => {
       setPreload(false)
-    }, 3000)
+    }, 6000)
   }, [])
 
   return (
     <>
+      <CustomCursor />
       <Routes>
-        <Route path='/' element={preload ? <Preloader setPreload={setPreload} /> : <Landing />} />
+
+        <Route path='/' element={preload ? <Preloader /> : <Landing />} />
+
         <Route path='/auth' element={<Auth />} />
         <Route path='/login' element={<Login />} />
         <Route path='/login-business' element={<BusinessLogin />} />
         <Route path='/signup' element={<SignUp />} />
         <Route path='/forgotpassword' element={<ForgotPassword />} />
+
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/edit-profile" element={<EditProfile />} />
-
 
         {/* Hotel routes */}
         <Route
@@ -55,6 +62,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path='/hotel/:id' element={<HotelDetail />} />
         <Route path='/booking/:id' element={<HotelBooking />} />
 
@@ -67,6 +75,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path='/restaurant/:id' element={<RestaurantDetail />} />
         <Route path='/reservation/:id' element={<RestaurantReservation />} />
 
@@ -79,6 +88,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/restaurant-dashboard"
           element={
@@ -88,13 +98,10 @@ function App() {
           }
         />
 
-
-        {/* Authentication */}
-        <Route path='/auth' element={<Auth />} />
-
-
       </Routes>
+
       <ToastContainer position="top-center" autoClose={3000} />
+
     </>
   )
 }

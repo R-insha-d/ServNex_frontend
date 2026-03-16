@@ -1,0 +1,14 @@
+.cursor-circle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background-color: #667eea6d;
+  border: 1px solid #667eea6d;
+  box-shadow: 0 0 15px #9333ea;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}

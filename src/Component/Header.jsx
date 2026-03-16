@@ -163,9 +163,9 @@ function Header() {
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             }}
           />
-          <Link to="/" className="header-logo">
+          <span className="header-logo">
             ServNex
-          </Link>
+          </span>
         </Link>
 
         {/* TOGGLER BUTTON  */}

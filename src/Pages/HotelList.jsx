@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { MapPin, ArrowRight, Search, Filter, Globe, Bell } from "lucide-react";
+import { MapPin, ArrowRight, Search, Filter, Globe, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
@@ -10,6 +10,7 @@ export default function HotelList() {
     const [search, setSearch] = useState("");
     const [badgeFilter, setBadgeFilter] = useState("All");
     const [loading, setLoading] = useState(true);
+    const [showFilters, setShowFilters] = useState(false);
 
     // Fetch hotels from Django
     useEffect(() => {
@@ -57,6 +58,13 @@ export default function HotelList() {
         }
     };
 
+    // Calculate active filters count
+    const activeFiltersCount = [
+        city !== "All",
+        search !== "",
+        badgeFilter !== "All"
+    ].filter(Boolean).length;
+
     return (
         <div className="hotel-list-page">
             {/* CUSTOM HEADER (Image design) */}
@@ -92,51 +100,70 @@ export default function HotelList() {
 
             <div className="filters-container">
                 <div className="container">
-                    <div className="row g-3">
-                        <div className="col-md-4">
-                            <div className="filter-card">
-                                <Globe size={18} color="#667eea" />
-                                <select
-                                    className="filter-select"
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                >
-                                    <option value="All">All Cities</option>
-                                    {uniqueCities.map((c) => (
-                                        <option key={c} value={c}>
-                                            {c}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                    {/* Mobile Filter Toggle */}
+                    <div
+                        className="mobile-filter-toggle"
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
+                        <div className="filter-icon-box">
+                            <Filter size={18} />
                         </div>
-
-                        <div className="col-md-4">
-                            <div className="filter-card">
-                                <Search size={18} color="#667eea" />
-                                <input
-                                    type="text"
-                                    className="filter-input"
-                                    placeholder="Discover your perfect stay..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                />
-                            </div>
+                        <span className="filter-toggle-text">Filters</span>
+                        {activeFiltersCount > 0 && (
+                            <span className="active-filter-count">{activeFiltersCount}</span>
+                        )}
+                        <div className="chevron-icon ms-auto">
+                            {showFilters ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                         </div>
+                    </div>
 
-                        <div className="col-md-4">
-                            <div className="filter-card">
-                                <Filter size={18} color="#667eea" />
-                                <select
-                                    className="filter-select"
-                                    value={badgeFilter}
-                                    onChange={(e) => setBadgeFilter(e.target.value)}
-                                >
-                                    <option value="All">All Property Types</option>
-                                    <option value="Luxury Stays">Luxury Stays</option>
-                                    <option value="Cheap & Best">Cheap & Best</option>
-                                    <option value="Dormitory">Dormitory</option>
-                                </select>
+                    <div className={`filters-grid-wrapper ${showFilters ? 'expanded' : 'collapsed'}`}>
+                        <div className="row g-3">
+                            <div className="col-md-4">
+                                <div className="filter-card">
+                                    <Globe size={18} color="#667eea" />
+                                    <select
+                                        className="filter-select"
+                                        value={city}
+                                        onChange={(e) => setCity(e.target.value)}
+                                    >
+                                        <option value="All">All Cities</option>
+                                        {uniqueCities.map((c) => (
+                                            <option key={c} value={c}>
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="col-md-4">
+                                <div className="filter-card">
+                                    <Search size={18} color="#667eea" />
+                                    <input
+                                        type="text"
+                                        className="filter-input"
+                                        placeholder="Discover your perfect stay..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="col-md-4">
+                                <div className="filter-card">
+                                    <Filter size={18} color="#667eea" />
+                                    <select
+                                        className="filter-select"
+                                        value={badgeFilter}
+                                        onChange={(e) => setBadgeFilter(e.target.value)}
+                                    >
+                                        <option value="All">All Property Types</option>
+                                        <option value="Luxury Stays">Luxury Stays</option>
+                                        <option value="Cheap & Best">Cheap & Best</option>
+                                        <option value="Dormitory">Dormitory</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -188,7 +215,6 @@ export default function HotelList() {
                                 <div
                                     key={hotel.id}
                                     className="hotel-card"
-                                    style={{ height: "310px" }}
                                 >
                                     <div className="row g-0">
                                         {/* IMAGE */}
@@ -200,9 +226,6 @@ export default function HotelList() {
                                                 }
                                                 alt={hotel.name}
                                                 className="w-100 object-fit-cover hotel-image"
-                                                style={{
-                                                    minHeight: "310px",
-                                                }}
                                             />
                                             <div className={`hotel-type-badge ${badgeInfo.class}`}>
                                                 {badgeInfo.icon} {hotel.badge}
@@ -234,6 +257,7 @@ export default function HotelList() {
                                                     style={{
                                                         display: "-webkit-box",
                                                         WebkitLineClamp: 3,
+                                                        lineClamp: 3,
                                                         WebkitBoxOrient: "vertical",
                                                         overflow: "hidden",
                                                     }}

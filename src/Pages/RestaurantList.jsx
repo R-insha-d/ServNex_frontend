@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { MapPin, ArrowRight, Search, Filter, Globe, Bell, UtensilsCrossed } from "lucide-react";
+import { MapPin, ArrowRight, Search, Filter, Globe, Bell, UtensilsCrossed, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
@@ -11,6 +11,7 @@ export default function RestaurantList() {
     const [badgeFilter, setBadgeFilter] = useState("All");
     const [cuisineFilter, setCuisineFilter] = useState("All");
     const [loading, setLoading] = useState(true);
+    const [showFilters, setShowFilters] = useState(false);
 
     // Fetch restaurants from Django
     useEffect(() => {
@@ -68,6 +69,14 @@ export default function RestaurantList() {
         }
     };
 
+    // Calculate active filters count
+    const activeFiltersCount = [
+        city !== "All",
+        search !== "",
+        badgeFilter !== "All",
+        cuisineFilter !== "All"
+    ].filter(Boolean).length;
+
     return (
         <div className="hotel-list-page">
             {/* CUSTOM HEADER (Image design) */}
@@ -100,70 +109,89 @@ export default function RestaurantList() {
             {/* FILTERS SECTION */}
             <div className="filters-container">
                 <div className="container">
-                    <div className="row g-3">
-                        <div className="col-md-3">
-                            <div className="filter-card">
-                                <Globe size={18} color="#667eea" />
-                                <select
-                                    className="filter-select"
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                >
-                                    <option value="All">All Cities</option>
-                                    {uniqueCities.map((c) => (
-                                        <option key={c} value={c}>
-                                            {c}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                    {/* Mobile Filter Toggle */}
+                    <div
+                        className="mobile-filter-toggle"
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
+                        <div className="filter-icon-box">
+                            <Filter size={18} />
                         </div>
-
-                        <div className="col-md-3">
-                            <div className="filter-card">
-                                <Search size={18} color="#667eea" />
-                                <input
-                                    type="text"
-                                    className="filter-input"
-                                    placeholder="Search restaurant..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                />
-                            </div>
+                        <span className="filter-toggle-text">Filters</span>
+                        {activeFiltersCount > 0 && (
+                            <span className="active-filter-count">{activeFiltersCount}</span>
+                        )}
+                        <div className="chevron-icon ms-auto">
+                            {showFilters ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                         </div>
+                    </div>
 
-                        <div className="col-md-3">
-                            <div className="filter-card">
-                                <Filter size={18} color="#667eea" />
-                                <select
-                                    className="filter-select"
-                                    value={badgeFilter}
-                                    onChange={(e) => setBadgeFilter(e.target.value)}
-                                >
-                                    <option value="All">All Types</option>
-                                    <option value="Fine Dining">Fine Dining</option>
-                                    <option value="Casual Dining">Casual Dining</option>
-                                    <option value="Fast Food">Fast Food</option>
-                                    <option value="Cafe">Cafe</option>
-                                </select>
+                    <div className={`filters-grid-wrapper ${showFilters ? 'expanded' : 'collapsed'}`}>
+                        <div className="row g-3">
+                            <div className="col-md-3">
+                                <div className="filter-card">
+                                    <Globe size={18} color="#667eea" />
+                                    <select
+                                        className="filter-select"
+                                        value={city}
+                                        onChange={(e) => setCity(e.target.value)}
+                                    >
+                                        <option value="All">All Cities</option>
+                                        {uniqueCities.map((c) => (
+                                            <option key={c} value={c}>
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="col-md-3">
-                            <div className="filter-card">
-                                <UtensilsCrossed size={18} color="#667eea" />
-                                <select
-                                    className="filter-select"
-                                    value={cuisineFilter}
-                                    onChange={(e) => setCuisineFilter(e.target.value)}
-                                >
-                                    <option value="All">All Cuisines</option>
-                                    {uniqueCuisines.map((c) => (
-                                        <option key={c} value={c}>
-                                            {c}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="col-md-3">
+                                <div className="filter-card">
+                                    <Search size={18} color="#667eea" />
+                                    <input
+                                        type="text"
+                                        className="filter-input"
+                                        placeholder="Search restaurant..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="col-md-3">
+                                <div className="filter-card">
+                                    <Filter size={18} color="#667eea" />
+                                    <select
+                                        className="filter-select"
+                                        value={badgeFilter}
+                                        onChange={(e) => setBadgeFilter(e.target.value)}
+                                    >
+                                        <option value="All">All Types</option>
+                                        <option value="Fine Dining">Fine Dining</option>
+                                        <option value="Casual Dining">Casual Dining</option>
+                                        <option value="Fast Food">Fast Food</option>
+                                        <option value="Cafe">Cafe</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="col-md-3">
+                                <div className="filter-card">
+                                    <UtensilsCrossed size={18} color="#667eea" />
+                                    <select
+                                        className="filter-select"
+                                        value={cuisineFilter}
+                                        onChange={(e) => setCuisineFilter(e.target.value)}
+                                    >
+                                        <option value="All">All Cuisines</option>
+                                        {uniqueCuisines.map((c) => (
+                                            <option key={c} value={c}>
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -215,7 +243,6 @@ export default function RestaurantList() {
                                 <div
                                     key={restaurant.id}
                                     className="hotel-card"
-                                    style={{ height: "330px" }}
                                 >
                                     <div className="row g-0">
                                         {/* IMAGE */}
@@ -227,9 +254,6 @@ export default function RestaurantList() {
                                                 }
                                                 alt={restaurant.name}
                                                 className="w-100 object-fit-cover hotel-image"
-                                                style={{
-                                                    minHeight: "330px",
-                                                }}
                                             />
                                             <div className={`hotel-type-badge ${badgeInfo.class}`}>
                                                 {badgeInfo.icon} {restaurant.badge}
@@ -268,6 +292,7 @@ export default function RestaurantList() {
                                                     style={{
                                                         display: "-webkit-box",
                                                         WebkitLineClamp: 3,
+                                                        lineClamp: 3,
                                                         WebkitBoxOrient: "vertical",
                                                         overflow: "hidden",
                                                     }}

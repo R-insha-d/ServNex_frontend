@@ -81,8 +81,74 @@
     top: 70px;
     /* Adjusted for custom header height */
     z-index: 100;
-    padding: 1.5rem 0;
+    padding: 1rem 0;
     transition: all 0.3s ease;
+}
+
+.mobile-filter-toggle {
+    display: none;
+    background: white;
+    border: 1.5px solid #eef2ff;
+    border-radius: 50px;
+    padding: 10px 20px;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    width: fit-content;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.filter-icon-box {
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+}
+
+.filter-toggle-text {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 15px;
+}
+
+.active-filter-count {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.chevron-icon {
+    color: #718096;
+    transition: transform 0.3s ease;
+}
+
+.filters-grid-wrapper {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .mobile-filter-toggle {
+        display: flex;
+        width: 100%;
+    }
+
+    .filters-grid-wrapper.collapsed {
+        max-height: 0;
+        opacity: 0;
+        margin-top: 0;
+        pointer-events: none;
+    }
+
+    .filters-grid-wrapper.expanded {
+        max-height: 500px; /* Adjust based on content */
+        opacity: 1;
+        margin-top: 1.5rem;
+    }
 }
 
 .filter-card {
@@ -126,6 +192,13 @@
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    min-height: 310px;
+    display: flex;
+}
+
+.hotel-card .row {
+    width: 100%;
+    margin: 0;
 }
 
 .hotel-card:hover {
@@ -136,10 +209,13 @@
 .hotel-image-wrapper {
     position: relative;
     overflow: hidden;
+    height: 100%;
 }
 
 .hotel-image {
     transition: transform 0.6s ease;
+    height: 100%;
+    object-fit: cover;
 }
 
 .hotel-card:hover .hotel-image {
@@ -295,12 +371,37 @@
     .filters-container {
         top: 56px;
     }
-
+    
     .hotel-card {
         border-radius: 20px;
+        min-height: auto;
     }
 
     .hotel-image {
-        height: 200px;
+        height: 240px;
+    }
+
+    .hotel-image-wrapper {
+        height: 240px;
+    }
+
+    .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .hotel-description {
+        margin: 0.75rem 0;
+        -webkit-line-clamp: 2; /* Slightly shorter for mobile */
+        line-clamp: 2;
+    }
+
+    .price-value {
+        font-size: 1.25rem;
+    }
+
+    .explore-btns {
+        width: 8em;
+        height: 2.8em;
+        font-size: 14px;
     }
 }
