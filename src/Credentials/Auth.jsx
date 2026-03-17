@@ -95,20 +95,13 @@ const Auth = ({ onSuccess }) => {
             account_type: activeTab,
         })
             .then((res) => {
-                if (res.data.access) {
-                    localStorage.setItem("access", res.data.access);
-                    localStorage.setItem("refresh", res.data.refresh);
-                    localStorage.setItem("account_type", activeTab);
-                    localStorage.setItem("username", data.first_name);
-                    localStorage.setItem("email", data.email);
-                    localStorage.setItem("phone", data.phone);
-                }
-
-                if (activeTab === "business") {
-                    navigate("/login-business");
-                } else {
-                    navigate("/");
-                }
+                toast.info(res.data.message || "OTP sent to your email!");
+                navigate("/otp-verify", { 
+                    state: { 
+                        email: data.email, 
+                        account_type: activeTab 
+                    } 
+                });
             })
             .catch((err) => {
                 toast.error(JSON.stringify(err.response?.data));

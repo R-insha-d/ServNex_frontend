@@ -16,6 +16,7 @@ import Dashboard from './admin/components/Dashboard'
 import EditProfile from './Component/EditProfile'
 import RestaurantDashboard from './admin/components/RestaurantDashboard'
 import Auth from './Credentials/Auth'
+import OTPVerification from './Pages/OTPVerification'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Preloader from './Credentials/Preloader'
@@ -25,7 +26,6 @@ const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("access");
   return token ? children : <Navigate to="/auth" replace />;
 };
-
 
 function App() {
 
@@ -40,6 +40,7 @@ function App() {
   return (
     <>
       <CustomCursor />
+
       <Routes>
 
         <Route path='/' element={preload ? <Preloader /> : <Landing />} />
@@ -48,6 +49,7 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/login-business' element={<BusinessLogin />} />
         <Route path='/signup' element={<SignUp />} />
+        <Route path='/otp-verify' element={<OTPVerification />} />
         <Route path='/forgotpassword' element={<ForgotPassword />} />
 
         <Route path="/my-bookings" element={<MyBookings />} />
