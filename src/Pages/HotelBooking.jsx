@@ -386,6 +386,10 @@ export default function HotelBooking() {
             setError("Check-in date cannot be in the past.");
             return;
         }
+        if (startDate >= endDate) {
+            setError("Check-out date must be after check-in date.");
+            return;
+        }
 
         setIsBooking(true);
         setError(null);
@@ -498,7 +502,7 @@ export default function HotelBooking() {
 
     const handleDownloadReceipt = () => {
         if (!bookingDetails) return;
-        
+
         const printWindow = window.open('', '_blank');
         const content = `
             <html>
@@ -678,7 +682,7 @@ export default function HotelBooking() {
                                     style={S.input}
                                     className="booking-input"
                                     value={endDate}
-                                    min={startDate || new Date().toISOString().split("T")[0]}
+                                    min={startDate ? new Date(new Date(startDate).getTime() + 86400000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
                                     onChange={e => setEndDate(e.target.value)}
                                 />
                             </div>
@@ -854,18 +858,18 @@ export default function HotelBooking() {
                     </Typography>
 
                     {bookingDetails && (
-                        <Box sx={{ 
-                            background: "#f8fafc", 
-                            p: 2, 
-                            borderRadius: "16px", 
-                            mb: 3, 
+                        <Box sx={{
+                            background: "#f8fafc",
+                            p: 2,
+                            borderRadius: "16px",
+                            mb: 3,
                             textAlign: "left",
                             border: "1px solid #e2e8f0"
                         }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                                 <Typography variant="subtitle2" fontWeight="700" color="#64748b">BOOKING DETAILS</Typography>
-                                <Button 
-                                    size="small" 
+                                <Button
+                                    size="small"
                                     startIcon={<Download size={14} />}
                                     onClick={handleDownloadReceipt}
                                     sx={{ textTransform: "none", fontSize: "0.75rem", borderRadius: "8px" }}

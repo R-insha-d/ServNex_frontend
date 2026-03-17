@@ -35,18 +35,18 @@ import KitchenIcon from "@mui/icons-material/Kitchen";
 import CheckIcon from "@mui/icons-material/Check";
 
 const amenityIconMap = {
-  "Wifi": <WifiIcon sx={{ color: "#667eeaff" }} />,
-  "Parking": <LocalParkingIcon sx={{ color: "#667eeaff" }} />,
-  "Restaurant": <RestaurantIcon sx={{ color: "#667eeaff" }} />,
-  "Pool": <PoolIcon sx={{ color: "#667eeaff" }} />,
-  "Gym": <FitnessCenterIcon sx={{ color: "#667eeaff" }} />,
-  "AC": <AcUnitIcon sx={{ color: "#667eeaff" }} />,
-  "Bar": <LocalBarIcon sx={{ color: "#667eeaff" }} />,
-  "Spa": <SpaIcon sx={{ color: "#667eeaff" }} />,
-  "Room Service": <RoomServiceIcon sx={{ color: "#667eeaff" }} />,
-  "Laundry": <LocalLaundryServiceIcon sx={{ color: "#667eeaff" }} />,
-  "TV": <TvIcon sx={{ color: "#667eeaff" }} />,
-  "Kitchen": <KitchenIcon sx={{ color: "#667eeaff" }} />,
+    "Wifi": <WifiIcon sx={{ color: "#667eeaff" }} />,
+    "Parking": <LocalParkingIcon sx={{ color: "#667eeaff" }} />,
+    "Restaurant": <RestaurantIcon sx={{ color: "#667eeaff" }} />,
+    "Pool": <PoolIcon sx={{ color: "#667eeaff" }} />,
+    "Gym": <FitnessCenterIcon sx={{ color: "#667eeaff" }} />,
+    "AC": <AcUnitIcon sx={{ color: "#667eeaff" }} />,
+    "Bar": <LocalBarIcon sx={{ color: "#667eeaff" }} />,
+    "Spa": <SpaIcon sx={{ color: "#667eeaff" }} />,
+    "Room Service": <RoomServiceIcon sx={{ color: "#667eeaff" }} />,
+    "Laundry": <LocalLaundryServiceIcon sx={{ color: "#667eeaff" }} />,
+    "TV": <TvIcon sx={{ color: "#667eeaff" }} />,
+    "Kitchen": <KitchenIcon sx={{ color: "#667eeaff" }} />,
 };
 
 /* ─── inline styles (no extra CSS file needed) ─── */
@@ -520,7 +520,7 @@ export default function HotelDetails() {
         const fetchHotel = AxiosInstance.get(`api/hotels/${id}/`);
         const fetchRooms = AxiosInstance.get(`api/rooms/?hotel=${id}`);
         const fetchReviews = AxiosInstance.get(`api/hotel-reviews/?hotel=${id}`);
-        
+
         Promise.all([fetchHotel, fetchRooms, fetchReviews])
             .then(([hotelRes, roomRes, reviewsRes]) => {
                 setHotel(hotelRes.data);
@@ -583,6 +583,7 @@ export default function HotelDetails() {
         if (!checkIn || !checkOut) { toast.warning("Please select dates"); return; }
         const today = new Date().toISOString().split("T")[0];
         if (checkIn < today) { toast.error("Check-in date cannot be in the past."); return; }
+        if (checkIn >= checkOut) { toast.error("Check-out date must be after check-in date."); return; }
 
         setCheckStatus("checking");
 
@@ -636,29 +637,29 @@ export default function HotelDetails() {
                 rating: reviewRating,
                 comment: reviewComment
             });
-            
+
             toast.success("Review submitted successfully!");
             setReviewModalOpen(false);
-            
+
             // REAL TIME UPDATE
             const newReview = {
                 ...res.data,
                 user_name: "You",
                 created_at: new Date().toISOString()
             };
-            
+
             const updatedReviews = [newReview, ...(Array.isArray(reviews) ? reviews : [])];
             setReviews(updatedReviews);
-            
+
             const sum = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
             const avg = (sum / updatedReviews.length).toFixed(1);
-            
+
             setHotel(prev => ({
                 ...prev,
                 average_rating: avg,
                 reviews_count: updatedReviews.length
             }));
-            
+
             setReviewRating(5);
             setReviewComment("");
         } catch (err) {
@@ -963,29 +964,29 @@ export default function HotelDetails() {
                         </div>
                     </div>
 
-                    <div 
+                    <div
                         style={{ marginTop: "40px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
                     >
                         <div style={{ fontSize: "1.4rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "25px", display: "flex", alignItems: "center", gap: "10px" }}>
-                             Property Facilities
+                            Property Facilities
                         </div>
-                        
+
                         {(Array.isArray(hotel.amenities) && hotel.amenities.length > 0) || (typeof hotel.amenities === "string" && hotel.amenities.length > 2) ? (
                             <div style={{
                                 display: "grid",
                                 gridTemplateColumns: isMobile ? "1fr 1fr" : isTablet ? "repeat(3, 1fr)" : "repeat(4, 1fr)",
                                 gap: "20px"
                             }}>
-                                {(Array.isArray(hotel.amenities) 
-                                    ? hotel.amenities 
+                                {(Array.isArray(hotel.amenities)
+                                    ? hotel.amenities
                                     : hotel.amenities.split(",").map(a => a.trim()).filter(Boolean)
                                 ).map((amenity, idx) => (
-                                    <div key={idx} style={{ 
-                                        display: "flex", 
-                                        alignItems: "center", 
-                                        gap: "10px", 
-                                        fontSize: "0.95rem", 
-                                        color: "#444", 
+                                    <div key={idx} style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                        fontSize: "0.95rem",
+                                        color: "#444",
                                         fontWeight: 500,
                                         padding: "10px 15px",
                                         backgroundColor: "#fcfcfc",
@@ -1007,7 +1008,7 @@ export default function HotelDetails() {
                     </div>
 
                     {/* ── REVIEWS SECTION ── */}
-                    <div 
+                    <div
                         style={{ marginTop: "60px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 25px rgba(0,0,0,0.03)" }}
                     >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", flexWrap: "wrap", gap: "15px" }}>
@@ -1025,13 +1026,13 @@ export default function HotelDetails() {
                                     <span style={{ color: "#888", fontSize: "0.9rem" }}>({reviews?.length || 0} reviews)</span>
                                 </div>
                             </div>
-                                <Button 
-                                    variant="outlined" 
-                                    onClick={handleWriteReviewClick}
-                                    sx={{ borderRadius: "10px", textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
-                                >
-                                    Write a Review
-                                </Button>
+                            <Button
+                                variant="outlined"
+                                onClick={handleWriteReviewClick}
+                                sx={{ borderRadius: "10px", textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
+                            >
+                                Write a Review
+                            </Button>
                         </div>
 
                         {!Array.isArray(reviews) || reviews.length === 0 ? (
