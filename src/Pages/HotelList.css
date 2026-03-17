@@ -160,7 +160,24 @@
     align-items: center;
     gap: 12px;
     height: 56px;
-    /* Unified fixed height */
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Original card style for Search input to keep consistency */
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 56px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }

@@ -17,7 +17,7 @@ export default function MyBookings() {
     const [reviewComment, setReviewComment] = useState("");
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState("");
-    
+
     // Details Modal state
     const [detailsModal, setDetailsModal] = useState(null); // holds booking/reservation object
 
@@ -54,10 +54,10 @@ export default function MyBookings() {
 
             if (isEditing) {
                 // UPDATE existing review
-                const apiUrl = reviewPopup.hotel 
-                    ? `api/hotel-reviews/${reviewPopup.review_data.id}/` 
+                const apiUrl = reviewPopup.hotel
+                    ? `api/hotel-reviews/${reviewPopup.review_data.id}/`
                     : `api/reviews/${reviewPopup.review_data.id}/`;
-                
+
                 await AxiosInstance.patch(apiUrl, {
                     rating: reviewRating,
                     comment: reviewComment,
@@ -124,7 +124,7 @@ export default function MyBookings() {
     const handleDownloadReceipt = (item) => {
         const isHotel = !!item.hotel;
         const printWindow = window.open('', '_blank');
-        
+
         let detailsHtml = "";
         if (isHotel) {
             const h = item.hotel_details || {};
@@ -330,7 +330,7 @@ export default function MyBookings() {
                     bookings.length === 0 ? (
                         <div className="text-center py-5">
                             <h4 className="text-muted">No hotel bookings yet!</h4>
-                            <Link to="/" className="btn btn-primary mt-3">Explore Hotels</Link>
+                            <Link to="/hotel" className="btn btn-primary mt-3">Explore Hotels</Link>
                         </div>
                     ) : (
                         <div className="row g-4">
@@ -393,9 +393,9 @@ export default function MyBookings() {
                                                     </button>
                                                 )}
 
-                                                <Button 
-                                                    variant="outlined" 
-                                                    fullWidth 
+                                                <Button
+                                                    variant="outlined"
+                                                    fullWidth
                                                     onClick={() => setDetailsModal(booking)}
                                                     sx={{ mt: 2, borderRadius: 3, textTransform: "none", borderColor: "#667eea", color: "#667eea" }}
                                                 >
@@ -508,9 +508,9 @@ export default function MyBookings() {
                                                 </button>
                                             )}
 
-                                            <Button 
-                                                variant="outlined" 
-                                                fullWidth 
+                                            <Button
+                                                variant="outlined"
+                                                fullWidth
                                                 onClick={() => setDetailsModal(reservation)}
                                                 sx={{ mt: 2, borderRadius: 3, textTransform: "none", borderColor: "#3a86ff", color: "#3a86ff", fontSize: "0.85rem" }}
                                             >
@@ -559,7 +559,7 @@ export default function MyBookings() {
                                     {detailsModal?.hotel_details?.name || detailsModal?.restaurant_name}
                                 </Typography>
                             </div>
-                            
+
                             {detailsModal?.hotel ? (
                                 <>
                                     <div>
@@ -602,12 +602,12 @@ export default function MyBookings() {
                         </div>
                     </Box>
 
-                    <Button 
-                        fullWidth 
-                        variant="contained" 
+                    <Button
+                        fullWidth
+                        variant="contained"
                         startIcon={<Download size={18} />}
                         onClick={() => handleDownloadReceipt(detailsModal)}
-                        sx={{ 
+                        sx={{
                             py: 1.5, borderRadius: "12px", textTransform: "none", fontWeight: 700,
                             bgcolor: detailsModal?.hotel ? "#667eea" : "#3a86ff",
                             "&:hover": { bgcolor: detailsModal?.hotel ? "#5a6fd6" : "#2d75e0" }

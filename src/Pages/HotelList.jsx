@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
 
+import { TbCurrentLocation } from "react-icons/tb";
+
 export default function HotelList() {
     const [hotelsData, setHotelsData] = useState([]);
     const [city, setCity] = useState("All");
@@ -11,6 +13,8 @@ export default function HotelList() {
     const [badgeFilter, setBadgeFilter] = useState("All");
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
+    const [locationLoading, setLocationLoading] = useState(false);
+    const [locationError, setLocationError] = useState("");
 
     // Fetch hotels from Django
     useEffect(() => {
@@ -20,6 +24,76 @@ export default function HotelList() {
             .catch((err) => console.error("Error fetching hotels:", err))
             .finally(() => setLoading(false));
     }, []);
+
+    // Get user's current location and match to nearest city
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationError("Geolocation is not supported by your browser.");
+            return;
+        }
+        setLocationLoading(true);
+        setLocationError("");
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+                        { headers: { "Accept-Language": "en" } }
+                    );
+                    const data = await res.json();
+                    const detectedCity =
+                        data.address?.city ||
+                        data.address?.town ||
+                        data.address?.village ||
+                        data.address?.county ||
+                        "";
+
+                    if (!detectedCity) {
+                        setLocationError("Could not detect city from your location.");
+                        setLocationLoading(false);
+                        return;
+                    }
+
+                    // Try to match detected city against available hotel cities (case-insensitive)
+                    const matched = uniqueCities.find(
+                        (c) => c.toLowerCase() === detectedCity.toLowerCase()
+                    );
+
+                    if (matched) {
+                        setCity(matched);
+                        setLocationError("");
+                    } else {
+                        // Partial match fallback
+                        const partial = uniqueCities.find((c) =>
+                            c.toLowerCase().includes(detectedCity.toLowerCase()) ||
+                            detectedCity.toLowerCase().includes(c.toLowerCase())
+                        );
+                        if (partial) {
+                            setCity(partial);
+                            setLocationError("");
+                        } else {
+                            setLocationError(`No hotels found near "${detectedCity}". Showing all cities.`);
+                            setCity("All");
+                        }
+                    }
+                } catch {
+                    setLocationError("Failed to fetch location data. Try again.");
+                } finally {
+                    setLocationLoading(false);
+                }
+            },
+            (err) => {
+                setLocationLoading(false);
+                if (err.code === 1) {
+                    setLocationError("Location permission denied.");
+                } else {
+                    setLocationError("Unable to retrieve your location.");
+                }
+            },
+            { timeout: 10000 }
+        );
+    };
 
     // Filtering logic (optimized)
     const filteredHotels = useMemo(() => {
@@ -121,20 +195,34 @@ export default function HotelList() {
                         <div className="row g-3">
                             <div className="col-md-4">
                                 <div className="filter-card">
-                                    <Globe size={18} color="#667eea" />
+                                    {locationLoading
+                                        ? <span style={{ width: "18px", height: "18px", border: "2px solid #667eea", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", flexShrink: 0, animation: "spin 0.7s linear infinite" }} />
+                                        : <Globe size={18} color="#667eea" style={{ flexShrink: 0 }} />
+                                    }
                                     <select
                                         className="filter-select"
                                         value={city}
-                                        onChange={(e) => setCity(e.target.value)}
+                                        onChange={(e) => {
+                                            if (e.target.value === "__locate__") {
+                                                handleGetLocation();
+                                            } else {
+                                                setCity(e.target.value);
+                                                setLocationError("");
+                                            }
+                                        }}
                                     >
                                         <option value="All">All Cities</option>
+                                        <option value="__locate__">📍 Detect My Location</option>
                                         {uniqueCities.map((c) => (
-                                            <option key={c} value={c}>
-                                                {c}
-                                            </option>
+                                            <option key={c} value={c}>{c}</option>
                                         ))}
                                     </select>
                                 </div>
+                                {locationError && (
+                                    <p style={{ fontSize: "11px", color: "#e53e3e", margin: "4px 0 0 4px" }}>
+                                        {locationError}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="col-md-4">
