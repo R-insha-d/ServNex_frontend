@@ -128,7 +128,7 @@
 
 .filters-grid-wrapper {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+    /* removed overflow: hidden to allow dropdown */
 }
 
 @media (max-width: 768px) {
@@ -142,12 +142,14 @@
         opacity: 0;
         margin-top: 0;
         pointer-events: none;
+        overflow: hidden;
     }
 
     .filters-grid-wrapper.expanded {
         max-height: 500px; /* Adjust based on content */
         opacity: 1;
         margin-top: 1.5rem;
+        overflow: visible;
     }
 }
 
@@ -162,6 +164,7 @@
     height: 56px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    position: relative; /* important for absolute dropdown */
 }
 
 @keyframes spin {
@@ -180,6 +183,7 @@
     height: 56px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    position: relative; /* important for absolute dropdown */
 }
 
 .filter-card:focus-within {
@@ -420,5 +424,62 @@
         width: 8em;
         height: 2.8em;
         font-size: 14px;
+    }
+}
+
+/* Search Suggestions Dropdown */
+.search-suggestions-dropdown {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+    animation: fadeInSuggestions 0.2s ease-out;
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f8faff;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: #f8faff;
+    padding-left: 20px;
+}
+
+.suggestion-type {
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+.suggestion-label {
+    font-size: 0.95rem;
+    color: #2d3748;
+    font-weight: 500;
+}
+
+@keyframes fadeInSuggestions {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .search-suggestions-dropdown {
+        top: 52px;
     }
 }

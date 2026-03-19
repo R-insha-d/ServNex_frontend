@@ -15,15 +15,49 @@ export default function HotelList() {
     const [showFilters, setShowFilters] = useState(false);
     const [locationLoading, setLocationLoading] = useState(false);
     const [locationError, setLocationError] = useState("");
+    const [coords, setCoords] = useState(null);
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
-    // Fetch hotels from Django
+    // Fetch search suggestions
     useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (search.length >= 2) {
+                try {
+                    const res = await AxiosInstance.get(`api/search/suggestions/?q=${search}`);
+                    setSuggestions(res.data);
+                    setShowSuggestions(true);
+                } catch (err) {
+                    console.error("Error fetching suggestions:", err);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchSuggestions, 300);
+        return () => clearTimeout(timeoutId);
+    }, [search]);
+
+    // Fetch hotels from Django - Unified Search
+    useEffect(() => {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (search) params.append("q", search);
+        if (city !== "All") params.append("city", city);
+        if (coords?.lat && coords?.lng) {
+            params.append("lat", coords.lat);
+            params.append("lng", coords.lng);
+        }
+        params.append("type", "hotel");
+
         AxiosInstance
-            .get("api/hotels/")
+            .get(`api/search/?${params.toString()}`)
             .then((res) => setHotelsData(res.data))
             .catch((err) => console.error("Error fetching hotels:", err))
             .finally(() => setLoading(false));
-    }, []);
+    }, [search, city, coords]);
 
     // Get user's current location and match to nearest city
     const handleGetLocation = () => {
@@ -36,6 +70,7 @@ export default function HotelList() {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
+                setCoords({ lat: latitude, lng: longitude });
                 try {
                     const res = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
@@ -95,23 +130,15 @@ export default function HotelList() {
         );
     };
 
-    // Filtering logic (optimized)
+    // Filtering logic (Main search is now backend-driven, local filtering only for badge)
     const filteredHotels = useMemo(() => {
         return hotelsData.filter((hotel) => {
-            const matchCity =
-                city === "All" ||
-                hotel.city?.toLowerCase() === city.toLowerCase();
-
-            const matchSearch =
-                !search ||
-                hotel.name?.toLowerCase().includes(search.toLowerCase());
-
             const matchBadge =
                 badgeFilter === "All" || hotel.badge === badgeFilter;
 
-            return matchCity && matchSearch && matchBadge;
+            return matchBadge;
         });
-    }, [hotelsData, city, search, badgeFilter]);
+    }, [hotelsData, badgeFilter]);
 
     // Dynamic city dropdown
     const uniqueCities = [
@@ -234,7 +261,26 @@ export default function HotelList() {
                                         placeholder="Discover your perfect stay..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
+                                        onFocus={() => search.length >= 2 && setShowSuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                     />
+                                    {showSuggestions && suggestions.length > 0 && (
+                                        <div className="search-suggestions-dropdown">
+                                            {suggestions.map((s, idx) => (
+                                                <div 
+                                                    key={idx} 
+                                                    className="suggestion-item"
+                                                    onClick={() => {
+                                                        setSearch(s.value);
+                                                        setShowSuggestions(false);
+                                                    }}
+                                                >
+                                                    <span className="suggestion-type">{s.type === 'city' ? '📍' : s.type === 'hotel' ? '🏨' : '🍽️'}</span>
+                                                    <span className="suggestion-label">{s.label}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

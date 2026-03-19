@@ -42,6 +42,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
     old_price: "",
     description: "",
     amenities: "",
+    keywords: "",
     image: null,
     room_image1: null,
     room_image2: null,
@@ -66,6 +67,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
         old_price: hotel.old_price || "",
         description: hotel.description || "",
         amenities: hotel.amenities || "",
+        keywords: hotel.keywords || "",
         image: null,
         room_image1: null,
         room_image2: null,
@@ -126,6 +128,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
     if(form.old_price) formData.append("old_price", form.old_price);
     formData.append("description", form.description);
     formData.append("amenities", form.amenities);
+    formData.append("keywords", form.keywords);
 
     if (form.image instanceof File) formData.append("image", form.image);
     if (form.room_image1 instanceof File) formData.append("room_image1", form.room_image1);
@@ -205,11 +208,22 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
             <div className="col-md-6">
               <label className="form-label small">Badge</label>
               <select className="form-select" name="badge" value={form.badge} onChange={handleInputChange}>
-                <option value="">Select Badge</option>
+                <option value="">No Badge</option>
                 <option value="Luxury Stays">Luxury Stays</option>
                 <option value="Cheap & Best">Cheap & Best</option>
                 <option value="Dormitory">Dormitory</option>
               </select>
+            </div>
+            <div className="col-12">
+              <label className="form-label small">Keywords (comma separated, for search optimization)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                name="keywords" 
+                value={form.keywords} 
+                onChange={handleInputChange} 
+                placeholder="e.g. pool, beach, wifi, rooftop, pet-friendly"
+              />
             </div>
           </div>
         )}
