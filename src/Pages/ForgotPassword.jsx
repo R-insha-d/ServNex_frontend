@@ -69,7 +69,7 @@ function ForgotPassword() {
       });
 
       toast.success("Password updated successfully ✅");
-      window.location.href = "/login";
+      window.location.href = "/auth";
     } catch (err) {
       setError(err.response?.data?.error || "Failed to reset password");
     } finally {
