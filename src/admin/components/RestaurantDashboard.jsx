@@ -124,6 +124,7 @@ export default function RestaurantDashboard() {
       badge: myRestaurant.badge || "", cuisine_type: myRestaurant.cuisine_type || "",
       price_range: myRestaurant.price_range || "₹₹", average_cost_for_two: myRestaurant.average_cost_for_two || "",
       total_tables: myRestaurant.total_tables || "", description: myRestaurant.description || "",
+      keywords: myRestaurant.keywords || "",
       image: null, menu_image: null, interior_image: null,
     });
     setEditImagePreview(getImageUrl(myRestaurant.image));
@@ -553,6 +554,10 @@ export default function RestaurantDashboard() {
                     <div className="col-12">
                       <label className="form-label small fw-semibold">Description *</label>
                       <textarea className="form-control" rows="3" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label small fw-semibold">Keywords (comma separated, for search optimization)</label>
+                      <input type="text" className="form-control" placeholder="e.g. biriyani, rooftop, live music, vegan" value={editForm.keywords} onChange={(e) => setEditForm({ ...editForm, keywords: e.target.value })} />
                     </div>
                     {[
                       { label: "🖼️ Main Image", field: "image", preview: editImagePreview, setPreview: setEditImagePreview },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { MapPin, ArrowRight, Search, Filter, Globe, Bell, UtensilsCrossed, ChevronDown, ChevronUp } from "lucide-react";
+import { TbCurrentLocation } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
@@ -12,36 +13,109 @@ export default function RestaurantList() {
     const [cuisineFilter, setCuisineFilter] = useState("All");
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
+    const [locationLoading, setLocationLoading] = useState(false);
+    const [locationError, setLocationError] = useState("");
+    const [coords, setCoords] = useState({ lat: null, lng: null });
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
-    // Fetch restaurants from Django
+    // Fetch search suggestions
     useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (search.length >= 2) {
+                try {
+                    const res = await AxiosInstance.get(`api/search/suggestions/?q=${search}`);
+                    setSuggestions(res.data);
+                    setShowSuggestions(true);
+                } catch (err) {
+                    console.error("Error fetching suggestions:", err);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchSuggestions, 300);
+        return () => clearTimeout(timeoutId);
+    }, [search]);
+
+    // Fetch restaurants from Django - Unified Search
+    useEffect(() => {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (search) params.append("q", search);
+        if (city !== "All") params.append("city", city);
+        if (coords.lat && coords.lng) {
+            params.append("lat", coords.lat);
+            params.append("lng", coords.lng);
+        }
+        params.append("type", "restaurant");
+
         AxiosInstance
-            .get("api/restaurants/")
+            .get(`api/search/?${params.toString()}`)
             .then((res) => setRestaurantsData(res.data))
             .catch((err) => console.error("Error fetching restaurants:", err))
             .finally(() => setLoading(false));
-    }, []);
+    }, [search, city, coords]);
 
-    // Filtering logic (optimized)
+    // Filtering logic (Main search is now backend-driven, local filtering only for badge and cuisine)
     const filteredRestaurants = useMemo(() => {
         return restaurantsData.filter((restaurant) => {
-            const matchCity =
-                city === "All" ||
-                restaurant.city?.toLowerCase() === city.toLowerCase();
-
-            const matchSearch =
-                !search ||
-                restaurant.name?.toLowerCase().includes(search.toLowerCase());
-
             const matchBadge =
                 badgeFilter === "All" || restaurant.badge === badgeFilter;
 
             const matchCuisine =
                 cuisineFilter === "All" || restaurant.cuisine_type === cuisineFilter;
 
-            return matchCity && matchSearch && matchBadge && matchCuisine;
+            return matchBadge && matchCuisine;
         });
-    }, [restaurantsData, city, search, badgeFilter, cuisineFilter]);
+    }, [restaurantsData, badgeFilter, cuisineFilter]);
+
+    // Get user's current location
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationError("Geolocation is not supported by your browser.");
+            return;
+        }
+        setLocationLoading(true);
+        setLocationError("");
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                setCoords({ lat: latitude, lng: longitude });
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+                        { headers: { "Accept-Language": "en" } }
+                    );
+                    const data = await res.json();
+                    const detectedCity =
+                        data.address?.city ||
+                        data.address?.town ||
+                        data.address?.village ||
+                        data.address?.county ||
+                        "";
+
+                    if (detectedCity) {
+                        const matched = uniqueCities.find(
+                            (c) => c.toLowerCase() === detectedCity.toLowerCase()
+                        );
+                        if (matched) setCity(matched);
+                    }
+                } catch {
+                    console.error("Failed to fetch location data");
+                } finally {
+                    setLocationLoading(false);
+                }
+            },
+            (err) => {
+                setLocationLoading(false);
+                setLocationError("Unable to retrieve location.");
+            },
+            { timeout: 10000 }
+        );
+    };
 
     // Dynamic city dropdown
     const uniqueCities = [
@@ -128,15 +202,26 @@ export default function RestaurantList() {
 
                     <div className={`filters-grid-wrapper ${showFilters ? 'expanded' : 'collapsed'}`}>
                         <div className="row g-3">
-                            <div className="col-md-3">
+                            <div className="col-md-4">
                                 <div className="filter-card">
-                                    <Globe size={18} color="#667eea" />
+                                    {locationLoading
+                                        ? <span style={{ width: "18px", height: "18px", border: "2px solid #667eea", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", flexShrink: 0, animation: "spin 0.7s linear infinite" }} />
+                                        : <Globe size={18} color="#667eea" style={{ flexShrink: 0 }} />
+                                    }
                                     <select
                                         className="filter-select"
                                         value={city}
-                                        onChange={(e) => setCity(e.target.value)}
+                                        onChange={(e) => {
+                                            if (e.target.value === "__locate__") {
+                                                handleGetLocation();
+                                            } else {
+                                                setCity(e.target.value);
+                                                setLocationError("");
+                                            }
+                                        }}
                                     >
                                         <option value="All">All Cities</option>
+                                        <option value="__locate__">📍 Detect My Location</option>
                                         {uniqueCities.map((c) => (
                                             <option key={c} value={c}>
                                                 {c}
@@ -144,18 +229,42 @@ export default function RestaurantList() {
                                         ))}
                                     </select>
                                 </div>
+                                {locationError && (
+                                    <p style={{ fontSize: "11px", color: "#e53e3e", margin: "4px 0 0 4px" }}>
+                                        {locationError}
+                                    </p>
+                                )}
                             </div>
 
-                            <div className="col-md-3">
+                            <div className="col-md-4">
                                 <div className="filter-card">
                                     <Search size={18} color="#667eea" />
                                     <input
                                         type="text"
                                         className="filter-input"
-                                        placeholder="Search restaurant..."
+                                        placeholder="Find best food near you..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
+                                        onFocus={() => search.length >= 2 && setShowSuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                     />
+                                    {showSuggestions && suggestions.length > 0 && (
+                                        <div className="search-suggestions-dropdown">
+                                            {suggestions.map((s, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="suggestion-item"
+                                                    onClick={() => {
+                                                        setSearch(s.value);
+                                                        setShowSuggestions(false);
+                                                    }}
+                                                >
+                                                    <span className="suggestion-type">{s.type === 'city' ? '📍' : s.type === 'hotel' ? '🏨' : '🍽️'}</span>
+                                                    <span className="suggestion-label">{s.label}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
