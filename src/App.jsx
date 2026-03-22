@@ -46,9 +46,9 @@ function App() {
         <Route path='/' element={preload ? <Preloader /> : <Landing />} />
 
         <Route path='/auth' element={<Auth />} />
-        <Route path='/login' element={<Login />} />
+        {/* <Route path='/login' element={<Login />} /> */}
         <Route path='/login-business' element={<BusinessLogin />} />
-        <Route path='/signup' element={<SignUp />} />
+        {/* <Route path='/signup' element={<SignUp />} /> */}
         <Route path='/otp-verify' element={<OTPVerification />} />
         <Route path='/forgotpassword' element={<ForgotPassword />} />
 

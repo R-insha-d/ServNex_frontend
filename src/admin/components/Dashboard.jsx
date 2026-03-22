@@ -395,8 +395,8 @@ export default function Dashboard() {
 
           <div className="mt-auto pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
             <small style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", display: "block", marginBottom: "10px" }}>{myHotel.name}</small>
-            <button className="btn w-100" 
-              style={{ 
+            <button className="btn w-100"
+              style={{
                 background: "rgba(220,53,69,0.2)",
                 border: "1px solid rgba(220,53,69,0.4)",
                 color: "white",
@@ -551,8 +551,9 @@ export default function Dashboard() {
                 <h5 className="fw-semibold mb-3">
                   {editingRoomId ? "Edit Room" : "Add Room"}
                 </h5>
-                <div className="row g-3">
+                <div className="row g-3 align-items-start">
                   <div className="col-md-4">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Room Type</label>
                     <select className="form-select" value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })}>
                       <option value="">Select Room Type</option>
                       {roomTypes.map((t) => <option key={t}>{t}</option>)}
@@ -560,10 +561,12 @@ export default function Dashboard() {
                     <InputError msg={errors.room_type} />
                   </div>
                   <div className="col-md-4">
-                    <input type="number" className="form-control" placeholder="Price" min="1" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Price</label>
+                    <input type="number" className="form-control" style={{ marginTop: "-1px" }} placeholder="Price" min="1" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
                     <InputError msg={errors.price} />
                   </div>
                   <div className="col-md-4">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Adults</label>
                     <select className="form-select" value={form.adults} onChange={(e) => setForm({ ...form, adults: e.target.value })}>
                       <option value="">Adults</option>
                       {[1, 2, 3, 4].map((n) => <option key={n}>{n}</option>)}
@@ -571,40 +574,46 @@ export default function Dashboard() {
                     <InputError msg={errors.adults} />
                   </div>
                   <div className="col-md-4">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Children</label>
                     <select className="form-select" value={form.children} onChange={(e) => setForm({ ...form, children: e.target.value })}>
                       <option value="">Children</option>
                       {[0, 1, 2, 3].map((n) => <option key={n}>{n}</option>)}
                     </select>
                   </div>
                   <div className="col-md-4">
-                    <input type="number" className="form-control" placeholder="Total Rooms" min="1" value={form.total_rooms} onChange={(e) => setForm({ ...form, total_rooms: e.target.value })} />
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Total Rooms</label>
+                    <input type="number" className="form-control" style={{ marginTop: "-1px" }} placeholder="Total Rooms" min="1" value={form.total_rooms} onChange={(e) => setForm({ ...form, total_rooms: e.target.value })} />
                     <InputError msg={errors.total_rooms} />
                   </div>
                   <div className="col-md-4">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Bed Type</label>
                     <select className="form-select" value={form.bed_type} onChange={(e) => setForm({ ...form, bed_type: e.target.value })}>
                       <option value="">Bed Type</option>
                       {bedTypes.map((b) => <option key={b}>{b}</option>)}
                     </select>
                   </div>
                   <div className="col-12">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Amenities</label>
                     <input type="text" className="form-control" placeholder="Amenities (comma separated) e.g. WiFi, AC, TV" value={form.amenities} maxLength={200} onChange={(e) => setForm({ ...form, amenities: e.target.value })} />
                     <InputError msg={errors.amenities} />
                   </div>
                   <div className="col-md-6">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Room Image</label>
                     <input type="file" className="form-control" accept="image/*" onChange={handleImageUpload} />
                   </div>
                   {imagePreview && (
-                    <div className="col-12">
-                      <img src={imagePreview} className="img-fluid rounded" style={{ maxHeight: 200 }} alt="preview" />
+                    <div className="col-md-6 d-flex align-items-center">
+                      <img src={imagePreview} className="img-fluid rounded mt-4" style={{ maxHeight: 100 }} alt="preview" />
                     </div>
                   )}
-                  <div className="col-12">
-                    <textarea className="form-control" placeholder="Description" rows="2" maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  <div className="col-12 mt-2">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Description</label>
+                    <textarea className="form-control" placeholder="Description" rows="3" maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                     <InputError msg={errors.description} />
                   </div>
                 </div>
-                <div className="d-flex gap-2 mt-3">
-                  <button className="btn btn-primary" onClick={handleSubmitRoom}>
+                <div className="d-flex gap-2 mt-4">
+                  <button className="btn" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }} onClick={handleSubmitRoom}>
                     {editingRoomId ? "Update Room" : "Add Room"}
                   </button>
                   <button className="btn btn-outline-secondary" onClick={resetForm}>Reset</button>

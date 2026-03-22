@@ -64,32 +64,21 @@ const OTPVerification = () => {
             });
 
             if (res.data.access) {
-                localStorage.setItem("access", res.data.access);
-                localStorage.setItem("refresh", res.data.refresh);
-                localStorage.setItem("account_type", account_type || "user");
-                localStorage.setItem("username", res.data.user.first_name);
-                localStorage.setItem("email", res.data.user.email);
-                
                 toast.success("Registration successful! ✅");
-                
-                if (account_type === "business") {
-                    navigate("/login-business");
-                } else {
-                    navigate("/");
-                }
+                navigate("/auth");
             }
         } catch (err) {
             toast.error(err.response?.data?.error || "Verification failed");
             // Clear OTP inputs and focus first field WITHOUT resending
-             setOtp(Array(4).fill(""));
-             otpRefs.current[0].focus();
+            setOtp(Array(4).fill(""));
+            otpRefs.current[0].focus();
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: "linear-gradient(135deg, #3f71bc35, hsla(213, 86%, 42%, 0.54))" }}>
+        <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
             <div className="card shadow-lg border-0 rounded-4 p-4 text-center" style={{ width: "420px" }}>
                 <h4 className="fw-bold mb-3">Verify Your Email</h4>
                 <p className="text-muted mb-4">We've sent a 4-digit code to <br /><strong>{email}</strong></p>
@@ -114,7 +103,7 @@ const OTPVerification = () => {
                     <button
                         type="submit"
                         className="btn text-white w-100 py-3 rounded-pill fw-bold mb-3"
-                        style={{ background: "linear-gradient(135deg, #0a3a82, #0f62c5)", border: "none" }}
+                        style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", border: "none" }}
                         disabled={loading}
                     >
                         {loading ? "Verifying..." : "Verify & Sign Up"}
@@ -123,17 +112,17 @@ const OTPVerification = () => {
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="btn btn-outline-secondary w-100 py-2 rounded-pill fw-bold"
-                        style={{ border: "2px solid #6c757d" }}
+                        className="btn  w-100 py-2 rounded-pill fw-bold"
+                        style={{ border: "2px solid #667eea", color: "#667eea" }}
                         disabled={loading}
                     >
-                        {loading ? "Sending..." : "Resend OTP"}
+                        Resend OTP
                     </button>
                 </form>
 
                 <p className="text-muted mt-4 mb-0">
-                    Didn't receive the code? 
-                    <button className="btn btn-link p-0 ms-1 fw-bold" style={{ color: "#0f62c5", textDecoration: "none" }} onClick={() => navigate("/auth")}>Try Again</button>
+                    Didn't receive the code?
+                    <button className="btn btn-link p-0 ms-1 fw-bold" style={{ color: "#667eea", fontSize: "16px", textDecoration: "none" }} onClick={() => navigate("/auth")}><span className="fs-7 fw-bold">Try Again</span></button>
                 </p>
             </div>
         </div>

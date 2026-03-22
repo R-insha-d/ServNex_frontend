@@ -20,7 +20,12 @@ export default function RestaurantDashboard() {
   const [menuImagePreview, setMenuImagePreview] = useState("");
   const [interiorImagePreview, setInteriorImagePreview] = useState("");
 
-  const theme = { primary: "#7c2d12", secondary: "#ea580c", accent: "#fbbf24", light: "#fff7ed" };
+ const theme = {
+  primary: "#667eea",     // main blue
+  secondary: "#9333ea",   // purple
+  accent: "#c4b5fd",      // soft violet highlight
+  light: "#f3f4ff"       // very light background
+};
   const badgeChoices = ["Fine Dining", "Casual Dining", "Fast Food", "Cafe"];
   const priceRangeChoices = ["₹", "₹₹", "₹₹₹", "₹₹₹₹"];
 
@@ -32,7 +37,7 @@ export default function RestaurantDashboard() {
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} style={{ color: i < rating ? "#f59e0b" : "#d1d5db", fontSize: "1rem" }}>&#9733;</span>
+      <span key={i} style={{ color: i < rating ? "#9b722d" : "#d1d5db", fontSize: "1rem" }}>&#9733;</span>
     ));
   };
 
@@ -188,11 +193,11 @@ export default function RestaurantDashboard() {
         .reservation-card:hover { box-shadow: 0 4px 16px rgba(124,45,18,0.1); }
         .record-card { border-radius: 14px; border: 1px solid #e5e7eb; background: white; transition: box-shadow 0.2s ease; }
         .record-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-        .hero-overlay { background: linear-gradient(to top, rgba(124,45,18,0.85) 0%, rgba(0,0,0,0.2) 100%); }
+        .hero-overlay { background: linear-gradient(to top, rgba(84, 82, 177, 0.85) 0%, rgba(0,0,0,0.2) 100%); }
         .form-control:focus, .form-select:focus { border-color: ${theme.secondary}; box-shadow: 0 0 0 0.2rem rgba(234,88,12,0.2); }
         .btn-restaurant-primary { background: ${theme.primary}; color: white; border: none; border-radius: 10px; padding: 10px 24px; font-weight: 600; transition: background 0.2s ease; }
         .btn-restaurant-primary:hover { background: ${theme.secondary}; color: white; }
-        .info-pill { background: #fff7ed; border: 1px solid #fed7aa; color: ${theme.primary}; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: 500; display: inline-block; }
+        .info-pill {color:#667eea; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: 500; display: inline-block; }
         .image-preview-box { border-radius: 10px; overflow: hidden; border: 2px dashed #fed7aa; background: #fff7ed; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-top: 8px; }
         .image-preview-box img { width: 100%; height: 120px; object-fit: cover; }
         .image-preview-box .no-image { color: #d97706; font-size: 0.82rem; text-align: center; padding: 16px; }
@@ -206,7 +211,7 @@ export default function RestaurantDashboard() {
           {/* SIDEBAR */}
           <div
             className={"col-md-3 col-lg-2 text-white p-3 d-flex flex-column " + (sidebarOpen ? "d-block" : "d-none d-md-flex")}
-            style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", minHeight: "100vh" }}
+            style={{ background: "linear-gradient(135deg, #667eea 0%, #9333ea 100%)", minHeight: "100vh" }}
           >
             <div className="mb-4 mt-2">
               <h4 className="sidebar-brand fw-bold mb-0" style={{ fontSize: "1.2rem" }}>🍽️ ServNex</h4>

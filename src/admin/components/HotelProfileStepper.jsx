@@ -95,7 +95,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
         currentAmenities = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
       }
     }
-    
+
     if (currentAmenities.includes(amenityValue)) {
       currentAmenities = currentAmenities.filter(a => a !== amenityValue);
     } else {
@@ -124,8 +124,8 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
     formData.append("city", form.city);
     formData.append("area", form.area);
     formData.append("badge", form.badge);
-    if(form.price) formData.append("price", form.price);
-    if(form.old_price) formData.append("old_price", form.old_price);
+    if (form.price) formData.append("price", form.price);
+    if (form.old_price) formData.append("old_price", form.old_price);
     formData.append("description", form.description);
     formData.append("amenities", form.amenities);
     formData.append("keywords", form.keywords);
@@ -180,7 +180,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
                 border: "4px solid white"
               }}
               onClick={() => {
-                if(num < step) setStep(num);
+                if (num < step) setStep(num);
               }}
             >
               {num}
@@ -203,7 +203,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
             </div>
             <div className="col-md-6">
               <label className="form-label small">Area</label>
-              <input type="text" className="form-control" name="area" value={form.area} onChange={handleInputChange} />
+              <input type="text" className="form-control" style={{ marginTop: "-1px" }} name="area" value={form.area} onChange={handleInputChange} />
             </div>
             <div className="col-md-6">
               <label className="form-label small">Badge</label>
@@ -216,12 +216,12 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
             </div>
             <div className="col-12">
               <label className="form-label small">Keywords (comma separated, for search optimization)</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                name="keywords" 
-                value={form.keywords} 
-                onChange={handleInputChange} 
+              <input
+                type="text"
+                className="form-control"
+                name="keywords"
+                value={form.keywords}
+                onChange={handleInputChange}
                 placeholder="e.g. pool, beach, wifi, rooftop, pet-friendly"
               />
             </div>
@@ -246,9 +246,9 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
                   let isSelected = false;
                   if (form.amenities) {
                     if (Array.isArray(form.amenities)) {
-                       isSelected = form.amenities.includes(amenity.value);
+                      isSelected = form.amenities.includes(amenity.value);
                     } else if (typeof form.amenities === "string") {
-                       isSelected = form.amenities.split(",").map(a => a.trim()).includes(amenity.value);
+                      isSelected = form.amenities.split(",").map(a => a.trim()).includes(amenity.value);
                     }
                   }
                   return (
@@ -283,8 +283,8 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
               <textarea className="form-control" rows="3" name="description" value={form.description} onChange={handleInputChange}></textarea>
             </div>
             <div className="col-12 mt-2">
-              <button 
-                className="btn btn-sm text-white" 
+              <button
+                className="btn btn-sm text-white"
                 style={{ backgroundColor: "#10b981", fontSize: "0.80rem", padding: "8px 16px", borderRadius: "8px" }}
                 onClick={handleSubmit}
                 disabled={loading}
@@ -323,25 +323,25 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
       </div>
 
       <div className="d-flex justify-content-between mt-4">
-        <button 
-          className="btn btn-outline-secondary" 
-          disabled={step === 1 || loading} 
+        <button
+          className="btn btn-outline-secondary"
+          disabled={step === 1 || loading}
           onClick={() => setStep(step - 1)}
         >
           Previous
         </button>
         {step < 3 ? (
-          <button 
-            className="btn text-white px-4" 
-            style={{ backgroundColor: theme.primary }} 
+          <button
+            className="btn text-white px-4"
+            style={{ backgroundColor: theme.primary }}
             onClick={() => setStep(step + 1)}
           >
             Next
           </button>
         ) : (
-          <button 
-            className="btn text-white px-4" 
-            style={{ backgroundColor: "#10b981" }} 
+          <button
+            className="btn text-white px-4"
+            style={{ backgroundColor: "#10b981" }}
             onClick={handleSubmit}
             disabled={loading}
           >

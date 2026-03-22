@@ -136,7 +136,7 @@ export default function BusinessLogin() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          background: "linear-gradient(135deg,#e3f2fd,#bbdefb)",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           px: 2,
         }}
       >
@@ -153,7 +153,7 @@ export default function BusinessLogin() {
           <Typography
             variant="h5"
             fontWeight="bold"
-            color="primary"
+            color="#667eea"
             gutterBottom
           >
             Welcome Business Partner 👋
@@ -164,6 +164,7 @@ export default function BusinessLogin() {
           </Typography>
 
           <Button
+            style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
             variant="contained"
             size="large"
             startIcon={<FaPlus />}
@@ -181,7 +182,7 @@ export default function BusinessLogin() {
   /* ---------- STEPPER FORM ---------- */
 
   return (
-    <Container className="py-5">
+    <div className="p-5" style={{ width: "100%", height: "100vh", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
       <Card style={{ borderRadius: 16 }}>
         <CardContent>
           <Typography variant="h5" align="center" gutterBottom>
@@ -332,7 +333,7 @@ export default function BusinessLogin() {
                   Submit
                 </Button>
               ) : (
-                <Button variant="contained" onClick={next}>
+                <Button variant="contained" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }} onClick={next}>
                   Next
                 </Button>
               )}
@@ -340,6 +341,6 @@ export default function BusinessLogin() {
           </Box>
         </CardContent>
       </Card>
-    </Container>
+    </div>
   );
 }

@@ -12,6 +12,7 @@ const Auth = ({ onSuccess }) => {
     // Password visibility states
     const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [showSignupPassword, setShowSignupPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -20,12 +21,16 @@ const Auth = ({ onSuccess }) => {
         const token = localStorage.getItem("access");
         const role = localStorage.getItem("role");
         if (token) {
-            if (role === "Hotel") {
-                navigate("/admin-dashboard", { replace: true });
-            } else if (["Restaurant", "Saloon"].includes(role)) {
-                navigate("/restaurant-dashboard", { replace: true });
-            } else if (role === "Business") {
-                navigate("/login-business", { replace: true });
+            const isBusiness = ["Hotel", "Restaurant", "Saloon", "Business"].includes(role);
+
+            if (isBusiness) {
+                if (role === "Hotel") {
+                    navigate("/admin-dashboard", { replace: true });
+                } else if (["Restaurant", "Saloon"].includes(role)) {
+                    navigate("/restaurant-dashboard", { replace: true });
+                } else {
+                    navigate("/login-business", { replace: true });
+                }
             } else {
                 navigate("/", { replace: true });
             }
@@ -40,6 +45,7 @@ const Auth = ({ onSuccess }) => {
     } = useForm({ mode: "onChange" });
 
     const onLoginSubmit = async (data) => {
+        setLoading(true);
         try {
             const response = await AxiosInstance.post("login/", {
                 email: data.email,
@@ -58,24 +64,30 @@ const Auth = ({ onSuccess }) => {
             }
 
             const role = response.data.user.role;
-            const accountType = ["Hotel", "Restaurant", "Saloon"].includes(role)
+            const accountType = ["Hotel", "Restaurant", "Saloon", "Business"].includes(role)
                 ? "business"
                 : "user";
             localStorage.setItem("account_type", accountType);
+            toast.success("Login Successful");
 
             if (onSuccess) onSuccess();
 
-            if (role === "Hotel") {
-                navigate("/admin-dashboard", { replace: true });
-            } else if (["Restaurant", "Saloon"].includes(role)) {
-                navigate("/restaurant-dashboard", { replace: true });
-            } else if (role === "Business") {
-                navigate("/login-business", { replace: true });
+            // Redirect based on role and account type
+            if (accountType === "business") {
+                if (role === "Hotel") {
+                    navigate("/admin-dashboard", { replace: true });
+                } else if (["Restaurant", "Saloon"].includes(role)) {
+                    navigate("/restaurant-dashboard", { replace: true });
+                } else {
+                    navigate("/login-business", { replace: true });
+                }
             } else {
                 navigate("/", { replace: true });
             }
         } catch (error) {
             toast.error("Invalid email or password");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -87,6 +99,7 @@ const Auth = ({ onSuccess }) => {
     } = useForm({ mode: "onChange" });
 
     const onSignUpSubmit = (data) => {
+        setLoading(true);
         AxiosInstance.post("register/", {
             first_name: data.first_name,
             email: data.email,
@@ -96,15 +109,18 @@ const Auth = ({ onSuccess }) => {
         })
             .then((res) => {
                 toast.info(res.data.message || "OTP sent to your email!");
-                navigate("/otp-verify", { 
-                    state: { 
-                        email: data.email, 
-                        account_type: activeTab 
-                    } 
+                navigate("/otp-verify", {
+                    state: {
+                        email: data.email,
+                        account_type: activeTab
+                    }
                 });
             })
             .catch((err) => {
                 toast.error(JSON.stringify(err.response?.data));
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
 
@@ -223,8 +239,8 @@ const Auth = ({ onSuccess }) => {
                             <div className="error">{errorsSignUp.phone.message}</div>
                         )}
 
-                        <button type="submit" style={{ borderRadius: "20px", border: "2px solid #667eea", marginTop: "30px" }}>
-                            Sign Up
+                        <button type="submit" disabled={loading} style={{ borderRadius: "20px", border: "2px solid #667eea", marginTop: "30px" }}>
+                            {loading ? "Signing Up..." : "Sign Up"}
                         </button>
                     </form>
                 </div>
@@ -282,7 +298,9 @@ const Auth = ({ onSuccess }) => {
                         )}
 
                         <Link style={{ fontSize: "12px" }} to="/forgotpassword">Forgot your password?</Link>
-                        <button style={{ borderRadius: "20px", border: "2px solid #667eea", marginTop: "30px" }} type="submit">Sign In</button>
+                        <button disabled={loading} style={{ borderRadius: "20px", border: "2px solid #667eea", marginTop: "30px" }} type="submit">
+                            {loading ? "Signing In..." : "Sign In"}
+                        </button>
                     </form>
                 </div>
 

@@ -45,7 +45,7 @@ export default function HotelList() {
         setLoading(true);
         const params = new URLSearchParams();
         if (search) params.append("q", search);
-        if (city !== "All") params.append("city", city);
+        if (city !== "All" && !coords) params.append("city", city);
         if (coords?.lat && coords?.lng) {
             params.append("lat", coords.lat);
             params.append("lng", coords.lng);
@@ -84,34 +84,9 @@ export default function HotelList() {
                         data.address?.county ||
                         "";
 
-                    if (!detectedCity) {
-                        setLocationError("Could not detect city from your location.");
-                        setLocationLoading(false);
-                        return;
-                    }
-
-                    // Try to match detected city against available hotel cities (case-insensitive)
-                    const matched = uniqueCities.find(
-                        (c) => c.toLowerCase() === detectedCity.toLowerCase()
-                    );
-
-                    if (matched) {
-                        setCity(matched);
-                        setLocationError("");
-                    } else {
-                        // Partial match fallback
-                        const partial = uniqueCities.find((c) =>
-                            c.toLowerCase().includes(detectedCity.toLowerCase()) ||
-                            detectedCity.toLowerCase().includes(c.toLowerCase())
-                        );
-                        if (partial) {
-                            setCity(partial);
-                            setLocationError("");
-                        } else {
-                            setLocationError(`No hotels found near "${detectedCity}". Showing all cities.`);
-                            setCity("All");
-                        }
-                    }
+                    const finalCity = detectedCity || "Current Location";
+                    setCity(finalCity);
+                    setLocationError("");
                 } catch {
                     setLocationError("Failed to fetch location data. Try again.");
                 } finally {
@@ -235,11 +210,15 @@ export default function HotelList() {
                                             } else {
                                                 setCity(e.target.value);
                                                 setLocationError("");
+                                                setCoords(null);
                                             }
                                         }}
                                     >
                                         <option value="All">All Cities</option>
                                         <option value="__locate__">📍 Detect My Location</option>
+                                        {city !== "All" && city !== "__locate__" && !uniqueCities.includes(city) && (
+                                            <option value={city}>📍 {city}</option>
+                                        )}
                                         {uniqueCities.map((c) => (
                                             <option key={c} value={c}>{c}</option>
                                         ))}
@@ -267,8 +246,8 @@ export default function HotelList() {
                                     {showSuggestions && suggestions.length > 0 && (
                                         <div className="search-suggestions-dropdown">
                                             {suggestions.map((s, idx) => (
-                                                <div 
-                                                    key={idx} 
+                                                <div
+                                                    key={idx}
                                                     className="suggestion-item"
                                                     onClick={() => {
                                                         setSearch(s.value);
@@ -336,7 +315,7 @@ export default function HotelList() {
                         <p className="text-muted">Try adjusting your filters or search terms.</p>
                         <button
                             className="btn btn-outline-primary btn-sm mt-2 rounded-pill px-4"
-                            onClick={() => { setCity("All"); setSearch(""); setBadgeFilter("All"); }}
+                            onClick={() => { setCity("All"); setSearch(""); setBadgeFilter("All"); setCoords(null); }}
                         >
                             Reset Filters
                         </button>

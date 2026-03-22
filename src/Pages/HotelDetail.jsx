@@ -860,8 +860,8 @@ export default function HotelDetails() {
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
                     <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
-                    <strong>{hotel.average_rating || "4.8"}</strong>&nbsp;
-                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({hotel.reviews_count || "876"} reviews)</span>
+                    <strong>{hotel.average_rating || "0.0"}</strong>&nbsp;
+                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({hotel.reviews_count || "0"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto" }}>

@@ -122,7 +122,7 @@ function Footer() {
                 <FaEnvelope size={18} color="rgba(255,255,255,0.6)" style={{ marginTop: '2px' }} />
                 <Box>
                   <Typography sx={{ color: "white", fontWeight: 700, fontSize: "14px", mb: 0.5 }}>Email:</Typography>
-                  <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", fontSize: "14px" }}>support@servnex.com</Typography>
+                  <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", fontSize: "14px" }}>Servnexofficial@gmail.com</Typography>
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
