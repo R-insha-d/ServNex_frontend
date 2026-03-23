@@ -153,7 +153,8 @@ export default function Dashboard() {
 
   const fetchReviews = async (hotelId) => {
     try {
-      const res = await AxiosInstance.get(`api/hotel-reviews/?hotel=${hotelId}`);
+      // Changed to all_owner_reviews to get all reviews for the owner
+      const res = await AxiosInstance.get(`api/hotel-reviews/all_owner_reviews/`);
       setReviews(res.data);
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -458,7 +459,7 @@ export default function Dashboard() {
         >
           <h4 className="fw-bold mb-4">ServNex Business</h4>
           <div className="flex-grow-1">
-            {["dashboard", "profile", "rooms", "bookings", "records", "coupons", "gallery", "nearby"].map((tab) => (
+            {["dashboard", "profile", "rooms", "bookings", "records", "reviews", "coupons", "gallery", "nearby"].map((tab) => (
               <button
                 key={tab}
                 className="btn w-100 text-start mb-2 px-3 py-2"
@@ -1090,6 +1091,62 @@ export default function Dashboard() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {/* REVIEWS TAB */}
+            {activeTab === "reviews" && (
+              <div className="card shadow border-0 p-4 rounded-4">
+                  <h5 className="mb-4 fw-semibold" style={{ color: theme.primary }}>Guest Reviews</h5>
+                  {reviews.length > 0 ? (
+                    <div className="row g-4">
+                      {reviews.map((rev) => (
+                        <div key={rev.id} className="col-12">
+                          <div className="border rounded-4 p-3 shadow-sm bg-white">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <div className="d-flex align-items-center gap-2">
+                                <div 
+                                  className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                  style={{ width: "40px", height: "40px", backgroundColor: theme.primary, fontSize: "1.1rem" }}
+                                >
+                                  {(rev.user_name || "G")[0].toUpperCase()}
+                                </div>
+                                <div>
+                                  <h6 className="mb-0 fw-bold">{rev.user_name}</h6>
+                                  <small className="text-muted">{new Date(rev.created_at).toLocaleDateString()}</small>
+                                </div>
+                              </div>
+                              <div className="bg-warning-subtle text-warning px-2 py-1 rounded small fw-bold">
+                                {rev.rating} ⭐
+                              </div>
+                            </div>
+                            <p className="mb-3 text-secondary" style={{ fontStyle: "italic" }}>"{rev.comment}"</p>
+                            
+                            {/* Attached Images */}
+                            {rev.images && rev.images.length > 0 && (
+                              <div className="d-flex gap-2 flex-wrap">
+                                {rev.images.map((img, i) => (
+                                  <img 
+                                    key={i} 
+                                    src={img.image} 
+                                    alt="review" 
+                                    className="rounded-3 border shadow-sm"
+                                    style={{ width: "100px", height: "100px", objectFit: "cover", cursor: "pointer" }}
+                                    onClick={() => window.open(img.image, '_blank')}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-5 text-muted">
+                       <div style={{ fontSize: "2.5rem" }}>⭐</div>
+                       <p className="mt-2 mb-0">No reviews found.</p>
+                    </div>
+                  )}
               </div>
             )}
           </div>
