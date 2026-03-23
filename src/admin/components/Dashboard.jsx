@@ -21,6 +21,7 @@ export default function Dashboard() {
 
   // ── Bookings state ──────────────────────────────────────────────
   const [bookings, setBookings] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [hotels, setHotels] = useState([]);
   const [selectedHotel, setSelectedHotel] = useState("all");
   const [loadingBookings, setLoadingBookings] = useState(false);
@@ -80,6 +81,7 @@ export default function Dashboard() {
       fetchNearby(hotelData.id);
       fetchCoupons(hotelData.id);
       fetchBookings();
+      fetchReviews(hotelData.id); // Fetch reviews for this hotel
     } catch (error) {
       console.error("Error fetching hotel data:", error);
       if (error.response && error.response.status === 404) {
@@ -148,6 +150,15 @@ export default function Dashboard() {
     }
   };
   /* ------------------------------------------------------------- */
+
+  const fetchReviews = async (hotelId) => {
+    try {
+      const res = await AxiosInstance.get(`api/hotel-reviews/?hotel=${hotelId}`);
+      setReviews(res.data);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
 
   // Client-side filter — no extra API call needed
   const filteredBookings =

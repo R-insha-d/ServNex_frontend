@@ -15,6 +15,8 @@ export default function RestaurantDashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [previousRecords, setPreviousRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const [editForm, setEditForm] = useState(null);
   const [editImagePreview, setEditImagePreview] = useState("");
   const [menuImagePreview, setMenuImagePreview] = useState("");
@@ -77,6 +79,20 @@ export default function RestaurantDashboard() {
       console.error("Records error:", error);
     } finally {
       setLoadingRecords(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      setLoadingReviews(true);
+      if (myRestaurant) {
+          const res = await AxiosInstance.get(`api/restaurants/${myRestaurant.id}/reviews/`);
+          setReviews(res.data);
+      }
+    } catch (error) {
+      console.error("Reviews error:", error);
+    } finally {
+      setLoadingReviews(false);
     }
   };
 
@@ -183,9 +199,9 @@ export default function RestaurantDashboard() {
   if (loading) return <div className="p-5 text-center"><div className="spinner-border me-2" />Loading Dashboard...</div>;
   if (!myRestaurant) return <div className="p-5 text-center">No Restaurant Profile Found.</div>;
 
-  const tabs = ["dashboard", "reservations", "records", "edit"];
-  const tabIcons = { dashboard: "🏠", reservations: "📅", records: "📋", edit: "✏️" };
-  const tabLabels = { dashboard: "Dashboard", reservations: "Reservations", records: "Previous Records", edit: "Edit" };
+  const tabs = ["dashboard", "reservations", "records", "reviews", "edit"];
+  const tabIcons = { dashboard: "🏠", reservations: "📅", records: "📋", reviews: "⭐", edit: "✏️" };
+  const tabLabels = { dashboard: "Dashboard", reservations: "Reservations", records: "Previous Records", reviews: "Guest Reviews", edit: "Edit" };
 
   return (
     <>
@@ -237,6 +253,7 @@ export default function RestaurantDashboard() {
                     else {
                       setActiveTab(tab);
                       if (tab === "records") fetchPreviousRecords();
+                      if (tab === "reviews") fetchReviews();
                     }
                     setSidebarOpen(false);
                   }}
@@ -282,6 +299,7 @@ export default function RestaurantDashboard() {
                 {activeTab === "dashboard" && "Overview"}
                 {activeTab === "reservations" && "Table Reservations"}
                 {activeTab === "records" && "Previous Records"}
+                {activeTab === "reviews" && "Guest Reviews"}
                 {activeTab === "edit" && "Edit Restaurant"}
               </h5>
               <span className="info-pill">{myRestaurant.badge || "Restaurant"}</span>
@@ -519,6 +537,20 @@ export default function RestaurantDashboard() {
                                   "{r.review_data.comment}"
                                 </p>
                               )}
+                              {r.review_data.images && r.review_data.images.length > 0 && (
+                                <div className="d-flex gap-2 flex-wrap mt-2">
+                                  {r.review_data.images.map((img, i) => (
+                                    <img 
+                                        key={i} 
+                                        src={img.image} 
+                                        alt="review" 
+                                        className="rounded-3 border shadow-sm"
+                                        style={{ width: "80px", height: "80px", objectFit: "cover", cursor: "pointer" }}
+                                        onClick={() => window.open(img.image, '_blank')}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <div className="no-review-box">No review submitted yet by customer.</div>
@@ -530,6 +562,64 @@ export default function RestaurantDashboard() {
                     <div className="text-center py-5 text-muted">
                       <div style={{ fontSize: "2.5rem" }}>📂</div>
                       <p className="mt-2 mb-0">No completed reservations yet.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── REVIEWS TAB ── */}
+              {activeTab === "reviews" && (
+                <div className="card shadow border-0 p-4 rounded-4">
+                  <h5 className="mb-4 fw-semibold" style={{ color: theme.primary }}>Guest Reviews</h5>
+                  {loadingReviews ? (
+                    <div className="text-center py-5"><div className="spinner-border spinner-border-sm me-2" />Loading...</div>
+                  ) : reviews.length > 0 ? (
+                    <div className="row g-4">
+                      {reviews.map((rev) => (
+                        <div key={rev.id} className="col-12">
+                          <div className="border rounded-4 p-3 shadow-sm bg-white">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <div className="d-flex align-items-center gap-2">
+                                <div 
+                                  className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                  style={{ width: "40px", height: "40px", backgroundColor: theme.primary, fontSize: "1.1rem" }}
+                                >
+                                  {(rev.user_name || "G")[0].toUpperCase()}
+                                </div>
+                                <div>
+                                  <h6 className="mb-0 fw-bold">{rev.user_name}</h6>
+                                  <small className="text-muted">{new Date(rev.created_at).toLocaleDateString()}</small>
+                                </div>
+                              </div>
+                              <div className="bg-warning-subtle text-warning px-2 py-1 rounded small fw-bold">
+                                {rev.rating} ⭐
+                              </div>
+                            </div>
+                            <p className="mb-3 text-secondary" style={{ fontStyle: "italic" }}>"{rev.comment}"</p>
+                            
+                            {/* Attached Images */}
+                            {rev.images && rev.images.length > 0 && (
+                              <div className="d-flex gap-2 flex-wrap">
+                                {rev.images.map((img, i) => (
+                                  <img 
+                                    key={i} 
+                                    src={img.image} 
+                                    alt="review" 
+                                    className="rounded-3 border shadow-sm"
+                                    style={{ width: "100px", height: "100px", objectFit: "cover", cursor: "pointer" }}
+                                    onClick={() => window.open(img.image, '_blank')}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-5 text-muted">
+                       <div style={{ fontSize: "2.5rem" }}>⭐</div>
+                       <p className="mt-2 mb-0">No reviews found.</p>
                     </div>
                   )}
                 </div>

@@ -513,6 +513,7 @@ export default function HotelDetails() {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [reviewImages, setReviewImages] = useState([]);
 
     /* ── Fetch ── */
     useEffect(() => {
@@ -632,10 +633,16 @@ export default function HotelDetails() {
         if (!eligibleBooking) return;
         setIsSubmittingReview(true);
         try {
-            const res = await AxiosInstance.post("api/hotel-reviews/", {
-                booking: eligibleBooking.id,
-                rating: reviewRating,
-                comment: reviewComment
+            const formData = new FormData();
+            formData.append("booking", eligibleBooking.id);
+            formData.append("rating", reviewRating);
+            formData.append("comment", reviewComment);
+            reviewImages.forEach((img) => {
+                formData.append("images", img);
+            });
+
+            const res = await AxiosInstance.post("api/hotel-reviews/", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
             });
 
             toast.success("Review submitted successfully!");
@@ -662,6 +669,7 @@ export default function HotelDetails() {
 
             setReviewRating(5);
             setReviewComment("");
+            setReviewImages([]);
         } catch (err) {
             toast.error(err.response?.data?.non_field_errors?.[0] || "Submission failed");
         } finally {
@@ -1063,9 +1071,22 @@ export default function HotelDetails() {
                                             </div>
                                         </div>
                                         {rev.comment && (
-                                            <p style={{ color: "#444", lineHeight: 1.6, fontSize: "0.95rem", margin: 0, paddingLeft: "52px" }}>
+                                            <p style={{ color: "#444", lineHeight: 1.6, fontSize: "0.95rem", margin: "0 0 15px 0", paddingLeft: "52px" }}>
                                                 "{rev.comment}"
                                             </p>
+                                        )}
+                                        {Array.isArray(rev.images) && rev.images.length > 0 && (
+                                            <div style={{ display: "flex", gap: "10px", paddingLeft: "52px", flexWrap: "wrap" }}>
+                                                {rev.images.map((img, i) => (
+                                                    <img 
+                                                        key={i} 
+                                                        src={img.image} 
+                                                        alt="review" 
+                                                        style={{ width: "80px", height: "80px", borderRadius: "10px", objectFit: "cover", border: "1px solid #eee" }} 
+                                                        onClick={() => window.open(img.image, '_blank')}
+                                                    />
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
                                 ))}
@@ -1204,6 +1225,28 @@ export default function HotelDetails() {
                             resize: "none", outline: "none", marginBottom: "20px"
                         }}
                     />
+
+                    <div style={{ marginBottom: "20px", textAlign: "left" }}>
+                        <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "#667eeaff", display: "block", marginBottom: "8px" }}>
+                             Add Photos (Optional)
+                        </label>
+                        <input 
+                            type="file" 
+                            multiple 
+                            accept="image/*"
+                            onChange={(e) => setReviewImages(Array.from(e.target.files))}
+                            style={{ fontSize: "0.8rem", width: "100%" }}
+                        />
+                        {reviewImages.length > 0 && (
+                            <div style={{ display: "flex", gap: "5px", marginTop: "10px", flexWrap: "wrap" }}>
+                                {reviewImages.map((img, i) => (
+                                    <div key={i} style={{ fontSize: "0.7rem", padding: "2px 8px", background: "#f0f0f0", borderRadius: "20px" }}>
+                                        {img.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     <Button
                         fullWidth

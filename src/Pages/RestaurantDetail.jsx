@@ -50,6 +50,7 @@ export default function RestaurantDetail() {
     const [eligibleResvId, setEligibleResvId] = useState(null);
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
+    const [reviewImages, setReviewImages] = useState([]);
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [availability, setAvailability] = useState({});
 
@@ -134,10 +135,18 @@ export default function RestaurantDetail() {
         if (!eligibleResvId) return;
         setIsSubmittingReview(true);
         try {
-            const res = await AxiosInstance.post("api/reviews/", {
-                reservation: eligibleResvId,
-                rating: reviewRating,
-                comment: reviewComment
+            const formData = new FormData();
+            formData.append("reservation", eligibleResvId);
+            formData.append("rating", reviewRating);
+            formData.append("comment", reviewComment);
+            if (reviewImages) {
+                for (let i = 0; i < reviewImages.length; i++) {
+                    formData.append("images", reviewImages[i]);
+                }
+            }
+
+            const res = await AxiosInstance.post("api/reviews/", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
             });
             toast.success("Thank you for your review!");
             setReviewModalOpen(false);
@@ -153,6 +162,7 @@ export default function RestaurantDetail() {
             
             setReviewRating(5);
             setReviewComment("");
+            setReviewImages([]);
         } catch (err) {
             toast.error("Failed to submit review.");
         } finally {
@@ -576,6 +586,19 @@ export default function RestaurantDetail() {
                                                 "{rev.comment}"
                                             </p>
                                         )}
+                                        {rev.images && rev.images.length > 0 && (
+                                            <div style={{ display: "flex", gap: "10px", marginTop: "15px", paddingLeft: "52px", flexWrap: "wrap" }}>
+                                                {rev.images.map((img, i) => (
+                                                    <img
+                                                        key={i}
+                                                        src={img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image}
+                                                        alt="review"
+                                                        style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10px", cursor: "pointer", border: "1px solid #eee" }}
+                                                        onClick={() => window.open(img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image, '_blank')}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -857,11 +880,31 @@ export default function RestaurantDetail() {
                         value={reviewComment}
                         onChange={(e) => setReviewComment(e.target.value)}
                         style={{
-                            width: "100%", height: "120px", padding: "15px", borderRadius: "15px",
+                            width: "100%", height: "100px", padding: "15px", borderRadius: "15px",
                             border: "1px solid #ddd", fontFamily: "inherit", fontSize: "0.95rem",
-                            resize: "none", outline: "none", marginBottom: "20px"
+                            resize: "none", outline: "none", marginBottom: "15px"
                         }}
                     />
+
+                    <Box mb={3} textAlign="left">
+                        <Typography variant="body2" fontWeight="600" mb={1} color="text.secondary">Attach Photos (Optional)</Typography>
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={(e) => setReviewImages(e.target.files)}
+                            style={{
+                                display: "block", width: "100%", padding: "10px",
+                                border: "1px dashed #ccc", borderRadius: "10px",
+                                background: "#f9fafb", cursor: "pointer"
+                            }}
+                        />
+                        {reviewImages && reviewImages.length > 0 && (
+                            <Typography variant="caption" color="primary" sx={{ display: "block", mt: 1 }}>
+                                {reviewImages.length} file(s) selected
+                            </Typography>
+                        )}
+                    </Box>
 
                     <Button
                         fullWidth
