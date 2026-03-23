@@ -128,7 +128,11 @@ export default function RestaurantDashboard() {
       name: myRestaurant.name || "", city: myRestaurant.city || "", area: myRestaurant.area || "",
       badge: myRestaurant.badge || "", cuisine_type: myRestaurant.cuisine_type || "",
       price_range: myRestaurant.price_range || "₹₹", average_cost_for_two: myRestaurant.average_cost_for_two || "",
-      total_tables: myRestaurant.total_tables || "", description: myRestaurant.description || "",
+      tables_4_capacity: myRestaurant.tables_4_capacity || 0,
+      tables_6_capacity: myRestaurant.tables_6_capacity || 0,
+      tables_8_capacity: myRestaurant.tables_8_capacity || 0,
+      tables_10_capacity: myRestaurant.tables_10_capacity || 0,
+      description: myRestaurant.description || "",
       keywords: myRestaurant.keywords || "",
       image: null, menu_image: null, interior_image: null,
     });
@@ -166,7 +170,13 @@ export default function RestaurantDashboard() {
       toast.success("Restaurant updated successfully!");
       setActiveTab("dashboard");
     } catch (error) {
-      toast.error("Failed to update.");
+      console.error("Update error:", error.response?.data || error.message);
+      const serverError = error.response?.data;
+      let errorMsg = "Failed to update.";
+      if (typeof serverError === "object") {
+        errorMsg = Object.entries(serverError).map(([k, v]) => `${k}: ${v}`).join(", ");
+      }
+      toast.error(errorMsg);
     }
   };
 
@@ -326,7 +336,13 @@ export default function RestaurantDashboard() {
                       <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
                         <h6 className="fw-bold mb-3" style={{ color: theme.primary }}>Restaurant Details</h6>
                         <div className="d-flex flex-column gap-2">
-                          {myRestaurant.total_tables && <div className="d-flex justify-content-between"><span className="text-muted">Total Tables</span><strong>{myRestaurant.total_tables}</strong></div>}
+                          <div className="d-flex justify-content-between small mb-1"><span className="text-muted">Total Tables</span><strong>{myRestaurant.total_tables}</strong></div>
+                          <div className="d-flex flex-column gap-1 bg-light p-2 rounded-3 mt-1" style={{ fontSize: "0.8rem" }}>
+                            <div className="d-flex justify-content-between"><span>4-Cap Tables:</span><span>{myRestaurant.tables_4_capacity}</span></div>
+                            <div className="d-flex justify-content-between"><span>6-Cap Tables:</span><span>{myRestaurant.tables_6_capacity}</span></div>
+                            <div className="d-flex justify-content-between"><span>8-Cap Tables:</span><span>{myRestaurant.tables_8_capacity}</span></div>
+                            <div className="d-flex justify-content-between"><span>10-Cap Tables:</span><span>{myRestaurant.tables_10_capacity}</span></div>
+                          </div>
                           {myRestaurant.average_cost_for_two && <div className="d-flex justify-content-between"><span className="text-muted">Avg Cost for Two</span><strong>Rs.{myRestaurant.average_cost_for_two}</strong></div>}
                           {myRestaurant.cuisine_type && <div className="d-flex justify-content-between"><span className="text-muted">Cuisine</span><strong>{myRestaurant.cuisine_type}</strong></div>}
                           {/* {myRestaurant.price_range && <div className="d-flex justify-content-between"><span className="text-muted">Price Range</span><strong>{myRestaurant.price_range}</strong></div>} */}
@@ -552,9 +568,26 @@ export default function RestaurantDashboard() {
                       <label className="form-label small fw-semibold">Avg Cost for Two (Rs.)</label>
                       <input type="number" className="form-control" min="0" value={editForm.average_cost_for_two} onChange={(e) => setEditForm({ ...editForm, average_cost_for_two: e.target.value })} />
                     </div>
-                    <div className="col-md-6">
-                      <label className="form-label small fw-semibold">Total Tables</label>
-                      <input type="number" className="form-control" min="1" value={editForm.total_tables} onChange={(e) => setEditForm({ ...editForm, total_tables: e.target.value })} />
+                    <div className="col-12">
+                      <label className="form-label small fw-semibold text-muted text-uppercase" style={{ letterSpacing: "0.05em", fontSize: "0.75rem" }}>Table Counts by Capacity</label>
+                      <div className="row g-2">
+                        <div className="col-md-3">
+                          <label className="form-label x-small">4-Guest Tables</label>
+                          <input type="number" className="form-control form-control-sm" min="0" value={editForm.tables_4_capacity} onChange={(e) => setEditForm({ ...editForm, tables_4_capacity: e.target.value })} />
+                        </div>
+                        <div className="col-md-3">
+                          <label className="form-label x-small">6-Guest Tables</label>
+                          <input type="number" className="form-control form-control-sm" min="0" value={editForm.tables_6_capacity} onChange={(e) => setEditForm({ ...editForm, tables_6_capacity: e.target.value })} />
+                        </div>
+                        <div className="col-md-3">
+                          <label className="form-label x-small">8-Guest Tables</label>
+                          <input type="number" className="form-control form-control-sm" min="0" value={editForm.tables_8_capacity} onChange={(e) => setEditForm({ ...editForm, tables_8_capacity: e.target.value })} />
+                        </div>
+                        <div className="col-md-3">
+                          <label className="form-label x-small">10-Guest Tables</label>
+                          <input type="number" className="form-control form-control-sm" min="0" value={editForm.tables_10_capacity} onChange={(e) => setEditForm({ ...editForm, tables_10_capacity: e.target.value })} />
+                        </div>
+                      </div>
                     </div>
                     <div className="col-12">
                       <label className="form-label small fw-semibold">Description *</label>

@@ -51,6 +51,7 @@ export default function RestaurantDetail() {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [availability, setAvailability] = useState({});
 
     useEffect(() => {
         setLoading(true);
@@ -100,6 +101,14 @@ export default function RestaurantDetail() {
 
     const handleOpenModal = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    useEffect(() => {
+        if (open && reservationDate && restaurant) {
+            AxiosInstance.get(`api/restaurants/${id}/availability/?date=${reservationDate}`)
+                .then(res => setAvailability(res.data))
+                .catch(err => console.error("Error fetching availability:", err));
+        }
+    }, [open, reservationDate, restaurant, id]);
 
     const handleWriteReviewClick = async () => {
         const token = localStorage.getItem("access");
@@ -798,10 +807,18 @@ export default function RestaurantDetail() {
                             </div>
                         </Box>
                         <Box>
-                            <Typography variant="subtitle2" color="text.secondary" mb={1}>Type of Table</Typography>
+                            <Typography variant="subtitle2" color="text.secondary" mb={1}>Guest Count / Table Capacity</Typography>
                             <select className="form-select form-select-lg" value={numberOfGuests} onChange={(e) => setNumberOfGuests(parseInt(e.target.value))}>
-                                {[4, 6, 8, 10].map(num => <option key={num} value={num}>{num} Guest Table</option>)}
+                                <option value={4}>4 Guests {availability[4] === 0 ? "(Full)" : `(${availability[4]} available)`}</option>
+                                <option value={6}>6 Guests {availability[6] === 0 ? "(Full)" : `(${availability[6]} available)`}</option>
+                                <option value={8}>8 Guests {availability[8] === 0 ? "(Full)" : `(${availability[8]} available)`}</option>
+                                <option value={10}>10 Guests {availability[10] === 0 ? "(Full)" : `(${availability[10]} available)`}</option>
                             </select>
+                            {availability[numberOfGuests] === 0 && (
+                                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', fontWeight: 600 }}>
+                                    ⚠️ This table type is currently full for the selected date.
+                                </Typography>
+                            )}
                         </Box>
                     </Box>
                     <Box mt={4}>

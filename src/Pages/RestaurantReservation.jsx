@@ -32,6 +32,7 @@ export default function RestaurantReservation() {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [availability, setAvailability] = useState({});
 
     const tablesNeeded = Math.ceil(guests / 4);
     const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * (guests / 2) : 0;
@@ -52,6 +53,14 @@ export default function RestaurantReservation() {
                 });
         }
     }, [id, restaurant]);
+
+    useEffect(() => {
+        if (date && restaurant) {
+            AxiosInstance.get(`api/restaurants/${id}/availability/?date=${date}`)
+                .then(res => setAvailability(res.data))
+                .catch(err => console.error("Error fetching availability:", err));
+        }
+    }, [date, restaurant, id]);
 
     if (loading) return <div className="text-center mt-5">Loading...</div>;
     if (!restaurant) return <div className="p-5">Restaurant not found</div>;
@@ -265,13 +274,20 @@ export default function RestaurantReservation() {
 
                         <p style={{ color: "#6b7280", fontSize: "0.92rem", marginBottom: 24 }}>
                             {error || "Sorry, we couldn't complete your reservation."}
+                            <br />
+                            <span className="fw-bold text-dark mt-2 d-block">
+                                Suggestion: Try a different table capacity or date.
+                            </span>
                         </p>
 
-                        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                             <button
-                                onClick={() => setShowPopup(false)}
+                                onClick={() => {
+                                    setShowPopup(false);
+                                    document.querySelector('.bg-light.p-3.rounded-4')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
                                 style={{
-                                    background: "#ef4444",
+                                    background: "#3b82f6",
                                     color: "white",
                                     border: "none",
                                     borderRadius: "12px",
@@ -281,7 +297,7 @@ export default function RestaurantReservation() {
                                     fontSize: "0.9rem",
                                 }}
                             >
-                                Try Another Date
+                                Try Another Table
                             </button>
                             <button
                                 onClick={() => navigate(-1)}
@@ -538,6 +554,11 @@ export default function RestaurantReservation() {
                                         style={{ width: '32px', height: '32px', padding: 0 }}
                                     ><FaPlus size={12} /></button>
                                 </div>
+                                {availability[guests] === 0 && (
+                                    <div className="text-danger small fw-bold mt-2 text-center">
+                                        ⚠️ This table type is full for the selected date.
+                                    </div>
+                                )}
                             </div>
                         </div>
 
