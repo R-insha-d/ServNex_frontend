@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [galleryImages, setGalleryImages] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [nearby, setNearby] = useState([]);
+  const [coupons, setCoupons] = useState([]);
 
   // ── Bookings state ──────────────────────────────────────────────
   const [bookings, setBookings] = useState([]);
@@ -51,6 +52,15 @@ export default function Dashboard() {
   });
   const [editingNearbyId, setEditingNearbyId] = useState(null);
 
+  const [couponForm, setCouponForm] = useState({
+    code: "",
+    discount_percent: 10,
+    valid_from: "",
+    valid_to: "",
+    is_active: true
+  });
+  const [editingCouponId, setEditingCouponId] = useState(null);
+
   const roomTypes = ["Deluxe", "Suite", "Executive", "Standard"];
   const bedTypes = ["Single", "Double", "Queen", "King"];
 
@@ -68,6 +78,7 @@ export default function Dashboard() {
       fetchRooms(hotelData.id);
       fetchGallery(hotelData.id);
       fetchNearby(hotelData.id);
+      fetchCoupons(hotelData.id);
       fetchBookings();
     } catch (error) {
       console.error("Error fetching hotel data:", error);
@@ -103,6 +114,15 @@ export default function Dashboard() {
       setNearby(res.data);
     } catch (error) {
       console.error("Error fetching nearby attractions:", error);
+    }
+  };
+
+  const fetchCoupons = async (hotelId) => {
+    try {
+      const res = await AxiosInstance.get(`api/coupons/?hotel=${hotelId}`);
+      setCoupons(res.data);
+    } catch (error) {
+      console.error("Error fetching coupons:", error);
     }
   };
 
@@ -325,6 +345,65 @@ export default function Dashboard() {
     }
   };
 
+  /* ---------- COUPONS ---------- */
+  const resetCouponForm = () => {
+    setCouponForm({
+      code: "",
+      discount_percent: 10,
+      valid_from: "",
+      valid_to: "",
+      is_active: true
+    });
+    setEditingCouponId(null);
+  };
+
+  const handleSubmitCoupon = async () => {
+    if (!myHotel) return toast.error("Hotel profile missing!");
+    if (!couponForm.code.trim()) return toast.error("Coupon code is required");
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (!editingCouponId && couponForm.valid_from && couponForm.valid_from < today) {
+      return toast.error("Coupon start date cannot be in the past.");
+    }
+
+    const { id, ...formData } = couponForm;
+    const payload = {
+      ...formData,
+      hotel: myHotel.id,
+      discount_percent: parseInt(formData.discount_percent)
+    };
+
+    try {
+      if (editingCouponId) {
+        await AxiosInstance.patch(`api/coupons/${editingCouponId}/`, payload);
+        toast.success("Coupon updated.");
+      } else {
+        await AxiosInstance.post("api/coupons/", payload);
+        toast.success("Coupon created.");
+      }
+      fetchCoupons(myHotel.id);
+      resetCouponForm();
+    } catch (error) {
+      console.error("Error saving coupon:", error);
+      const msg = error.response?.data ? JSON.stringify(error.response.data) : "Failed to save coupon.";
+      toast.error(msg);
+    }
+  };
+
+  const handleDeleteCoupon = async (id) => {
+    if (!window.confirm("Delete this coupon?")) return;
+    try {
+      await AxiosInstance.delete(`api/coupons/${id}/`);
+      setCoupons(coupons.filter(c => c.id !== id));
+      if (editingCouponId === id) {
+        resetCouponForm();
+      }
+    } catch (error) {
+      console.error("Error deleting coupon:", error);
+      toast.error("Failed to delete coupon.");
+    }
+  };
+
   /* ---------- HELPERS ---------- */
   const InputError = ({ msg }) =>
     msg ? <small className="text-danger">{msg}</small> : null;
@@ -357,7 +436,7 @@ export default function Dashboard() {
         >
           <h4 className="fw-bold mb-4">ServNex Business</h4>
           <div className="flex-grow-1">
-            {["dashboard", "profile", "rooms", "bookings", "gallery", "nearby"].map((tab) => (
+            {["dashboard", "profile", "rooms", "bookings", "coupons", "gallery", "nearby"].map((tab) => (
               <button
                 key={tab}
                 className="btn w-100 text-start mb-2 px-3 py-2"
@@ -844,6 +923,85 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* COUPONS TAB */}
+            {activeTab === "coupons" && (
+              <div className="card shadow border-0 p-4 rounded-4">
+                <h5 className="mb-3">Manage Coupons</h5>
+                <p className="text-muted small">
+                  Create special discount codes for your guests.
+                </p>
+
+                <div className="row g-3 align-items-end mb-4 p-3 bg-light rounded-3">
+                  <div className="col-md-2">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Code</label>
+                    <input type="text" className="form-control" placeholder="SUMMER10" value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} />
+                  </div>
+                  <div className="col-md-2">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Discount %</label>
+                    <input type="number" className="form-control" value={couponForm.discount_percent} onChange={(e) => setCouponForm({ ...couponForm, discount_percent: e.target.value })} />
+                  </div>
+                  <div className="col-md-3">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Valid From</label>
+                    <input type="date" className="form-control" min={new Date().toISOString().split('T')[0]} value={couponForm.valid_from ? couponForm.valid_from.split('T')[0] : ""} onChange={(e) => setCouponForm({ ...couponForm, valid_from: e.target.value })} />
+                  </div>
+                  <div className="col-md-3">
+                    <label className="form-label small fw-semibold text-uppercase text-muted">Valid To</label>
+                    <input type="date" className="form-control" min={couponForm.valid_from ? couponForm.valid_from.split('T')[0] : new Date().toISOString().split('T')[0]} value={couponForm.valid_to ? couponForm.valid_to.split('T')[0] : ""} onChange={(e) => setCouponForm({ ...couponForm, valid_to: e.target.value })} />
+                  </div>
+                  <div className="col-md-2 d-flex gap-2">
+                    <button className="btn btn-primary flex-grow-1" onClick={handleSubmitCoupon}>{editingCouponId ? "Update" : "Add"}</button>
+                    {editingCouponId && (
+                      <button className="btn btn-outline-secondary" onClick={resetCouponForm}>Cancel</button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                        <th>Validity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {coupons.map((c) => (
+                        <tr key={c.id}>
+                          <td><span className="fw-bold text-primary">{c.code}</span></td>
+                          <td>{c.discount_percent}%</td>
+                          <td>
+                            <small className="text-muted">
+                              {c.valid_from ? new Date(c.valid_from).toLocaleDateString() : "Anytime"} - {c.valid_to ? new Date(c.valid_to).toLocaleDateString() : "Always"}
+                            </small>
+                          </td>
+                          <td>
+                            <div className="form-check form-switch">
+                              <input className="form-check-input" type="checkbox" checked={c.is_active} onChange={async () => {
+                                try {
+                                  await AxiosInstance.patch(`api/coupons/${c.id}/`, { is_active: !c.is_active });
+                                  fetchCoupons(myHotel.id);
+                                } catch (e) { toast.error("Failed to toggle status"); }
+                              }} />
+                            </div>
+                          </td>
+                          <td>
+                            <button className="btn btn-sm btn-outline-primary me-2" onClick={() => {
+                              setCouponForm({ ...c });
+                              setEditingCouponId(c.id);
+                            }}>Edit</button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteCoupon(c.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                      {coupons.length === 0 && <tr><td colSpan="5" className="text-center py-4 text-muted">No coupons created yet.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

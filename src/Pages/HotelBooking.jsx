@@ -287,6 +287,14 @@ export default function HotelBooking() {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [couponCode, setCouponCode] = useState("");
+    const [availableCoupons, setAvailableCoupons] = useState([]);
+    const [priceDetails, setPriceDetails] = useState({
+        total_original_price: 0,
+        discount_amount: 0,
+        final_price: 0,
+        applied_discount_reason: null
+    });
 
     // Reactive logic: Auto-calculate rooms when guests change
     const updateGuests = (val) => {
@@ -339,6 +347,47 @@ export default function HotelBooking() {
             fetchAvailability();
         }
     }, [startDate, endDate, roomsBooked, hotel, room]);
+
+    useEffect(() => {
+        if (startDate && endDate && hotel) {
+            const fetchPricePreview = async () => {
+                try {
+                    const payload = {
+                        hotel: hotel.id,
+                        check_in: startDate,
+                        check_out: endDate,
+                        rooms_booked: roomsBooked,
+                        coupon_code: couponCode // Optional
+                    };
+                    if (room) payload.room = room.id;
+
+                    const res = await AxiosInstance.post("api/bookings/price_preview/", payload);
+                    setPriceDetails(res.data);
+                } catch (err) {
+                    console.error("Error fetching price preview:", err);
+                    // Reset or show error if needed
+                }
+            };
+            
+            // Debounce or only fetch when needed
+            const timer = setTimeout(fetchPricePreview, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [startDate, endDate, roomsBooked, hotel, room, couponCode]);
+
+    useEffect(() => {
+        if (id) {
+            const fetchAvailableCoupons = async () => {
+                try {
+                    const res = await AxiosInstance.get(`api/coupons/?hotel=${id}`);
+                    setAvailableCoupons(res.data);
+                } catch (error) {
+                    console.error("Error fetching coupons:", error);
+                }
+            };
+            fetchAvailableCoupons();
+        }
+    }, [id]);
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const isTablet = useMediaQuery("(max-width:1024px)");
@@ -397,10 +446,10 @@ export default function HotelBooking() {
         try {
             const payload = {
                 hotel: hotel.id,
-                check_in: startDate,
                 check_out: endDate,
                 number_of_guests: guests,
-                rooms_booked: roomsBooked
+                rooms_booked: roomsBooked,
+                coupon_code: couponCode // Send coupon code on final booking
             };
 
             if (room) {
@@ -413,7 +462,7 @@ export default function HotelBooking() {
 
             // 2. Create Razorpay Order
             const orderRes = await AxiosInstance.post("api/razorpay/order/", {
-                amount: totalCost,
+                amount: Math.round(Number(priceDetails.final_price) * 1.12),
                 booking_type: 'hotel',
                 booking_id: bookingId
             });
@@ -534,7 +583,7 @@ export default function HotelBooking() {
                     </div>
                     <div class="total">
                         <div class="label">Total Amount Paid</div>
-                        <div class="price">₹${totalCost.toLocaleString()}</div>
+                        <div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.12).toLocaleString()}</div>
                     </div>
                     <p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p>
                 </body>
@@ -722,7 +771,6 @@ export default function HotelBooking() {
                         </div>
 
                         {/* Availability Info */}
-                        {remainingRooms !== null && (
                             <div style={{ textAlign: "center", marginTop: "24px" }}>
                                 <Chip
                                     label={remainingRooms > 0 ? `Hurry! Only ${remainingRooms} rooms left.` : 'No rooms available for these dates.'}
@@ -742,9 +790,62 @@ export default function HotelBooking() {
                                     }}
                                 />
                             </div>
-                        )}
 
-                        {/* Cost Summary Section */}
+                        {/* [NEW] Coupon/Promo Code Section */}
+                        <div style={{ marginTop: "40px" }}>
+                            <span style={S.formLabel}>Have a Promo Code?</span>
+                            <div style={{ display: "flex", gap: "12px" }}>
+                                <input
+                                    type="text"
+                                    placeholder="Enter code (e.g. WELCOME10)"
+                                    style={{ ...S.input, flex: 1, textTransform: "uppercase" }}
+                                    value={couponCode}
+                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                />
+                            </div>
+                            {availableCoupons.length > 0 && (
+                                <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                                    {availableCoupons.map((c) => (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setCouponCode(c.code);
+                                                toast.success(`Coupon ${c.code} selected!`);
+                                            }}
+                                            style={{
+                                                background: couponCode === c.code ? "#667eea" : "rgba(102, 126, 234, 0.05)",
+                                                border: `1.5px solid ${couponCode === c.code ? "#667eea" : "rgba(102, 126, 234, 0.2)"}`,
+                                                color: couponCode === c.code ? "#fff" : "#667eea",
+                                                padding: "6px 16px",
+                                                borderRadius: "100px",
+                                                fontSize: "0.8rem",
+                                                fontWeight: 700,
+                                                cursor: "pointer",
+                                                transition: "all 0.3s ease",
+                                                boxShadow: couponCode === c.code ? "0 4px 12px rgba(102, 126, 234, 0.2)" : "none"
+                                            }}
+                                        >
+                                            {c.code}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            {priceDetails.applied_discount_reason && priceDetails.discount_amount > 0 && (
+                                <Typography style={{ 
+                                    fontSize: "0.85rem", 
+                                    color: "#2e7d32", 
+                                    marginTop: "8px", 
+                                    fontWeight: 600,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px"
+                                }}>
+                                    <AlertCircle size={14} /> Applied: {priceDetails.applied_discount_reason}
+                                </Typography>
+                            )}
+                        </div>
+
                         <div style={{
                             ...S.summaryCard,
                             flexDirection: "column",
@@ -753,12 +854,18 @@ export default function HotelBooking() {
                             textAlign: "left"
                         }}>
                             <div style={{ display: "flex", justifyContent: "space-between", color: "#7a6a4a", fontSize: "0.95rem" }}>
-                                <span>Room Price ({roomsBooked} {roomsBooked === 1 ? 'Room' : 'Rooms'} × {nights} {nights === 1 ? 'night' : 'nights'})</span>
-                                <span>₹{subtotal.toLocaleString()}</span>
+                                <span>Room Subtotal</span>
+                                <span>₹{Number(priceDetails.total_original_price).toLocaleString()}</span>
                             </div>
+                            {priceDetails.discount_amount > 0 && (
+                                <div style={{ display: "flex", justifyContent: "space-between", color: "#2e7d32", fontSize: "0.95rem", fontWeight: 600 }}>
+                                    <span>Special Discount</span>
+                                    <span>- ₹{Number(priceDetails.discount_amount).toLocaleString()}</span>
+                                </div>
+                            )}
                             <div style={{ display: "flex", justifyContent: "space-between", color: "#7a6a4a", fontSize: "0.95rem" }}>
                                 <span>Taxes & Service Fees (12%)</span>
-                                <span>₹{tax.toLocaleString()}</span>
+                                <span>₹{Math.round(Number(priceDetails.final_price) * 0.12).toLocaleString()}</span>
                             </div>
                             <Divider sx={{ my: 1, opacity: 0.1 }} />
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -768,7 +875,7 @@ export default function HotelBooking() {
                                     fontWeight: 700,
                                     color: "#667eea"
                                 }}>
-                                    ₹{totalCost.toLocaleString()}
+                                    ₹{Math.round(Number(priceDetails.final_price) * 1.12).toLocaleString()}
                                 </span>
                             </div>
                         </div>
