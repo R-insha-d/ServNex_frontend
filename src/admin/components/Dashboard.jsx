@@ -404,6 +404,17 @@ export default function Dashboard() {
     }
   };
 
+  const handleCompleteBooking = async (bookingId) => {
+    try {
+      await AxiosInstance.post(`api/bookings/${bookingId}/complete_booking/`);
+      toast.success("Stay marked as completed!");
+      fetchBookings(); // Refresh list
+    } catch (error) {
+      console.error("Error completing booking:", error);
+      toast.error("Failed to complete booking.");
+    }
+  };
+
   /* ---------- HELPERS ---------- */
   const InputError = ({ msg }) =>
     msg ? <small className="text-danger">{msg}</small> : null;
@@ -436,7 +447,7 @@ export default function Dashboard() {
         >
           <h4 className="fw-bold mb-4">ServNex Business</h4>
           <div className="flex-grow-1">
-            {["dashboard", "profile", "rooms", "bookings", "coupons", "gallery", "nearby"].map((tab) => (
+            {["dashboard", "profile", "rooms", "bookings", "records", "coupons", "gallery", "nearby"].map((tab) => (
               <button
                 key={tab}
                 className="btn w-100 text-start mb-2 px-3 py-2"
@@ -743,8 +754,8 @@ export default function Dashboard() {
                     Loading bookings...
                   </div>
 
-                ) : filteredBookings.length > 0 ? (
-                  filteredBookings.map((b) => (
+                ) : (filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").length > 0) ? (
+                  filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").map((b) => (
                     <div
                       key={b.booking_id}
                       className="border rounded-3 p-3 mb-3 d-flex justify-content-between align-items-start"
@@ -770,12 +781,23 @@ export default function Dashboard() {
                         </span>
                       </div>
 
-                      <span
-                        className={`badge ${statusBadgeClass(b.status)} ms-3`}
-                        style={{ whiteSpace: "nowrap", alignSelf: "flex-start" }}
-                      >
-                        {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
-                      </span>
+                      <div className="d-flex flex-column align-items-end">
+                        <span
+                          className={`badge ${statusBadgeClass(b.status)} ms-3`}
+                          style={{ whiteSpace: "nowrap", alignSelf: "flex-start" }}
+                        >
+                          {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
+                        </span>
+                        {activeTab === 'bookings' && (b.status === 'confirmed' || b.status === 'paid') && (
+                          <button 
+                            className="btn btn-sm btn-success mt-2" 
+                            style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                            onClick={() => handleCompleteBooking(b.booking_id)}
+                          >
+                            Complete Stay
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))
 
@@ -784,11 +806,68 @@ export default function Dashboard() {
                     <div style={{ fontSize: "2.5rem" }}>📭</div>
                     <p className="mt-2 mb-0">
                       {selectedHotel === "all"
-                        ? "No bookings yet."
-                        : `No bookings found for "${selectedHotel}".`}
+                        ? "No active bookings yet."
+                        : `No active bookings found for "${selectedHotel}".`}
                     </p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* RECORDS TAB */}
+            {activeTab === "records" && (
+              <div className="card shadow border-0 p-4 rounded-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h5 className="mb-0 fw-semibold" style={{ color: theme.primary }}>Booking Records & History</h5>
+                </div>
+
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle">
+                    <thead className="bg-light">
+                      <tr style={{ fontSize: "0.85rem", textTransform: "uppercase", color: "#64748b" }}>
+                        <th className="px-3">Customer</th>
+                        <th>Hotel & Room</th>
+                        <th>Dates</th>
+                        <th>Status</th>
+                        <th>Booked At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredBookings.filter(b => b.status === "completed" || b.status === "cancelled").length > 0 ? (
+                        filteredBookings.filter(b => b.status === "completed" || b.status === "cancelled").map((b) => (
+                          <tr key={b.booking_id}>
+                            <td className="px-3">
+                              <div className="fw-bold">{b.customer_name}</div>
+                              <div className="small text-muted">{b.customer_email}</div>
+                            </td>
+                            <td>
+                              <div className="fw-medium">{b.hotel_name}</div>
+                              <div className="small text-muted">{b.room_type || "N/A"}</div>
+                            </td>
+                            <td>
+                              <div className="small">
+                                <strong>In:</strong> {b.check_in}<br/>
+                                <strong>Out:</strong> {b.check_out}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`badge ${statusBadgeClass(b.status)}`}>
+                                {b.status.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="small text-muted">
+                              {new Date(b.booked_at).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="text-center py-5 text-muted">No records found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
