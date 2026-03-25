@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AxiosInstance from "../Component/AxiosInstance";
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs, Tab, Modal, IconButton } from "@mui/material";
-import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star } from "lucide-react";
+import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed } from "lucide-react";
 
 export default function MyBookings() {
     const [bookings, setBookings] = useState([]);
@@ -181,6 +181,24 @@ export default function MyBookings() {
         printWindow.print();
     };
 
+    const handleCancelBooking = async (id, isHotel) => {
+        if (!window.confirm(`Are you sure you want to cancel this ${isHotel ? 'booking' : 'reservation'}? Your payment will be refunded within 24 hours.`)) return;
+
+        try {
+            if (isHotel) {
+                await AxiosInstance.post(`api/bookings/${id}/cancel_booking/`);
+                setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+            } else {
+                await AxiosInstance.patch(`api/my-reservations/${id}/`, { status: "cancelled" });
+                setReservations(prev => prev.map(r => r.id === id ? { ...r, status: 'cancelled' } : r));
+            }
+            alert("Cancellation successful. You will receive a confirmation email shortly.");
+        } catch (error) {
+            console.error("Cancellation error:", error);
+            alert("Failed to cancel. Please contact support.");
+        }
+    };
+
     const getImageUrl = (url) => {
         if (!url) return "";
         if (url.startsWith("http")) return url;
@@ -204,9 +222,8 @@ export default function MyBookings() {
 
     const getStatusChipColor = (status) => {
         if (status === "Your Table Is Ready" || status === "confirmed" || status === "paid") return "success";
-        if (status === "completed" || status === "visited") return "default";
-        if (status === "cancelled" || status === "failed") return "error";
-        if (status === "pending") return "warning";
+        if (status === "completed" || status === "visited") return "info";
+        if (status === "cancelled" || status === "failed" || status === "pending") return "error";
         return "primary";
     };
 
@@ -344,7 +361,7 @@ export default function MyBookings() {
                                             <div className="position-relative">
                                                 <img src={hotel.image || "https://via.placeholder.com/300?text=Hotel"} alt={hotel.name} className="w-100" style={{ height: 160, objectFit: "cover" }} />
                                                 <div className="position-absolute top-0 end-0 m-2">
-                                                    <Chip label={booking.status.toUpperCase()} color={getStatusChipColor(booking.status)} size="small" />
+                                                    <Chip label={booking.status === 'pending' ? 'PAYMENT FAILED' : booking.status.toUpperCase()} color={getStatusChipColor(booking.status)} size="small" />
 
                                                 </div>
                                             </div>
@@ -358,6 +375,8 @@ export default function MyBookings() {
                                                 <Box display="flex" flexDirection="column" gap={1} bgcolor="#f8f9fa" p={2} borderRadius={2}>
                                                     <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-in: {booking.check_in}</div>
                                                     <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-out: {booking.check_out}</div>
+                                                    <div className="d-flex align-items-center gap-2"><DoorClosed size={18} className="text-primary" /> Rooms: {booking.rooms_booked}</div>
+                                                    <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Time: {new Date(booking.created_at).toLocaleString()}</div>
                                                 </Box>
 
                                                 {/* Show existing review if any */}
@@ -404,6 +423,19 @@ export default function MyBookings() {
                                                 >
                                                     Booking Details
                                                 </Button>
+
+                                                {(booking.status === "confirmed" || booking.status === "paid") && (
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        fullWidth
+                                                        onClick={() => handleCancelBooking(booking.id, true)}
+                                                        sx={{ mt: 1, borderRadius: 3, textTransform: "none" }}
+                                                    >
+                                                        Cancel Booking
+                                                    </Button>
+                                                )}
+
                                                 <Link to={"/hotel/" + booking.hotel} className="text-decoration-none d-block text-center mt-2">
                                                     <small style={{ color: "#667eea", fontSize: "0.75rem", fontWeight: 600 }}>View Property Again</small>
                                                 </Link>
@@ -450,7 +482,7 @@ export default function MyBookings() {
                                                     {reservation.number_of_guests} {reservation.number_of_guests === 1 ? "Guest" : "Guests"}
                                                 </span>
                                                 <Chip
-                                                    label={reservation.status === "completed" ? "Completed" : reservation.status}
+                                                    label={reservation.status === "pending" ? "Payment Failed" : reservation.status === "completed" ? "Completed" : reservation.status}
                                                     color={getStatusChipColor(reservation.status)}
                                                     size="small"
                                                 />
@@ -462,6 +494,9 @@ export default function MyBookings() {
                                                 </div>
                                                 <div className="d-flex align-items-center gap-2 text-dark fw-medium">
                                                     <Calendar size={16} className="text-primary" /> {reservation.reservation_time}
+                                                </div>
+                                                <div className="d-flex align-items-center gap-2 text-dark fw-medium">
+                                                    <Calendar size={16} className="text-primary" /> Time: {new Date(reservation.created_at).toLocaleString()}
                                                 </div>
                                             </Box>
 
@@ -519,6 +554,19 @@ export default function MyBookings() {
                                             >
                                                 Reservation Details
                                             </Button>
+
+                                            {(reservation.status === "Your Table Is Ready" || reservation.status === "confirmed" || reservation.status === "paid") && (
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    fullWidth
+                                                    onClick={() => handleCancelBooking(reservation.id, false)}
+                                                    sx={{ mt: 1, borderRadius: 3, textTransform: "none", fontSize: "0.85rem" }}
+                                                >
+                                                    Cancel Reservation
+                                                </Button>
+                                            )}
+
                                             <Link to={"/restaurant/" + reservation.restaurant} className="text-decoration-none d-block text-center mt-2">
                                                 <small style={{ color: "#3a86ff", fontSize: "0.75rem", fontWeight: 600 }}>View Restaurant Again</small>
                                             </Link>

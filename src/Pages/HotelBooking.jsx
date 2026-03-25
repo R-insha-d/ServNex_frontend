@@ -511,9 +511,27 @@ export default function HotelBooking() {
                 }
             };
 
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response) {
+            const rzp = new window.Razorpay({
+                ...options,
+                modal: {
+                    ondismiss: async function () {
+                        // If user closes modal without paying, fail the payment to release the room
+                        try {
+                            await AxiosInstance.post(`api/bookings/${bookingId}/fail_payment/`);
+                        } catch (err) {
+                            console.error("Failed to sync modal dismissal:", err);
+                        }
+                    }
+                }
+            });
+
+            rzp.on('payment.failed', async function (response) {
                 toast.error(`Payment failed: ${response.error.description}`);
+                try {
+                    await AxiosInstance.post(`api/bookings/${bookingId}/fail_payment/`);
+                } catch (err) {
+                    console.error("Failed to sync payment failure:", err);
+                }
             });
             rzp.open();
 
@@ -728,8 +746,15 @@ export default function HotelBooking() {
                                     style={S.input}
                                     className="booking-input"
                                     value={startDate}
-                                    min={new Date().toISOString().split("T")[0]}
-                                    onChange={e => setStartDate(e.target.value)}
+                                    min={new Date().toLocaleDateString('en-CA')}
+                                    onChange={e => {
+                                        const newIn = e.target.value;
+                                        setStartDate(newIn);
+                                        const nextDay = new Date(new Date(newIn).getTime() + 86400000).toISOString().split("T")[0];
+                                        if (!endDate || endDate <= newIn) {
+                                            setEndDate(nextDay);
+                                        }
+                                    }}
                                 />
                             </div>
                             <div>
@@ -739,7 +764,7 @@ export default function HotelBooking() {
                                     style={S.input}
                                     className="booking-input"
                                     value={endDate}
-                                    min={startDate ? new Date(new Date(startDate).getTime() + 86400000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
+                                    min={startDate ? new Date(new Date(startDate).getTime() + 86400000).toISOString().split("T")[0] : new Date().toLocaleDateString('en-CA')}
                                     onChange={e => setEndDate(e.target.value)}
                                 />
                             </div>
@@ -861,6 +886,10 @@ export default function HotelBooking() {
                             gap: "16px",
                             textAlign: "left"
                         }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", color: "#2c1810", fontSize: "1rem", fontWeight: 700 }}>
+                                <span>Total Rooms Selected</span>
+                                <span>{roomsBooked} {roomsBooked === 1 ? 'Room' : 'Rooms'}</span>
+                            </div>
                             <div style={{ display: "flex", justifyContent: "space-between", color: "#7a6a4a", fontSize: "0.95rem" }}>
                                 <span>Room Subtotal</span>
                                 <span>₹{Number(priceDetails.total_original_price).toLocaleString()}</span>

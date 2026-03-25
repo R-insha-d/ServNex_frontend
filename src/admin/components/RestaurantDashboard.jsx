@@ -435,7 +435,7 @@ export default function RestaurantDashboard() {
                             <span className="text-muted small">📅 {r.reservation_date} at 🕐 {r.reservation_time}</span>
                             <span className="text-muted small">👥 {r.number_of_guests} guests · 🪑 {r.tables_reserved} table(s)</span>
                             {r.special_requests && <span className="text-muted small">💬 <em>{r.special_requests}</em></span>}
-                            <span className="text-muted small">🕐 Booked: {new Date(r.created_at).toLocaleString()}</span>
+                            <span className="text-muted small">🕐 Time: {new Date(r.created_at).toLocaleString()}</span>
                           </div>
                           <div className="d-flex flex-column align-items-end gap-2 ms-3">
                             <span className={"badge " + statusBadgeClass(r.status)} style={{ whiteSpace: "nowrap" }}>{r.status}</span>

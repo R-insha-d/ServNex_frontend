@@ -176,7 +176,8 @@ export default function Dashboard() {
     if (!form.adults) newErrors.adults = "Adults required";
     if (!form.total_rooms || Number(form.total_rooms) <= 0)
       newErrors.total_rooms = "Enter valid room count";
-    if (!form.amenities.trim()) newErrors.amenities = "Amenities required";
+    
+    // Amenities are optional in backend, so making it optional in frontend too
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -252,6 +253,7 @@ export default function Dashboard() {
       }
       fetchRooms(myHotel.id);
       resetForm();
+      // Go back to dashboard to see the updated/new room card
       setActiveTab("dashboard");
     } catch (error) {
       console.error("Error saving room:", error);
@@ -267,7 +269,8 @@ export default function Dashboard() {
       children: room.children,
       total_rooms: room.total_rooms,
       bed_type: room.bed_type,
-      amenities: room.amenities,
+      // Ensure amenities is a comma-separated string for the form input
+      amenities: Array.isArray(room.amenities) ? room.amenities.join(", ") : (room.amenities || ""),
       description: room.description,
       image: null,
     });
@@ -434,6 +437,8 @@ export default function Dashboard() {
   const statusBadgeClass = (status) => {
     if (status === "confirmed") return "bg-success";
     if (status === "cancelled") return "bg-danger";
+    if (status === "completed") return "bg-transparent text-dark border border-secondary";
+    if (status === "pending") return "bg-danger";
     return "bg-warning text-dark";
   };
 
@@ -571,6 +576,23 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* ── STATS SECTION ── */}
+                <div className="row g-4 mb-4">
+                  <div className="col-12 text-center p-4 bg-white rounded-4 shadow-sm border" style={{ borderColor: "#e2e8f0" }}>
+                    <div className="d-flex flex-column align-items-center">
+                      <div className="mb-2" style={{ fontSize: "2.5rem" }}>🏨</div>
+                      <h2 className="mb-0 fw-bold" style={{ color: theme.primary, letterSpacing: "-0.02em" }}>
+                        {bookings.filter(b => {
+                          const today = new Date().toISOString().split('T')[0];
+                          const isActive = b.check_in <= today && b.check_out > today;
+                          return (b.status === "confirmed" || b.status === "paid") && isActive;
+                        }).reduce((acc, b) => acc + (b.rooms_booked || 1), 0)} Rooms Occupied Today
+                      </h2>
+                      <p className="text-muted fw-medium mt-1 mb-0">Currently active guests in your hotel</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="row g-4">
                   {rooms.map((room) => (
                     <div key={room.id} className="col-sm-6 col-lg-4 col-xl-3">
@@ -608,9 +630,18 @@ export default function Dashboard() {
                                 ))}
                             </div>
                           )}
-                          <span className="badge bg-success mt-2">
-                            {room.total_rooms} Rooms Total
-                          </span>
+                          <div className="d-flex gap-1 mt-2">
+                            <span className="badge bg-success-subtle text-success border border-success-subtle" style={{ fontSize: '0.75rem' }}>
+                              {room.total_rooms} Total
+                            </span>
+                            <span className="badge bg-primary-subtle text-primary border border-primary-subtle" style={{ fontSize: '0.75rem' }}>
+                              {bookings.filter(b => {
+                                const today = new Date().toISOString().split('T')[0];
+                                const isActive = b.check_in <= today && b.check_out > today;
+                                return b.room_type === room.room_type && (b.status === 'confirmed' || b.status === 'paid') && isActive;
+                              }).reduce((acc, b) => acc + (b.rooms_booked || 1), 0)} Occupied
+                            </span>
+                          </div>
                           <div className="mt-auto pt-3">
                             <button
                               className="btn btn-sm btn-outline-primary me-2"
@@ -765,54 +796,59 @@ export default function Dashboard() {
                     <div className="spinner-border spinner-border-sm me-2" role="status" />
                     Loading bookings...
                   </div>
-
-                ) : (filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").length > 0) ? (
+                ) : filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").length > 0 ? (
                   filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").map((b) => (
                     <div
                       key={b.booking_id}
-                      className="border rounded-3 p-3 mb-3 d-flex justify-content-between align-items-start"
-                      style={{ borderColor: "#e2e8f0" }}
+                      className="card mb-3 border-0 shadow-sm"
+                      style={{ borderRadius: "16px" }}
                     >
-                      <div className="d-flex flex-column gap-1">
-                        <strong style={{ color: theme.primary }}>{b.customer_name}</strong>
-                        <span className="text-muted small">{b.customer_email}</span>
-                        <span className="text-muted small">🏨 {b.hotel_name}</span>
-                        {b.room_type && <span className="text-muted small">🛏 Type: {b.room_type}</span>}
-                        <span className="text-muted small">
-                          📅 Check-in: <span className="fw-medium text-dark">{b.check_in}</span>
-                          {"  →  "}
-                          Check-out: <span className="fw-medium text-dark">{b.check_out}</span>
-                        </span>
-                        {b.rooms_booked && (
-                          <span className="text-muted small">
-                            🛏 {b.rooms_booked} room(s) · 👤 {b.number_of_guests} guest(s)
-                          </span>
-                        )}
-                        <span className="text-muted small">
-                          🕐 Booked: {new Date(b.booked_at).toLocaleString()}
-                        </span>
-                      </div>
-
-                      <div className="d-flex flex-column align-items-end">
-                        <span
-                          className={`badge ${statusBadgeClass(b.status)} ms-3`}
-                          style={{ whiteSpace: "nowrap", alignSelf: "flex-start" }}
-                        >
-                          {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
-                        </span>
-                        {activeTab === 'bookings' && (b.status === 'confirmed' || b.status === 'paid') && (
-                          <button 
-                            className="btn btn-sm btn-success mt-2" 
-                            style={{ fontSize: '0.75rem', padding: '4px 8px' }}
-                            onClick={() => handleCompleteBooking(b.booking_id)}
-                          >
-                            Complete Stay
-                          </button>
-                        )}
+                      <div className="card-body p-4">
+                        <div className="d-flex justify-content-between align-items-start mb-3">
+                          <div>
+                            <div className="d-flex align-items-center gap-2 mb-1">
+                              <h5 className="mb-0 fw-bold">{b.customer_name}</h5>
+                              <span className={`badge ${statusBadgeClass(b.status)}`} style={{ fontSize: '0.7rem' }}>
+                                {b.status.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="d-flex flex-column gap-1">
+                              <span className="text-muted small">{b.customer_email}</span>
+                              <span className="text-muted small">🏨 {b.hotel_name}</span>
+                              {b.room_type && <span className="text-muted small">🛏 Type: {b.room_type}</span>}
+                              <span className="text-muted small">
+                                📅 Check-in: <span className="fw-medium text-dark">{b.check_in}</span>
+                                {"  →  "}
+                                Check-out: <span className="fw-medium text-dark">{b.check_out}</span>
+                              </span>
+                              {b.customer_phone && (
+                                <span className="text-muted small">📞 {b.customer_phone}</span>
+                              )}
+                              <div className="mt-1">
+                                <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style={{ fontSize: '0.8rem' }}>
+                                  🛏 {b.rooms_booked} {b.rooms_booked === 1 ? 'Room' : 'Rooms'}
+                                </span>
+                              </div>
+                              <span className="text-muted small">
+                                🕐 Time: {new Date(b.booked_at).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="d-flex flex-column align-items-end">
+                            {(b.status === 'confirmed' || b.status === 'paid') && (
+                              <button
+                                className="btn btn-sm btn-success mt-2"
+                                style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                                onClick={() => handleCompleteBooking(b.booking_id)}
+                              >
+                                Complete Stay
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))
-
                 ) : (
                   <div className="text-center py-5 text-muted">
                     <div style={{ fontSize: "2.5rem" }}>📭</div>
@@ -845,16 +881,20 @@ export default function Dashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredBookings.filter(b => b.status === "completed" || b.status === "cancelled").length > 0 ? (
-                        filteredBookings.filter(b => b.status === "completed" || b.status === "cancelled").map((b) => (
+                      {filteredBookings.filter(b => !(b.status === "confirmed" || b.status === "paid")).length > 0 ? (
+                        filteredBookings.filter(b => !(b.status === "confirmed" || b.status === "paid")).map((b) => (
                           <tr key={b.booking_id}>
                             <td className="px-3">
                               <div className="fw-bold">{b.customer_name}</div>
                               <div className="small text-muted">{b.customer_email}</div>
+                              {b.customer_phone && <div className="small text-muted">📞 {b.customer_phone}</div>}
                             </td>
                             <td>
                               <div className="fw-medium">{b.hotel_name}</div>
-                              <div className="small text-muted">{b.room_type || "N/A"}</div>
+                              <div className="small text-muted mb-1">🛏 {b.room_type || "N/A"}</div>
+                              <div className="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0" style={{ fontSize: '0.7rem' }}>
+                                {b.rooms_booked || 1} { (b.rooms_booked || 1) === 1 ? 'Room' : 'Rooms' }
+                              </div>
                             </td>
                             <td>
                               <div className="small">
@@ -864,11 +904,11 @@ export default function Dashboard() {
                             </td>
                             <td>
                               <span className={`badge ${statusBadgeClass(b.status)}`}>
-                                {b.status.toUpperCase()}
+                                {b.status === 'pending' ? 'PAYMENT FAILED' : b.status.toUpperCase()}
                               </span>
                             </td>
                             <td className="small text-muted">
-                              {new Date(b.booked_at).toLocaleDateString()}
+                              {new Date(b.booked_at).toLocaleString()}
                             </td>
                           </tr>
                         ))

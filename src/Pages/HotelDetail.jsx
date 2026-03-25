@@ -1141,8 +1141,16 @@ export default function HotelDetails() {
                                         type="date"
                                         className="form-control form-control-lg"
                                         value={checkIn}
-                                        min={new Date().toISOString().split("T")[0]}
-                                        onChange={e => setCheckIn(e.target.value)}
+                                        min={new Date().toLocaleDateString('en-CA')}
+                                        onChange={e => {
+                                            const newIn = e.target.value;
+                                            setCheckIn(newIn);
+                                            // Handle check-out auto-update
+                                            const nextDay = new Date(new Date(newIn).getTime() + 86400000).toISOString().split("T")[0];
+                                            if (!checkOut || checkOut <= newIn) {
+                                                setCheckOut(nextDay);
+                                            }
+                                        }}
                                         style={{ borderRadius: "10px", borderColor: "#667eea8f", fontFamily: "'Lato', sans-serif" }}
                                     />
                                 </div>
@@ -1152,7 +1160,7 @@ export default function HotelDetails() {
                                         type="date"
                                         className="form-control form-control-lg"
                                         value={checkOut}
-                                        min={checkIn || new Date().toISOString().split("T")[0]}
+                                        min={checkIn ? new Date(new Date(checkIn).getTime() + 86400000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
                                         onChange={e => setCheckOut(e.target.value)}
                                         style={{ borderRadius: "10px", borderColor: "#667eea8f", fontFamily: "'Lato', sans-serif" }}
                                     />
