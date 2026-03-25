@@ -1,6 +1,13 @@
 import React, { useState, useRef } from "react";
 import AxiosInstance from "../Component/AxiosInstance.jsx";
 import { toast } from "react-toastify";
+import { GoEye } from "react-icons/go";
+import { GoEyeClosed } from "react-icons/go";
+
+
+
+
+
 function ForgotPassword() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -9,6 +16,8 @@ function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupPassword2, setShowSignupPassword2] = useState(false);
 
   const otpRefs = useRef([]);
 
@@ -27,7 +36,7 @@ function ForgotPassword() {
       setLoading(false);
     }
   };
-  
+
 
   /* ---------- VERIFY OTP ---------- */
   const handleVerifyOtp = async () => {
@@ -86,7 +95,7 @@ function ForgotPassword() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: "#eef2f5" }}>
+    <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: " linear-gradient(135deg, #667eea 0%, #764ba2 100%)" ,padding:"10px"}}>
       <div className="card shadow-lg border-0 rounded-4 p-4 text-center" style={{ width: "420px" }}>
 
         {/* STEP 1 */}
@@ -107,7 +116,7 @@ function ForgotPassword() {
             <button
               className="btn text-white w-100 mt-3"
               onClick={handleSendOtp}
-              style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}
+              style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               disabled={loading}
             >
               {loading ? "Sending..." : "Send OTP"}
@@ -138,7 +147,7 @@ function ForgotPassword() {
 
             <button
               className="btn text-white w-100 mt-3"
-              style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}
+              style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               onClick={handleVerifyOtp}
               disabled={loading}
             >
@@ -153,25 +162,65 @@ function ForgotPassword() {
             <h4 className="fw-bold">Set New Password</h4>
 
             <input
-              type="password"
+              type={showSignupPassword ? "text" : "password"}
               className="form-control mb-3"
               placeholder="New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
+            <span
+              onClick={() => setShowSignupPassword(prev => !prev)}
+              style={{
+                position: "absolute",
+                right: "45px",
+                top: "33%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                fontSize: "16px",
+                color: "#667eea",
+                userSelect: "none",
+              }}
+            >
+              {showSignupPassword ? (
+                <GoEyeClosed />
+              ) : (
+                <GoEye />
+              )}
+            </span>
 
             <input
-              type="password"
+              type={showSignupPassword2 ? "text" : "password"}
               className="form-control mb-3"
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
+            <span
+              onClick={() => setShowSignupPassword2(!showSignupPassword2)}
+              style={{
+                position: "absolute",
+                right: "45px",
+                top: "56%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                fontSize: "16px",
+                color: "#667eea",
+                userSelect: "none",
+              }}
+            >
+              {showSignupPassword2 ? (
+              <GoEyeClosed />
+              ) : (
+                <GoEye />
+
+              )}
+            </span>
 
             {error && <small className="text-danger">{error}</small>}
 
             <button
-              className="btn btn-primary w-100"
+              className="btn text-white  w-100"
+              style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               onClick={handleUpdatePassword}
               disabled={loading}
             >

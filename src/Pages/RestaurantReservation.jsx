@@ -545,7 +545,7 @@ export default function RestaurantReservation() {
                                 <h6 className="fw-bold">Type of table</h6>
                                 <div className="d-flex justify-content-center align-items-center gap-3">
                                     <button className="btn btn-outline-danger btn-sm rounded-circle"
-                                        onClick={() => setGuests(Math.max(4, guests - 2))}
+                                        onClick={() => setGuests(Math.max(1, guests - 2))}
                                         style={{ width: '32px', height: '32px', padding: 0 }}
                                     ><FaMinus size={12} /></button>
                                     <span className="fw-bold fs-5" style={{ minWidth: '80px' }}>{guests} {guests === 1 ? 'Guest' : 'Guests'}</span>

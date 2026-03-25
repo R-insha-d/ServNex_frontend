@@ -4,6 +4,10 @@ import AxiosInstance from "../Component/AxiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./Auth.css";
+import { GoEye } from "react-icons/go";
+import { GoEyeClosed } from "react-icons/go";
+
+
 
 const Auth = ({ onSuccess }) => {
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
@@ -219,7 +223,7 @@ const Auth = ({ onSuccess }) => {
                                     userSelect: "none",
                                 }}
                             >
-                                {showSignupPassword ? "🙈" : "👁"}
+                                {showSignupPassword ? <GoEyeClosed/> : <GoEye /> }
                             </span>
                         </div>
 
@@ -289,7 +293,7 @@ const Auth = ({ onSuccess }) => {
                                     color: "#667eea",
                                 }}
                             >
-                                {showLoginPassword ? "🙈" : "👁"}
+                                {showLoginPassword ? <GoEyeClosed />: <GoEye /> }
                             </span>
                         </div>
 

@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
+import { IoCloseOutline } from "react-icons/io5";
+
 
 const OTPVerification = () => {
     const [otp, setOtp] = useState(Array(4).fill(""));
@@ -80,6 +82,9 @@ const OTPVerification = () => {
     return (
         <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
             <div className="card shadow-lg border-0 rounded-4 p-4 text-center" style={{ width: "420px" }}>
+            <div className="d-flex justify-content-end">
+                <IoCloseOutline type="button" size={25} onClick={() => navigate("/auth")} />
+            </div>
                 <h4 className="fw-bold mb-3">Verify Your Email</h4>
                 <p className="text-muted mb-4">We've sent a 4-digit code to <br /><strong>{email}</strong></p>
 
@@ -109,7 +114,7 @@ const OTPVerification = () => {
                         {loading ? "Verifying..." : "Verify & Sign Up"}
                     </button>
 
-                    <button
+                    {/* <button
                         type="button"
                         onClick={handleReset}
                         className="btn  w-100 py-2 rounded-pill fw-bold"
@@ -117,12 +122,11 @@ const OTPVerification = () => {
                         disabled={loading}
                     >
                         Resend OTP
-                    </button>
+                    </button> */}
                 </form>
 
                 <p className="text-muted mt-4 mb-0">
-                    Didn't receive the code?
-                    <button className="btn btn-link p-0 ms-1 fw-bold" style={{ color: "#667eea", fontSize: "16px", textDecoration: "none" }} onClick={() => navigate("/auth")}><span className="fs-7 fw-bold">Try Again</span></button>
+                    Didn't receive the code?<span className="btn p-0" onClick={handleReset} style={{ fontSize: "12px", fontWeight: "bold", color: "#667eea" }}> Resend OTP</span>
                 </p>
             </div>
         </div>
