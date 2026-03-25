@@ -1,10 +1,100 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { MapPin, ArrowRight, Search, Filter, Globe, Bell, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { MapPin, Search, Filter, Globe, Bell, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
 
-import { TbCurrentLocation } from "react-icons/tb";
+// ─── Custom Dropdown Component ───────────────────────────────────────────────
+function CustomDropdown({ icon, options, value, onChange, placeholder, isLoading, loadingText }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
+
+    // Close when clicking outside
+    useEffect(() => {
+        const handler = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    // Close panel whenever loading starts (e.g. just clicked "Detect My Location")
+    useEffect(() => {
+        if (isLoading) setOpen(false);
+    }, [isLoading]);
+
+    const selectedLabel = isLoading
+        ? (loadingText || "Loading...")
+        : (options.find((o) => o.value === value)?.label || placeholder);
+
+    return (
+        <div className="custom-dd-root" ref={ref}>
+            {/* Trigger */}
+            <div
+                className={`custom-dd-trigger ${open ? "custom-dd-trigger--open" : ""} ${isLoading ? "custom-dd-trigger--loading" : ""}`}
+                onClick={() => !isLoading && setOpen((p) => !p)}
+            >
+                {icon && <span className="custom-dd-icon">{icon}</span>}
+                <span className={`custom-dd-selected ${isLoading ? "custom-dd-selected--loading" : ""}`}>
+                    {selectedLabel}
+                </span>
+                {!isLoading && (
+                    <ChevronDown
+                        size={18}
+                        className={`custom-dd-chevron ${open ? "custom-dd-chevron--open" : ""}`}
+                    />
+                )}
+            </div>
+
+            {/* Panel */}
+            {open && !isLoading && (
+                <div className="custom-dd-panel">
+                    <div className="custom-dd-list">
+                        {options.map((opt) => (
+                            <div
+                                key={opt.value}
+                                className={`custom-dd-option ${value === opt.value ? "custom-dd-option--selected" : ""}`}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setOpen(false);
+                                }}
+                            >
+                                <span className="custom-dd-option-label">{opt.label}</span>
+                                {value === opt.value && (
+                                    <Check size={16} className="custom-dd-check" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Highlight Text Component ────────────────────────────────────────────────
+function HighlightText({ text, highlight }) {
+    if (!highlight.trim()) {
+        return <span>{text}</span>;
+    }
+    const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+    const parts = text.split(regex);
+
+    return (
+        <span>
+            {parts.map((part, i) =>
+                regex.test(part) ? (
+                    <mark key={i} className="highlight">
+                        {part}
+                    </mark>
+                ) : (
+                    <span key={i}>{part}</span>
+                )
+            )}
+        </span>
+    );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function HotelList() {
     const [hotelsData, setHotelsData] = useState([]);
@@ -42,10 +132,15 @@ export default function HotelList() {
 
     // Fetch hotels from Django - Unified Search
     useEffect(() => {
+        // AbortController cancels the previous in-flight request
+        // so a slow "all hotels" response never overwrites a faster location-filtered one
+        const controller = new AbortController();
+
         setLoading(true);
         const params = new URLSearchParams();
         if (search) params.append("q", search);
-        if (city !== "All" && !coords) params.append("city", city);
+        // Always send city so backend fallback can filter by city name when coords yield 0 results
+        if (city !== "All" && city !== "__locate__") params.append("city", city);
         if (coords?.lat && coords?.lng) {
             params.append("lat", coords.lat);
             params.append("lng", coords.lng);
@@ -53,10 +148,18 @@ export default function HotelList() {
         params.append("type", "hotel");
 
         AxiosInstance
-            .get(`api/search/?${params.toString()}`)
+            .get(`api/search/?${params.toString()}`, { signal: controller.signal })
             .then((res) => setHotelsData(res.data))
-            .catch((err) => console.error("Error fetching hotels:", err))
+            .catch((err) => {
+                if (err.name !== "CanceledError" && err.code !== "ERR_CANCELED") {
+                    console.error("Error fetching hotels:", err);
+                }
+                // Silently ignore aborted requests
+            })
             .finally(() => setLoading(false));
+
+        // Cleanup: abort on next effect run or unmount
+        return () => controller.abort();
     }, [search, city, coords]);
 
     // Get user's current location and match to nearest city
@@ -105,20 +208,53 @@ export default function HotelList() {
         );
     };
 
-    // Filtering logic (Main search is now backend-driven, local filtering only for badge)
+    // Filtering logic (Main search is now backend-driven, local filtering only for badge and city)
     const filteredHotels = useMemo(() => {
         return hotelsData.filter((hotel) => {
             const matchBadge =
                 badgeFilter === "All" || hotel.badge === badgeFilter;
 
-            return matchBadge;
-        });
-    }, [hotelsData, badgeFilter]);
+            const matchCity =
+                city === "All" ||
+                city === "__locate__" ||
+                city === "Current Location" ||
+                (hotel.city && hotel.city.toLowerCase() === city.toLowerCase());
 
-    // Dynamic city dropdown
+            return matchBadge && matchCity;
+        });
+    }, [hotelsData, badgeFilter, city]);
+
+    // Dynamic city dropdown options
     const uniqueCities = [
         ...new Set(hotelsData.map((h) => h.city).filter(Boolean)),
     ];
+
+    const cityOptions = [
+        { value: "All", label: "All Cities" },
+        { value: "__locate__", label: "📍 Detect My Location" },
+        ...(city !== "All" && city !== "__locate__" && !uniqueCities.includes(city)
+            ? [{ value: city, label: `📍 ${city}` }]
+            : []),
+        ...uniqueCities.map((c) => ({ value: c, label: c })),
+    ];
+
+    const badgeOptions = [
+        { value: "All", label: "All Property Types" },
+        { value: "Luxury Stays", label: "💎 Luxury Stays" },
+        { value: "Cheap & Best", label: "💰 Cheap & Best" },
+        { value: "Dormitory", label: "🏠 Dormitory" },
+    ];
+
+    // Handle city dropdown change (preserves detect-location behavior)
+    const handleCityChange = (val) => {
+        if (val === "__locate__") {
+            handleGetLocation();
+        } else {
+            setCity(val);
+            setLocationError("");
+            setCoords(null);
+        }
+    };
 
     // Badge styling logic
     const getBadgeInfo = (badge) => {
@@ -143,9 +279,8 @@ export default function HotelList() {
 
     return (
         <div className="hotel-list-page">
-            {/* CUSTOM HEADER (Image design) */}
+            {/* CUSTOM HEADER */}
             <header className="hotel-custom-header">
-
                 <Link to="/" className="header-logo"
                     style={{
                         textDecoration: "none",
@@ -172,8 +307,6 @@ export default function HotelList() {
             </header>
 
             {/* FILTERS SECTION */}
-
-
             <div className="filters-container">
                 <div className="container">
                     {/* Mobile Filter Toggle */}
@@ -195,35 +328,33 @@ export default function HotelList() {
 
                     <div className={`filters-grid-wrapper ${showFilters ? 'expanded' : 'collapsed'}`}>
                         <div className="row g-3">
+                            {/* City Dropdown */}
                             <div className="col-md-4">
-                                <div className="filter-card">
-                                    {locationLoading
-                                        ? <span style={{ width: "18px", height: "18px", border: "2px solid #667eea", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", flexShrink: 0, animation: "spin 0.7s linear infinite" }} />
-                                        : <Globe size={18} color="#667eea" style={{ flexShrink: 0 }} />
+                                <CustomDropdown
+                                    icon={
+                                        locationLoading ? (
+                                            <span
+                                                style={{
+                                                    width: "18px",
+                                                    height: "18px",
+                                                    border: "2px solid #667eea",
+                                                    borderTopColor: "transparent",
+                                                    borderRadius: "50%",
+                                                    display: "inline-block",
+                                                    animation: "spin 0.7s linear infinite",
+                                                }}
+                                            />
+                                        ) : (
+                                            <Globe size={18} color="#667eea" />
+                                        )
                                     }
-                                    <select
-                                        className="filter-select"
-                                        value={city}
-                                        onChange={(e) => {
-                                            if (e.target.value === "__locate__") {
-                                                handleGetLocation();
-                                            } else {
-                                                setCity(e.target.value);
-                                                setLocationError("");
-                                                setCoords(null);
-                                            }
-                                        }}
-                                    >
-                                        <option value="All">All Cities</option>
-                                        <option value="__locate__">📍 Detect My Location</option>
-                                        {city !== "All" && city !== "__locate__" && !uniqueCities.includes(city) && (
-                                            <option value={city}>📍 {city}</option>
-                                        )}
-                                        {uniqueCities.map((c) => (
-                                            <option key={c} value={c}>{c}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                    options={cityOptions}
+                                    value={city}
+                                    onChange={handleCityChange}
+                                    placeholder="Select City"
+                                    isLoading={locationLoading}
+                                    loadingText="Detecting location..."
+                                />
                                 {locationError && (
                                     <p style={{ fontSize: "11px", color: "#e53e3e", margin: "4px 0 0 4px" }}>
                                         {locationError}
@@ -231,6 +362,7 @@ export default function HotelList() {
                                 )}
                             </div>
 
+                            {/* Search Input */}
                             <div className="col-md-4">
                                 <div className="filter-card">
                                     <Search size={18} color="#667eea" />
@@ -263,20 +395,15 @@ export default function HotelList() {
                                 </div>
                             </div>
 
+                            {/* Badge/Property Type Dropdown */}
                             <div className="col-md-4">
-                                <div className="filter-card">
-                                    <Filter size={18} color="#667eea" />
-                                    <select
-                                        className="filter-select"
-                                        value={badgeFilter}
-                                        onChange={(e) => setBadgeFilter(e.target.value)}
-                                    >
-                                        <option value="All">All Property Types</option>
-                                        <option value="Luxury Stays">Luxury Stays</option>
-                                        <option value="Cheap & Best">Cheap & Best</option>
-                                        <option value="Dormitory">Dormitory</option>
-                                    </select>
-                                </div>
+                                <CustomDropdown
+                                    icon={<Filter size={18} color="#667eea" />}
+                                    options={badgeOptions}
+                                    value={badgeFilter}
+                                    onChange={setBadgeFilter}
+                                    placeholder="All Property Types"
+                                />
                             </div>
                         </div>
                     </div>
@@ -300,19 +427,45 @@ export default function HotelList() {
                         <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
                             <span className="visually-hidden">Loading...</span>
                         </div>
-                        <p className="mt-3 text-muted">Finding best hotels for you...</p>
+                        <p className="mt-3 text-muted">
+                            {coords ? `Finding hotels near ${city !== "All" ? city : "your location"}...` : "Finding best hotels for you..."}
+                        </p>
                     </div>
                 ) : hotelsData.length === 0 ? (
                     <div className="text-center py-5">
-                        <div className="display-4 text-muted mb-3">📭</div>
-                        <h4 className="text-dark">No hotels available right now</h4>
-                        <p className="text-muted">Check back later for new listings.</p>
+                        <div className="display-4 mb-3">📍</div>
+                        <h4 className="text-dark fw-bold">
+                            {coords && city !== "All"
+                                ? `No Hotels Found in "${city}"`
+                                : "No hotels available right now"}
+                        </h4>
+                        <p className="text-muted">
+                            {coords && city !== "All"
+                                ? `We couldn't find any hotels within 50 km of ${city}. Try browsing all cities.`
+                                : "Check back later for new listings."}
+                        </p>
+                        {coords && (
+                            <button
+                                className="btn btn-outline-primary btn-sm mt-2 rounded-pill px-4"
+                                onClick={() => { setCity("All"); setCoords(null); }}
+                            >
+                                Browse All Cities
+                            </button>
+                        )}
                     </div>
                 ) : filteredHotels.length === 0 ? (
                     <div className="text-center py-5">
-                        <div className="display-4 text-muted mb-3">🔍</div>
-                        <h4 className="text-dark">No hotels match your search</h4>
-                        <p className="text-muted">Try adjusting your filters or search terms.</p>
+                        <div className="display-4 mb-3">🔍</div>
+                        <h4 className="text-dark fw-bold">
+                            {coords && city !== "All"
+                                ? `No Hotels Found in "${city}"`
+                                : "No hotels match your search"}
+                        </h4>
+                        <p className="text-muted">
+                            {coords && city !== "All"
+                                ? `We couldn't find any hotels matching your filters near ${city}.`
+                                : "Try adjusting your filters or search terms."}
+                        </p>
                         <button
                             className="btn btn-outline-primary btn-sm mt-2 rounded-pill px-4"
                             onClick={() => { setCity("All"); setSearch(""); setBadgeFilter("All"); setCoords(null); }}
@@ -350,7 +503,7 @@ export default function HotelList() {
                                             <div className="card-body p-4 d-flex flex-column h-100">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <h3 className="hotel-title fs-5">
-                                                        {hotel.name}
+                                                        <HighlightText text={hotel.name} highlight={search} />
                                                     </h3>
                                                     {hotel.rating && (
                                                         <div className="rating-pill">
@@ -361,7 +514,7 @@ export default function HotelList() {
 
                                                 <div className="hotel-location mb-3">
                                                     <MapPin size={16} />
-                                                    {hotel.area}, {hotel.city}
+                                                    <HighlightText text={`${hotel.area}, ${hotel.city}`} highlight={search} />
                                                 </div>
 
                                                 {/* DESCRIPTION */}
@@ -375,7 +528,7 @@ export default function HotelList() {
                                                         overflow: "hidden",
                                                     }}
                                                 >
-                                                    {hotel.description.slice(0, 235)}...
+                                                    <HighlightText text={hotel.description.slice(0, 235)} highlight={search} />...
                                                 </p>
 
                                                 {/* PRICE + BUTTON */}
