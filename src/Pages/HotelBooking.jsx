@@ -379,15 +379,21 @@ export default function HotelBooking() {
         if (id) {
             const fetchAvailableCoupons = async () => {
                 try {
-                    const res = await AxiosInstance.get(`api/coupons/?hotel=${id}`);
+                    let url = `api/coupons/?hotel=${id}`;
+                    if (startDate) {
+                        url += `&check_in=${startDate}`;
+                    }
+                    const res = await AxiosInstance.get(url);
                     setAvailableCoupons(res.data);
                 } catch (error) {
+
                     console.error("Error fetching coupons:", error);
                 }
             };
             fetchAvailableCoupons();
         }
-    }, [id]);
+    }, [id, startDate]);
+
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const isTablet = useMediaQuery("(max-width:1024px)");
@@ -446,11 +452,13 @@ export default function HotelBooking() {
         try {
             const payload = {
                 hotel: hotel.id,
+                check_in: startDate,
                 check_out: endDate,
                 number_of_guests: guests,
                 rooms_booked: roomsBooked,
                 coupon_code: couponCode // Send coupon code on final booking
             };
+
 
             if (room) {
                 payload.room = room.id;

@@ -203,11 +203,13 @@ export default function MyBookings() {
     };
 
     const getStatusChipColor = (status) => {
-        if (status === "Your Table Is Ready") return "success";
-        if (status === "completed") return "default";
-        if (status === "cancelled") return "error";
-        return "warning";
+        if (status === "Your Table Is Ready" || status === "confirmed" || status === "paid") return "success";
+        if (status === "completed" || status === "visited") return "default";
+        if (status === "cancelled" || status === "failed") return "error";
+        if (status === "pending") return "warning";
+        return "primary";
     };
+
 
     if (loading) return <div className="text-center mt-5">Loading your trips...</div>;
 
@@ -342,7 +344,8 @@ export default function MyBookings() {
                                             <div className="position-relative">
                                                 <img src={hotel.image || "https://via.placeholder.com/300?text=Hotel"} alt={hotel.name} className="w-100" style={{ height: 160, objectFit: "cover" }} />
                                                 <div className="position-absolute top-0 end-0 m-2">
-                                                    <Chip label={booking.status} color={booking.status === "confirmed" ? "success" : "default"} size="small" />
+                                                    <Chip label={booking.status.toUpperCase()} color={getStatusChipColor(booking.status)} size="small" />
+
                                                 </div>
                                             </div>
                                             <CardContent>
