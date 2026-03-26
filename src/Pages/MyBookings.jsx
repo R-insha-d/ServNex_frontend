@@ -189,7 +189,7 @@ export default function MyBookings() {
                 await AxiosInstance.post(`api/bookings/${id}/cancel_booking/`);
                 setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
             } else {
-                await AxiosInstance.patch(`api/my-reservations/${id}/`, { status: "cancelled" });
+                await AxiosInstance.patch(`api/reservations/${id}/`, { status: "cancelled" });
                 setReservations(prev => prev.map(r => r.id === id ? { ...r, status: 'cancelled' } : r));
             }
             alert("Cancellation successful. You will receive a confirmation email shortly.");
