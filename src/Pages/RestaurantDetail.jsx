@@ -445,8 +445,8 @@ export default function RestaurantDetail() {
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
                     <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
-                    <strong>{restaurant.average_rating || restaurant.rating || "4.8"}</strong>&nbsp;
-                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({restaurant.reviews_count || "876"} reviews)</span>
+                    <strong>{restaurant.average_rating || "New"}</strong>&nbsp;
+                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({restaurant.reviews_count || "0"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto", justifyContent: "center" }}>
@@ -538,11 +538,11 @@ export default function RestaurantDetail() {
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
                                         {[1, 2, 3, 4, 5].map(s => (
-                                            <StarIcon key={s} sx={{ color: s <= (restaurant?.average_rating || 0) ? "#f59e0b" : "#d1d5db", fontSize: 20 }} />
+                                            <StarIcon key={s} sx={{ color: s <= (parseFloat(restaurant?.average_rating) || 0) ? "#f59e0b" : "#d1d5db", fontSize: 20 }} />
                                         ))}
                                     </div>
                                     <span style={{ fontWeight: 600, color: "#2c1810" }}>{restaurant?.average_rating || "New"}</span>
-                                    <span style={{ color: "#888", fontSize: "0.9rem" }}>({reviews?.length || 0} reviews)</span>
+                                    <span style={{ color: "#888", fontSize: "0.9rem" }}>({restaurant?.reviews_count || reviews?.length || 0} reviews)</span>
                                 </div>
                             </div>
                             <Button
