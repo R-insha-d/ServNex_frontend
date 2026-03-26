@@ -32,6 +32,7 @@ import RoomServiceIcon from "@mui/icons-material/RoomService";
 import LocalLaundryServiceIcon from "@mui/icons-material/LocalLaundryService";
 import TvIcon from "@mui/icons-material/Tv";
 import KitchenIcon from "@mui/icons-material/Kitchen";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import CheckIcon from "@mui/icons-material/Check";
 
 const amenityIconMap = {
@@ -629,6 +630,92 @@ export default function HotelDetails() {
                         to { opacity: 1; transform: translateY(0); }
                     }
 
+                    .detail-layout-container {
+                        display: grid;
+                        grid-template-columns: 1fr 380px;
+                        gap: 40px;
+                        margin-top: 40px;
+                        align-items: flex-start;
+                    }
+                    
+                    @media (max-width: 1024px) {
+                        .detail-layout-container {
+                            grid-template-columns: 1fr;
+                            gap: 30px;
+                        }
+                    }
+
+                    .main-content-area {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 30px;
+                    }
+
+                    .sidebar-area {
+                        position: sticky;
+                        top: 100px;
+                    }
+
+                    .section-card {
+                        background: #ffffff;
+                        padding: 40px;
+                        border-radius: 24px;
+                        border: 1px solid #f0f0f0;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.02);
+                    }
+
+                    .section-title {
+                        font-family: 'Poppins', sans-serif;
+                        font-size: 1.8rem;
+                        font-weight: 700;
+                        color: #1a1a1a;
+                        margin-bottom: 24px;
+                        position: relative;
+                    }
+                    
+                    .section-title::after {
+                        content: "";
+                        position: absolute;
+                        bottom: -10px;
+                        left: 0;
+                        width: 40px;
+                        height: 3px;
+                        background: #6366f1;
+                        border-radius: 2px;
+                    }
+
+                    .reservation-sidebar-card {
+                        background: #fff;
+                        border-radius: 28px;
+                        border: 1px solid #eee;
+                        padding: 32px;
+                        box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+                    }
+
+                    .feature-pill {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        padding: 12px 16px;
+                        border-radius: 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        transition: all 0.3s ease;
+                    }
+                    .feature-pill:hover {
+                        background: #fff;
+                        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+                        transform: translateY(-2px);
+                    }
+
+                    .review-item {
+                        padding: 24px 0;
+                        border-bottom: 1px solid #f1f1f1;
+                    }
+                    .review-item:last-child {
+                        border-bottom: none;
+                    }
+
                     .luxury-feature-card {
                         background: #fff;
                         padding: 20px;
@@ -870,336 +957,261 @@ export default function HotelDetails() {
                 </div>
             </div>
 
-            {/* ── Luxury Section ── */}
-            <section style={S.luxurySection}>
-                <div style={S.body}>
-                    <div style={isMobile
-                        ? { display: "flex", flexDirection: "column", gap: "60px" }
-                        : S.twoCol
-                    }>
-                        {/* Left Panel */}
-                        <div style={S.luxuryLeftPanel}>
-                            <div data-reveal-id="luxury-header" className={`reveal ${revealed['luxury-header'] ? 'active' : ''}`}>
-                                <div style={{
-                                     fontSize: "0.8rem",
-                                     fontWeight: 500,
-                                     color: "#6366f1",
-                                     textTransform: "uppercase",
-                                     letterSpacing: "0.1em",
-                                     marginBottom: "12px"
-                                 }}>
-                                     Experience Excellence
-                                 </div>
-                                <h2 style={S.sectionTitle}>{hotel.name}</h2>
-                            </div>
-
-                            <p 
-                                data-reveal-id="luxury-desc" 
-                                className={`reveal ${revealed['luxury-desc'] ? 'active' : ''}`}
-                                style={S.descText}
-                            >
+            {/* ── Main content layout ── */}
+            <div style={{ ...S.body, paddingBottom: "100px" }}>
+                <div className="detail-layout-container">
+                    
+                    {/* LEFT COLUMN: MAIN CONTENT */}
+                    <div className="main-content-area">
+                        
+                        {/* About Section */}
+                        <div className="section-card reveal active" data-reveal-id="about">
+                            <h2 className="section-title">Experience & Ambience</h2>
+                            <p style={{ 
+                                fontFamily: "'Poppins', sans-serif", 
+                                fontSize: "1rem", 
+                                color: "#475569", 
+                                lineHeight: "1.8", 
+                                marginBottom: "24px" 
+                            }}>
                                 {hotel.description}
                             </p>
-
-                            {/* Nearby Attractions - More Premium */}
+                            
                             {Array.isArray(hotel.nearby_attractions) && hotel.nearby_attractions.length > 0 && (
-                                <div 
-                                    data-reveal-id="nearby" 
-                                    className={`reveal ${revealed['nearby'] ? 'active' : ''}`}
-                                    style={{ marginTop: "12px" }}
-                                >
-                                    <h4 style={{ 
-                                        fontSize: "1.1rem", 
-                                        fontWeight: 600, 
-                                        marginBottom: "16px",
-                                        color: "#0f172a" 
-                                    }}>
-                                        Nearby Exploration
-                                    </h4>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                                <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid #f0f0f0" }}>
+                                    <Typography variant="overline" sx={{ color: "#6366f1", fontWeight: 700, letterSpacing: "0.1em" }}>
+                                        Nearby Attractions
+                                    </Typography>
+                                    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2, mt: 2 }}>
                                         {hotel.nearby_attractions.map((place, idx) => (
-                                            <div key={place.id || idx} style={{
-                                                padding: "12px 16px",
-                                                background: "#fff",
-                                                borderRadius: "12px",
-                                                border: "1px solid #f1f5f9",
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "center"
-                                            }}>
-                                                <span style={{ fontWeight: 500, color: "#334155", fontSize: "0.9rem" }}>
-                                                    {place.name}
-                                                </span>
-                                                <span style={{ 
-                                                    background: "#f8fafc", 
-                                                    padding: "3px 8px", 
-                                                    borderRadius: "6px",
-                                                    fontSize: "0.75rem",
-                                                    fontWeight: 500,
-                                                    color: "#64748b"
-                                                }}>
-                                                    {parseFloat(place.distance_km).toFixed(1)} km
-                                                </span>
+                                            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", padding: "12px 16px", borderRadius: "12px", border: "1px solid #f1f5f9" }}>
+                                                <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "#334155" }}>{place.name}</span>
+                                                <span style={{ fontSize: "0.8rem", color: "#64748b", background: "#fff", padding: "2px 8px", borderRadius: "6px" }}>{parseFloat(place.distance_km).toFixed(1)} km</span>
                                             </div>
                                         ))}
-                                    </div>
+                                    </Box>
+                                </Box>
+                            )}
+                        </div>
+
+                        {/* Available Rooms Section */}
+                        <div className="section-card reveal active" data-reveal-id="rooms" id="rooms">
+                            <h2 className="section-title">Available Accommodations</h2>
+                            {rooms.length > 0 ? (
+                                <div style={{
+                                    display: "grid",
+                                    gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2, 1fr)" : "repeat(2, 1fr)",
+                                    gap: "24px",
+                                }}>
+                                    {rooms.map(room => (
+                                        <RoomCard
+                                            key={room.id}
+                                            room={room}
+                                            onBook={() => handleOpenModal(room)}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8", fontStyle: "italic" }}>
+                                    No rooms currently available. Please contact us for details.
                                 </div>
                             )}
                         </div>
 
-                        {/* Right Panel: Map */}
-                        <div 
-                            data-reveal-id="luxury-map" 
-                            className={`reveal ${revealed['luxury-map'] ? 'active' : ''}`}
-                        >
-                            <div className="map-card-hover" style={S.mapCard}>
-                                <iframe
-                                    height={isMobile ? "400" : "650"}
-                                    width="100%"
-                                    style={{ display: "block", border: 0 }}
-                                    loading="lazy"
-                                    src={`https://www.google.com/maps?q=${hotel.area || hotel.name}&output=embed`}
-                                    title="map"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Property Facilities - Redesigned */}
-                    <div 
-                        data-reveal-id="facilities"
-                        className={`reveal ${revealed['facilities'] ? 'active' : ''}`}
-                        style={{ marginTop: "100px" }}
-                    >
-                        <div style={{ textAlign: "center", marginBottom: "48px" }}>
-                            <h3 style={{ 
-                                fontFamily: "'Poppins', sans-serif",
-                                fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
-                                fontWeight: 600,
-                                color: "#0f172a",
-                                marginBottom: "12px"
-                            }}>
-                                World-Class Amenities
-                            </h3>
-                            <p style={{ color: "#64748b", maxWidth: "600px", margin: "0 auto", fontSize: "0.95rem" }}>
-                                Every detail curated for your absolute comfort and convenience.
-                            </p>
+                        {/* Map Section */}
+                        <div className="section-card reveal active" data-reveal-id="location" style={{ padding: "8px", overflow: "hidden" }}>
+                            <iframe
+                                height="450"
+                                width="100%"
+                                style={{ display: "block", border: 0, borderRadius: "16px" }}
+                                loading="lazy"
+                                src={`https://www.google.com/maps?q=${hotel.area || hotel.name}&output=embed`}
+                                title="map"
+                            />
                         </div>
 
-                        {(Array.isArray(hotel.amenities) && hotel.amenities.length > 0) || (typeof hotel.amenities === "string" && hotel.amenities.length > 2) ? (
-                            <div style={{
+                        {/* Amenities Section */}
+                        <div className="section-card reveal active" data-reveal-id="features">
+                            <h2 className="section-title">World-Class Amenities</h2>
+                            <Box sx={{
                                 display: "grid",
-                                gridTemplateColumns: isMobile ? "1fr 1fr" : isTablet ? "repeat(3, 1fr)" : "repeat(4, 1fr)",
-                                gap: "20px"
+                                gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" },
+                                gap: 2
                             }}>
                                 {(Array.isArray(hotel.amenities)
                                     ? hotel.amenities
-                                    : hotel.amenities.split(",").map(a => a.trim()).filter(Boolean)
+                                    : (hotel.amenities || "").split(",").map(a => a.trim()).filter(Boolean)
                                 ).map((amenity, idx) => (
-                                    <div key={idx} className="luxury-feature-card">
-                                        <div className="facility-icon-wrap">
-                                            {amenityIconMap[amenity] || <CheckIcon style={{ fontSize: "1.25rem" }} />}
+                                    <div key={idx} className="feature-pill">
+                                        <div style={{ color: "#6366f1" }}>
+                                            {amenityIconMap[amenity] || <CheckIcon sx={{ fontSize: "1.1rem" }} />}
                                         </div>
-                                        <div style={{ fontWeight: 500, color: "#334155", fontSize: "0.9rem" }}>{amenity}</div>
+                                        <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "#334155" }}>{amenity}</span>
                                     </div>
                                 ))}
-                            </div>
-                        ) : (
-                            <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8", fontStyle: "italic", fontSize: "0.9rem" }}>
-                                Facilities information will be updated soon.
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Guest Reviews - Redesigned */}
-                    <div 
-                        data-reveal-id="reviews"
-                        className={`reveal ${revealed['reviews'] ? 'active' : ''}`}
-                        style={{ marginTop: "100px" }}
-                    >
-                        <div style={{ 
-                            display: "flex", 
-                            justifyContent: "space-between", 
-                            alignItems: "flex-end", 
-                            marginBottom: "48px",
-                            flexWrap: "wrap",
-                            gap: "20px" 
-                        }}>
-                            <div>
-                                <h3 style={{ 
-                                    fontFamily: "'Poppins', sans-serif",
-                                    fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
-                                    fontWeight: 600,
-                                    color: "#0f172a",
-                                    marginBottom: "12px"
-                                }}>
-                                    Guest Voices
-                                </h3>
-                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                    <div style={{ display: "flex", gap: "3px" }}>
-                                        {[1, 2, 3, 4, 5].map(s => (
-                                            <StarIcon key={s} sx={{ 
-                                                color: s <= (hotel?.average_rating || 0) ? "#f59e0b" : "#e2e8f0", 
-                                                fontSize: 20 
-                                            }} />
-                                        ))}
-                                    </div>
-                                    <span style={{ fontSize: "1.1rem", fontWeight: 600 }}>{hotel?.average_rating || "New"}</span>
-                                    <span style={{ color: "#64748b", fontSize: "0.9rem" }}>• {reviews?.length || 0} experiences</span>
-                                </div>
-                            </div>
-                            <Button
-                                onClick={handleWriteReviewClick}
-                                style={{
-                                    ...S.bookBtn,
-                                    width: "auto",
-                                    padding: "12px 24px",
-                                    background: "#fff",
-                                    color: "#6366f1",
-                                    border: "1px solid #e2e8f0",
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
-                                    fontSize: "0.9rem"
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = "#f8fafc";
-                                    e.currentTarget.style.transform = "translateY(-1px)";
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = "#fff";
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                }}
-                            >
-                                Share Your Experience
-                            </Button>
+                            </Box>
                         </div>
 
-                        {!Array.isArray(reviews) || reviews.length === 0 ? (
-                            <div style={{ 
-                                textAlign: "center", 
-                                padding: "60px 30px", 
-                                background: "#fff",
-                                borderRadius: "24px",
-                                border: "1px solid #f1f5f9"
-                            }}>
-                                <div style={{ fontSize: "2.5rem", marginBottom: "16px" }}>💭</div>
-                                <h4 style={{ fontWeight: 600, marginBottom: "4px", fontSize: "1.1rem" }}>No reviews yet</h4>
-                                <p style={{ color: "#64748b", fontSize: "0.9rem" }}>Be the first to share your thoughts about your stay.</p>
+                        {/* Reviews Section */}
+                        <div className="section-card reveal active" data-reveal-id="reviews">
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
+                                <h2 className="section-title" style={{ marginBottom: 0 }}>Guest Voices</h2>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleWriteReviewClick}
+                                    sx={{ borderRadius: "50px", px: 3, textTransform: "none", color: "#6366f1", borderColor: "#6366f1", fontWeight: 600, "&:hover": { borderColor: "#4f46e5", bgcolor: "#f5f3ff" } }}
+                                >
+                                    Share Your Experience
+                                </Button>
                             </div>
-                        ) : (
-                            <div style={{ 
-                                display: "grid", 
-                                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", 
-                                gap: "24px" 
-                            }}>
-                                {reviews.map((rev, idx) => (
-                                    <div key={rev.id || idx} className="review-card">
-                                        <div className="review-content">
-                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px" }}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                                    <div style={{ 
-                                                        width: "48px", 
-                                                        height: "48px", 
-                                                        borderRadius: "12px", 
-                                                        background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", 
-                                                        color: "#fff", 
-                                                        display: "flex", 
-                                                        alignItems: "center", 
-                                                        justifyContent: "center", 
-                                                        fontWeight: 600, 
-                                                        fontSize: "1.1rem" 
-                                                    }}>
+
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 4, p: 3, background: "#f8fafc", borderRadius: "20px", border: "1px solid #f1f5f9" }}>
+                                <div style={{ textAlign: "center" }}>
+                                    <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{hotel?.average_rating || "N/A"}</div>
+                                    <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "4px", fontWeight: 500 }}>out of 5</div>
+                                </div>
+                                <div style={{ width: "2px", height: "40px", background: "#e2e8f0" }}></div>
+                                <div>
+                                    <div style={{ display: "flex", gap: "2px", mb: 0.5 }}>
+                                        {[1, 2, 3, 4, 5].map(s => (
+                                            <StarIcon key={s} sx={{ color: s <= (parseFloat(hotel?.average_rating) || 0) ? "#f59e0b" : "#e2e8f0", fontSize: 20 }} />
+                                        ))}
+                                    </div>
+                                    <div style={{ fontSize: "0.9rem", color: "#64748b", fontWeight: 500 }}>Based on {reviews.length || 0} verified guest experiences</div>
+                                </div>
+                            </Box>
+
+                            {!Array.isArray(reviews) || reviews.length === 0 ? (
+                                <div style={{ textAlign: "center", padding: "40px 0", color: "#94a3b8" }}>
+                                    <div style={{ fontSize: "3rem", marginBottom: "10px" }}>💬</div>
+                                    <p style={{ fontWeight: 500 }}>No reviews yet. Be the first to share your journey!</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                    {reviews.map((rev, idx) => (
+                                        <div key={rev.id || idx} className="review-item">
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                                                    <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.2rem", boxShadow: "0 4px 12px rgba(99, 102, 241, 0.2)" }}>
                                                         {(rev.user_name || "G")[0].toUpperCase()}
                                                     </div>
                                                     <div>
                                                         <div style={{ fontWeight: 600, color: "#0f172a", fontSize: "0.95rem" }}>{rev.user_name || "Verified Guest"}</div>
-                                                        <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
+                                                        <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
                                                             {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div style={{ display: "flex", gap: "2px" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
                                                     {Array.from({ length: 5 }, (_, i) => (
-                                                        <StarIcon key={i} sx={{ 
-                                                            color: i < rev.rating ? "#f59e0b" : "#e2e8f0", 
-                                                            fontSize: 16 
-                                                        }} />
+                                                        <StarIcon key={i} sx={{ color: i < rev.rating ? "#f59e0b" : "#e2e8f0", fontSize: 16 }} />
                                                     ))}
                                                 </div>
                                             </div>
-                                            
                                             {rev.comment && (
-                                                <p style={{ 
-                                                    color: "#475569", 
-                                                    lineHeight: 1.7, 
-                                                    fontSize: "0.95rem", 
-                                                    margin: "0 0 20px 0",
-                                                    fontStyle: "italic",
-                                                    fontWeight: 400
-                                                }}>
+                                                <p style={{ color: "#334155", lineHeight: 1.7, fontSize: "0.95rem", marginLeft: "62px", marginBottom: "16px", fontStyle: "italic" }}>
                                                     "{rev.comment}"
                                                 </p>
                                             )}
-
                                             {Array.isArray(rev.images) && rev.images.length > 0 && (
-                                                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                                                <div style={{ display: "flex", gap: "12px", marginLeft: "62px", flexWrap: "wrap" }}>
                                                     {rev.images.map((img, i) => (
-                                                        <img 
-                                                            key={i} 
-                                                            src={img.image} 
-                                                            alt="review" 
-                                                            style={{ 
-                                                                width: "80px", 
-                                                                height: "80px", 
-                                                                borderRadius: "12px", 
-                                                                objectFit: "cover", 
-                                                                border: "2px solid #fff",
-                                                                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                                                                cursor: "pointer"
-                                                            }} 
+                                                        <img
+                                                            key={i}
+                                                            src={img.image}
+                                                            alt="review"
+                                                            style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "12px", cursor: "pointer", border: "2px solid #fff", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", transition: "transform 0.2s" }}
                                                             onClick={() => window.open(img.image, '_blank')}
+                                                            onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                                                            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
                                                         />
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Available Rooms Section ── */}
-            <section
-                data-reveal-id="rooms"
-                className={`reveal ${revealed['rooms'] ? 'active' : ''}`}
-                style={{ ...S.luxurySection, backgroundColor: "#FFFFFF", padding: "80px 0 100px" }}
-            >
-                <div style={{ ...S.body, paddingBottom: "100px" }}>
-                    <h2 style={S.roomsTitle}>Available Rooms</h2>
-
-                    {rooms.length > 0 ? (
-                        <div style={{
-                            display: "grid",
-                            gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
-                            gap: isMobile ? "24px" : "32px",
-                        }}>
-                            {rooms.map(room => (
-                                <RoomCard
-                                    key={room.id}
-                                    room={room}
-                                    onBook={() => handleOpenModal(room)}
-                                />
-                            ))}
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    ) : (
-                        <p style={{ ...S.descText, textAlign: "center", fontStyle: "italic" }}>
-                            No specific rooms listed. Please contact the hotel directly.
-                        </p>
-                    )}
+                    </div>
+
+                    {/* RIGHT COLUMN: SIDEBAR */}
+                    <aside className="sidebar-area">
+                        <div className="reservation-sidebar-card">
+                            <Box sx={{ mb: 3 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                                    <Typography variant="h6" fontWeight="700" color="#0f172a">Booking</Typography>
+                                    <Chip 
+                                        icon={<CheckIcon style={{ fontSize: 14 }} />} 
+                                        label="Premium Stay" 
+                                        size="small" 
+                                        sx={{ bgcolor: "rgba(99, 102, 241, 0.1)", color: "#6366f1", fontWeight: 600 }} 
+                                    />
+                                </div>
+                                <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
+                                    <span style={{ fontSize: "0.9rem", color: "#64748b", fontWeight: 500 }}>Rooms from</span>
+                                    <span style={{ fontSize: "1.8rem", fontWeight: 800, color: "#1e293b" }}>₹{rooms.length > 0 ? Math.min(...rooms.map(r => r.price)).toLocaleString() : "---"}</span>
+                                    <span style={{ fontSize: "0.9rem", color: "#64748b" }}>/ night</span>
+                                </div>
+                            </Box>
+
+                            <Box sx={{ mb: 3, p: 2, background: "#fff9f2", borderRadius: "16px", border: "1px dashed #fbd38d" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ed8936", animation: "pulse 2s infinite" }}></div>
+                                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#c05621", letterSpacing: "0.02em" }}>
+                                        HIGH DEMAND FOR THESE DATES
+                                    </span>
+                                </div>
+                            </Box>
+
+                            <Box sx={{ mb: 4, display: "flex", flexDirection: "column", gap: 1.5 }}>
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#4ade80", marginTop: "6px" }}></div>
+                                    <Typography variant="body2" color="#475569">Instant confirmation on all rooms.</Typography>
+                                </div>
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#6366f1", marginTop: "6px" }}></div>
+                                    <Typography variant="body2" color="#475569">ServNex Verified Luxury Property.</Typography>
+                                </div>
+                            </Box>
+
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                onClick={() => {
+                                    const el = document.getElementById("rooms");
+                                    if(el) el.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                sx={{
+                                    py: 2,
+                                    borderRadius: "16px",
+                                    fontSize: "1rem",
+                                    fontWeight: 700,
+                                    textTransform: "none",
+                                    background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                                    boxShadow: "0 10px 20px rgba(99, 102, 241, 0.2)",
+                                    transition: "all 0.3s ease",
+                                    fontFamily: "'Poppins', sans-serif",
+                                    "&:hover": {
+                                        transform: "translateY(-2px)",
+                                        boxShadow: "0 15px 30px rgba(99, 102, 241, 0.3)",
+                                    }
+                                }}
+                            >
+                                Check Available Rooms
+                            </Button>
+                        </div>
+
+                        {/* Additional Sidebar Info */}
+                        <Box sx={{ mt: 3, textAlign: "center", p: 2 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, fontFamily: "'Poppins', sans-serif" }}>
+                                <NotificationsIcon sx={{ fontSize: 16 }} />
+                                Standard ServNex Booking Policy Applies
+                            </Typography>
+                        </Box>
+                    </aside>
                 </div>
-            </section>
+            </div>
 
             {/* ── Booking Modal ── */}
             <Modal open={open} onClose={handleClose}>

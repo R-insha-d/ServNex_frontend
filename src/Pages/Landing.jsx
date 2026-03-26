@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AiFillThunderbolt } from "react-icons/ai";
 import { IoIosLock } from "react-icons/io";
 import { MdLocationPin } from "react-icons/md";
+import { ChevronsRight } from "lucide-react";
 
 function Landing() {
     const navigate = useNavigate();
@@ -65,7 +66,7 @@ function Landing() {
                                 <h4>Hotels</h4>
                                 <p>Book luxury and budget stays instantly.</p>
                                 <Link to="/hotel" className="explore-btns">
-                                    <span className="fs-6">Explore ›</span>
+                                    <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>
                         </div>
@@ -76,7 +77,7 @@ function Landing() {
                                 <h4>Restaurants</h4>
                                 <p>Reserve tables at the best restaurants.</p>
                                 <Link to="/restaurant" className="explore-btns">
-                                    <span className="fs-6">Explore ›</span>
+                                    <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>
                         </div>
@@ -93,7 +94,7 @@ function Landing() {
                                 <h4>Salons</h4>
                                 <p>Schedule appointments with top-rated stylists.</p>
                                 <Link to="" className="explore-btns">
-                                    <span className="fs-6">Explore ›</span>
+                                    <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>
                         </div>
@@ -110,7 +111,7 @@ function Landing() {
                                 <h4>Home Services</h4>
                                 <p>Book trusted professionals for cleaning, repairs, and maintenance.</p>
                                 <Link to="" className="explore-btns">
-                                    <span className="fs-6">Explore ›</span>
+                                    <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>
                         </div>
@@ -127,7 +128,7 @@ function Landing() {
                                 <h4>Health</h4>
                                 <p>Schedule appointments with certified doctors and clinics.</p>
                                 <Link to="" className="explore-btns">
-                                    <span className="fs-6">Explore ›</span>
+                                    <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>
                         </div>
@@ -144,7 +145,7 @@ function Landing() {
                                 <h4>Transport</h4>
                                 <p>Book reliable rides and travel services instantly, anytime you need.</p>
                                 <Link to="" className="explore-btns">
-                                    <span className="fs-6">Explore ›</span>
+                                    <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>
                         </div>

@@ -31,7 +31,8 @@ import {
     Clock, 
     CreditCard,
     Info,
-    ChevronRight
+    ChevronRight,
+    ChevronsRight
 } from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
 import AxiosInstance from "../Component/AxiosInstance";
@@ -678,7 +679,7 @@ export default function HotelBooking() {
 
                             <div style={{ marginTop: "32px" }}>
                                 <button className="premium-btn" onClick={handleBooking} disabled={isBooking}>
-                                    <span>{isBooking ? "Processing..." : "Confirm Reservation ›"}</span>
+                                    <span>{isBooking ? "Processing..." : "Confirm Reservation "}</span>
                                 </button>
                             </div>
 
@@ -702,7 +703,9 @@ export default function HotelBooking() {
                 <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: { xs: '90%', sm: 440 }, bgcolor: '#fff', p: 5, borderRadius: "24px", textAlign: 'center', outline: 'none' }}>
                     <AnimatedCross /><Typography variant="h5" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", color: "#ef4444", mt: 2 }}>Selection Unavailable</Typography>
                     <Typography sx={{ mt: 2, color: '#64748b', fontFamily: "'Poppins', sans-serif" }}>{error}</Typography>
-                    <button className="premium-btn" onClick={() => setShowErrorModal(false)} style={{ marginTop: "32px", width: "auto", padding: "0 2.5em" }}><span>Adjust Selection ›</span></button>
+                    <button className="premium-btn" onClick={() => setShowErrorModal(false)} style={{ marginTop: "32px", width: "auto", padding: "0 2.5em" }}>
+                        <span className="d-flex align-items-center gap-1">Adjust Selection <ChevronsRight size={18} /></span>
+                    </button>
                 </Box>
             </Modal>
 
@@ -716,7 +719,12 @@ export default function HotelBooking() {
                             <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>Paid: ₹{totalCost.toLocaleString()}</Typography>
                         </Box>
                     )}
-                    <button className="premium-btn" onClick={handleReviewSubmit} disabled={isSubmittingReview}><span>{isSubmittingReview ? "Submitting..." : "Continue to Dashboard ›"}</span></button>
+                        <button className="premium-btn" onClick={handleReviewSubmit} disabled={isSubmittingReview}>
+                            <span className="d-flex align-items-center gap-1">
+                                {isSubmittingReview ? "Submitting..." : "Continue to Dashboard"}
+                                {!isSubmittingReview && <ChevronsRight size={18} />}
+                            </span>
+                        </button>
                 </Box>
             </Modal>
         </div>

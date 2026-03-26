@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { MapPin, Search, Filter, Globe, Bell, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { MapPin, Search, Filter, Globe, Bell, ChevronDown, ChevronUp, Check, LocateFixed, ChevronsRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
@@ -231,18 +231,34 @@ export default function HotelList() {
 
     const cityOptions = [
         { value: "All", label: "All Cities" },
-        { value: "__locate__", label: "📍 Detect My Location" },
+        { 
+            value: "__locate__", 
+            label: (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <LocateFixed size={16} color="#667eea" />
+                    <span>Detect My Location</span>
+                </div>
+            )
+        },
         ...(city !== "All" && city !== "__locate__" && !uniqueCities.includes(city)
-            ? [{ value: city, label: `📍 ${city}` }]
+            ? [{ 
+                value: city, 
+                label: (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <MapPin size={16} color="#667eea" />
+                        <span>{city}</span>
+                    </div>
+                )
+            }]
             : []),
         ...uniqueCities.map((c) => ({ value: c, label: c })),
     ];
 
     const badgeOptions = [
         { value: "All", label: "All Property Types" },
-        { value: "Luxury Stays", label: "💎 Luxury Stays" },
-        { value: "Cheap & Best", label: "💰 Cheap & Best" },
-        { value: "Dormitory", label: "🏠 Dormitory" },
+        { value: "Luxury Stays", label: "Luxury Stays" },
+        { value: "Cheap & Best", label: "Cheap & Best" },
+        { value: "Dormitory", label: "Dormitory" },
     ];
 
     // Handle city dropdown change (preserves detect-location behavior)
@@ -551,7 +567,7 @@ export default function HotelList() {
                                                         to={`/hotel/${hotel.id}`}
                                                         className="explore-btns"
                                                     >
-                                                        <span>See Details ›</span>
+                                                        <span className="d-flex align-items-center gap-1">See Details <ChevronsRight size={18} /></span>
                                                     </Link>
                                                 </div>
                                             </div>

@@ -1,9 +1,101 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { MapPin, ArrowRight, Search, Filter, Globe, Bell, UtensilsCrossed, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { MapPin, ArrowRight, Search, Filter, Globe, Bell, UtensilsCrossed, ChevronDown, ChevronUp, Check, LocateFixed, ChevronsRight } from "lucide-react";
 import { TbCurrentLocation } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import "./HotelList.css";
+
+// ─── Custom Dropdown Component ───────────────────────────────────────────────
+function CustomDropdown({ icon, options, value, onChange, placeholder, isLoading, loadingText }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
+
+    // Close when clicking outside
+    useEffect(() => {
+        const handler = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    // Close panel whenever loading starts (e.g. just clicked "Detect My Location")
+    useEffect(() => {
+        if (isLoading) setOpen(false);
+    }, [isLoading]);
+
+    const selectedLabel = isLoading
+        ? (loadingText || "Loading...")
+        : (options.find((o) => o.value === value)?.label || placeholder);
+
+    return (
+        <div className="custom-dd-root" ref={ref}>
+            {/* Trigger */}
+            <div
+                className={`custom-dd-trigger ${open ? "custom-dd-trigger--open" : ""} ${isLoading ? "custom-dd-trigger--loading" : ""}`}
+                onClick={() => !isLoading && setOpen((p) => !p)}
+            >
+                {icon && <span className="custom-dd-icon">{icon}</span>}
+                <span className={`custom-dd-selected ${isLoading ? "custom-dd-selected--loading" : ""}`}>
+                    {selectedLabel}
+                </span>
+                {!isLoading && (
+                    <ChevronDown
+                        size={18}
+                        className={`custom-dd-chevron ${open ? "custom-dd-chevron--open" : ""}`}
+                    />
+                )}
+            </div>
+
+            {/* Panel */}
+            {open && !isLoading && (
+                <div className="custom-dd-panel">
+                    <div className="custom-dd-list">
+                        {options.map((opt) => (
+                            <div
+                                key={opt.value}
+                                className={`custom-dd-option ${value === opt.value ? "custom-dd-option--selected" : ""}`}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setOpen(false);
+                                }}
+                            >
+                                <span className="custom-dd-option-label">{opt.label}</span>
+                                {value === opt.value && (
+                                    <Check size={16} className="custom-dd-check" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Highlight Text Component ────────────────────────────────────────────────
+function HighlightText({ text, highlight }) {
+    if (!highlight.trim()) {
+        return <span>{text}</span>;
+    }
+    const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+    const parts = text.split(regex);
+
+    return (
+        <span>
+            {parts.map((part, i) =>
+                regex.test(part) ? (
+                    <mark key={i} className="highlight">
+                        {part}
+                    </mark>
+                ) : (
+                    <span key={i}>{part}</span>
+                )
+            )}
+        </span>
+    );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function RestaurantList() {
     const [restaurantsData, setRestaurantsData] = useState([]);
@@ -127,6 +219,58 @@ export default function RestaurantList() {
         ...new Set(restaurantsData.map((r) => r.cuisine_type).filter(Boolean)),
     ];
 
+    // City Dropdown options
+    const cityOptions = [
+        { value: "All", label: "All Cities" },
+        { 
+            value: "__locate__", 
+            label: (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <LocateFixed size={16} color="#667eea" />
+                    <span>Detect My Location</span>
+                </div>
+            )
+        },
+        ...(city !== "All" && city !== "__locate__" && !uniqueCities.includes(city)
+            ? [{ 
+                value: city, 
+                label: (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <MapPin size={16} color="#667eea" />
+                        <span>{city}</span>
+                    </div>
+                )
+            }]
+            : []),
+        ...uniqueCities.map((c) => ({ value: c, label: c })),
+    ];
+
+    // Badge/Type options
+    const typeOptions = [
+        { value: "All", label: "All Types" },
+        { value: "Fine Dining", label: "Fine Dining" },
+        { value: "Casual Dining", label: "Casual Dining" },
+        { value: "Fast Food", label: "Fast Food" },
+        { value: "Cafe", label: "Cafe" },
+    ];
+
+    // Cuisine options
+    const cuisineOptions = [
+        { value: "All", label: "All Cuisines" },
+        ...uniqueCuisines.map((c) => ({ value: c, label: c })),
+    ];
+
+    // Handle city change
+    const handleCityChange = (val) => {
+        if (val === "__locate__") {
+            handleGetLocation();
+        } else {
+            setCity(val);
+            setLocationError("");
+            setCoords({ lat: null, lng: null });
+        }
+    };
+
     // Badge styling logic
     const getBadgeInfo = (badge) => {
         switch (badge) {
@@ -202,33 +346,33 @@ export default function RestaurantList() {
 
                     <div className={`filters-grid-wrapper ${showFilters ? 'expanded' : 'collapsed'}`}>
                         <div className="row g-3">
-                            <div className="col-md-4">
-                                <div className="filter-card">
-                                    {locationLoading
-                                        ? <span style={{ width: "18px", height: "18px", border: "2px solid #667eea", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", flexShrink: 0, animation: "spin 0.7s linear infinite" }} />
-                                        : <Globe size={18} color="#667eea" style={{ flexShrink: 0 }} />
+                            {/* City Dropdown */}
+                            <div className="col-md-3">
+                                <CustomDropdown
+                                    icon={
+                                        locationLoading ? (
+                                            <span
+                                                style={{
+                                                    width: "18px",
+                                                    height: "18px",
+                                                    border: "2px solid #667eea",
+                                                    borderTopColor: "transparent",
+                                                    borderRadius: "50%",
+                                                    display: "inline-block",
+                                                    animation: "spin 0.7s linear infinite",
+                                                }}
+                                            />
+                                        ) : (
+                                            <Globe size={18} color="#667eea" />
+                                        )
                                     }
-                                    <select
-                                        className="filter-select"
-                                        value={city}
-                                        onChange={(e) => {
-                                            if (e.target.value === "__locate__") {
-                                                handleGetLocation();
-                                            } else {
-                                                setCity(e.target.value);
-                                                setLocationError("");
-                                            }
-                                        }}
-                                    >
-                                        <option value="All">All Cities</option>
-                                        <option value="__locate__">📍 Detect My Location</option>
-                                        {uniqueCities.map((c) => (
-                                            <option key={c} value={c}>
-                                                {c}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                    options={cityOptions}
+                                    value={city}
+                                    onChange={handleCityChange}
+                                    placeholder="Select City"
+                                    isLoading={locationLoading}
+                                    loadingText="Detecting location..."
+                                />
                                 {locationError && (
                                     <p style={{ fontSize: "11px", color: "#e53e3e", margin: "4px 0 0 4px" }}>
                                         {locationError}
@@ -236,13 +380,14 @@ export default function RestaurantList() {
                                 )}
                             </div>
 
-                            <div className="col-md-4">
+                            {/* Search Input */}
+                            <div className="col-md-3">
                                 <div className="filter-card">
                                     <Search size={18} color="#667eea" />
                                     <input
                                         type="text"
                                         className="filter-input"
-                                        placeholder="Find best food near you..."
+                                        placeholder="Find best food..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onFocus={() => search.length >= 2 && setShowSuggestions(true)}
@@ -268,39 +413,26 @@ export default function RestaurantList() {
                                 </div>
                             </div>
 
+                            {/* Badge/Type Dropdown */}
                             <div className="col-md-3">
-                                <div className="filter-card">
-                                    <Filter size={18} color="#667eea" />
-                                    <select
-                                        className="filter-select"
-                                        value={badgeFilter}
-                                        onChange={(e) => setBadgeFilter(e.target.value)}
-                                    >
-                                        <option value="All">All Types</option>
-                                        <option value="Fine Dining">Fine Dining</option>
-                                        <option value="Casual Dining">Casual Dining</option>
-                                        <option value="Fast Food">Fast Food</option>
-                                        <option value="Cafe">Cafe</option>
-                                    </select>
-                                </div>
+                                <CustomDropdown
+                                    icon={<Filter size={18} color="#667eea" />}
+                                    options={typeOptions}
+                                    value={badgeFilter}
+                                    onChange={setBadgeFilter}
+                                    placeholder="All Types"
+                                />
                             </div>
 
+                            {/* Cuisine Dropdown */}
                             <div className="col-md-3">
-                                <div className="filter-card">
-                                    <UtensilsCrossed size={18} color="#667eea" />
-                                    <select
-                                        className="filter-select"
-                                        value={cuisineFilter}
-                                        onChange={(e) => setCuisineFilter(e.target.value)}
-                                    >
-                                        <option value="All">All Cuisines</option>
-                                        {uniqueCuisines.map((c) => (
-                                            <option key={c} value={c}>
-                                                {c}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <CustomDropdown
+                                    icon={<UtensilsCrossed size={18} color="#667eea" />}
+                                    options={cuisineOptions}
+                                    value={cuisineFilter}
+                                    onChange={setCuisineFilter}
+                                    placeholder="All Cuisines"
+                                />
                             </div>
                         </div>
                     </div>
@@ -374,7 +506,7 @@ export default function RestaurantList() {
                                             <div className="card-body p-4 d-flex flex-column h-100">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <h3 className="hotel-title fs-5">
-                                                        {restaurant.name}
+                                                        <HighlightText text={restaurant.name} highlight={search} />
                                                     </h3>
                                                     {restaurant.rating && (
                                                         <div className="rating-pill">
@@ -385,7 +517,7 @@ export default function RestaurantList() {
 
                                                 <div className="hotel-location mb-3">
                                                     <MapPin size={16} />
-                                                    {restaurant.area}, {restaurant.city}
+                                                    <HighlightText text={`${restaurant.area}, ${restaurant.city}`} highlight={search} />
                                                 </div>
 
                                                 <div className="mb-3">
@@ -406,7 +538,7 @@ export default function RestaurantList() {
                                                         overflow: "hidden",
                                                     }}
                                                 >
-                                                    {restaurant.description.slice(0, 235)}...
+                                                    <HighlightText text={restaurant.description.slice(0, 235)} highlight={search} />...
                                                 </p>
 
                                                 {/* PRICE + BUTTON */}
@@ -424,7 +556,7 @@ export default function RestaurantList() {
                                                         to={`/restaurant/${restaurant.id}`}
                                                         className="explore-btns"
                                                     >
-                                                        <span>See Details ›</span>
+                                                        <span className="d-flex align-items-center gap-1">See Details <ChevronsRight size={18} /></span>
                                                     </Link>
                                                 </div>
                                             </div>
