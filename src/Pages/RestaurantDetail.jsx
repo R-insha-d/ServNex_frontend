@@ -208,55 +208,26 @@ export default function RestaurantDetail() {
         heroWrap: { position: "relative", overflow: "hidden", backgroundColor: "#1a1308" },
         heroOverlay: {
             position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.6) 100%)",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%)",
             zIndex: 1, pointerEvents: "none"
         },
-        heroTitle: { position: "absolute", bottom: "80px", left: "80px", zIndex: 2, color: "#fff", fontFamily: "'Playfair Display', serif" },
-        heroBrand: { fontSize: "clamp(3.5rem, 8vw, 6rem)", fontWeight: 400, lineHeight: 0.8, letterSpacing: "-0.02em", marginBottom: "10px", textShadow: "0 4px 20px rgba(0,0,0,0.3)", position: "relative" },
-        heroSubtitle: { fontSize: "clamp(1.2rem, 3vw, 2rem)", fontWeight: 500, opacity: 0.9, letterSpacing: "0.03em" },
+        heroTitle: { position: "absolute", bottom: "60px", left: "60px", zIndex: 2, color: "#fff", fontFamily: "'Playfair Display', serif" },
+        heroBrand: { fontSize: "clamp(3rem, 7vw, 5.5rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.01em", marginBottom: "8px", textShadow: "0 4px 20px rgba(0,0,0,0.4)" },
+        heroSubtitle: { fontSize: "clamp(1.1rem, 2.5vw, 1.8rem)", fontWeight: 500, opacity: 0.95, letterSpacing: "0.02em" },
         infoBar: {
             display: "flex", alignItems: "center", justifyContent: "center", gap: "40px",
-            padding: "20px 30px", backgroundColor: "#fff", borderBottom: "1px solid rgba(139, 105, 20, 0.1)",
+            padding: "24px 30px", backgroundColor: "#fff", borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
             flexWrap: "wrap",
         },
-        infoSep: { width: "2px", height: "24px", backgroundColor: "#667eeaff", opacity: 0.6 },
+        infoSep: { width: "1px", height: "30px", backgroundColor: "#e0e0e0" },
         infoItem: {
-            display: "flex", alignItems: "center", gap: "12px", fontSize: "0.95rem",
-            color: "#000", fontFamily: "'Playfair Display', serif", fontWeight: 500, letterSpacing: "0.05em",
+            display: "flex", alignItems: "center", gap: "10px", fontSize: "1rem",
+            color: "#333", fontFamily: "'Inter', sans-serif", fontWeight: 500,
         },
-        infoIcon: { fontSize: "1.3rem", color: "#667eeaff" },
-        luxurySection: { backgroundColor: "#FFFFFF", width: "100%", minHeight: "60vh", padding: "80px 0 100px", position: "relative" },
-        body: { maxWidth: "1400px", margin: "0 auto", padding: "0 48px" },
-        twoCol: { display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: "48px", alignItems: "flex-start", minHeight: "400px" },
-        luxuryLeftPanel: { padding: "40px 48px 40px 0", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "flex-start", maxWidth: "560px" },
-        luxuryRightPanel: { display: "flex", alignItems: "center", justifyContent: "flex-end" },
-        sectionTitle: { fontFamily: "'Poppins', sans-serif", fontSize: "clamp(2.1rem, 6vw, 1.5rem)", fontWeight: 400, color: "#282828", marginBottom: "32px", lineHeight: 0.5, letterSpacing: "-0.02em" },
-        descText: { fontFamily: "'Inter', 'Roboto', 'Open Sans', sans-serif", fontSize: "1.05rem", color: "#555555", lineHeight: 1.8, marginBottom: "0", maxWidth: "540px", overflowWrap: "break-word", wordBreak: "break-word" },
-        mapCard: {
-            width: "100%", maxWidth: "700px", borderRadius: "32px", overflow: "hidden",
-            boxShadow: "0 25px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.05)",
-            border: "8px solid rgba(255, 255, 255, 0.6)", background: "#fff", transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-        },
-        heroDots: { position: "absolute", bottom: "35px", width: "100%", display: "flex", justifyContent: "center", gap: "12px", zIndex: 2 },
-        bookBtn: {
-            width: "auto",
-            minWidth: "280px",
-            padding: "18px 40px",
-            borderRadius: "50px",
-            border: "1.5px solid rgba(102, 126, 234, 0.4)",
-            background: "rgba(255, 255, 255, 0.9)",
-            color: "#667eea",
-            fontFamily: "'Lato', sans-serif",
-            fontWeight: 800,
-            fontSize: "1rem",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            cursor: "pointer",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow: "0 12px 30px -10px rgba(102, 126, 234, 0.4), 0 4px 10px -2px rgba(102, 126, 234, 0.1)",
-            backdropFilter: "blur(10px)",
-        },
+        infoIcon: { fontSize: "1.4rem", color: "#667eeaff" },
+        body: { maxWidth: "1350px", margin: "0 auto", padding: "0 24px" },
     };
+
 
     return (
         <div style={{ minHeight: "100vh", fontFamily: "'Cormorant Garamond', 'Georgia', serif" }}>
@@ -271,85 +242,103 @@ export default function RestaurantDetail() {
                         50% { opacity: 0.8; transform: scale(0.98); }
                         100% { opacity: 1; transform: scale(1); }
                     }
-                    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1); }
+                    .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
                     .reveal.active { opacity: 1; transform: translateY(0); }
-                    .map-card-hover:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 40px 80px rgba(102, 126, 234, 0.15); }
                     
-                    .premium-card {
-                        border: 1px solid #ffffff;
-                        border-radius: 28px;
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0); /* Soft large shadow from image */
+                    .detail-layout-container {
+                        display: grid;
+                        grid-template-columns: 1fr 380px;
+                        gap: 40px;
+                        margin-top: 40px;
+                        align-items: flex-start;
                     }
-                    .info-tag {
-                        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
-                        backdrop-filter: blur(10px);
-                        padding: 6px 16px;
-                        font-size: 0.85rem;
-                        color: #555;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        border-radius: 50px;
-                    }
-                    .price-main {
-                        color: #1e63d0;
-                        font-weight: 700;
-                        font-size: 1.6rem;
-                    }
-                    .reservation-btn {
-                        background: linear-gradient(135deg, #3a86ff 0%, #1e63d0 100%);
-                        color: white !important;
-                        border-radius: 12px;
-                        padding: 14px;
-                        font-weight: 600;
-                        font-size: 1.1rem;
-                        text-transform: none;
-                        box-shadow: 0 8px 16px rgba(30, 99, 208, 0.2);
-                        transition: all 0.3s ease;
-                        border: none;
-                        width: 100%;
-                    }
-                    .reservation-btn:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 12px 20px rgba(30, 99, 208, 0.3);
-                        opacity: 0.9;
-                    }
-                    .info-grid-item {
-                        padding: 12px 0;
-                        border-bottom: 1px solid #f0f0f0;
+                    
+                    @media (max-width: 1024px) {
+                        .detail-layout-container {
+                            grid-template-columns: 1fr;
+                            gap: 30px;
+                        }
                     }
 
-                    /* Ported from HotelDetail.jsx for premium buttons */
-                    .smooth-grad-btn {
-                        position: relative;
-                        overflow: hidden;
-                        z-index: 1;
-                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    .main-content-area {
                         display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        text-decoration: none;
+                        flex-direction: column;
+                        gap: 30px;
                     }
-                    .smooth-grad-btn::before {
+
+                    .sidebar-area {
+                        position: sticky;
+                        top: 40px;
+                    }
+
+                    .section-card {
+                        background: #ffffff;
+                        padding: 40px;
+                        border-radius: 24px;
+                        border: 1px solid #f0f0f0;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.02);
+                    }
+
+                    .section-title {
+                        font-family: 'Playfair Display', serif;
+                        font-size: 1.8rem;
+                        font-weight: 700;
+                        color: #1a1a1a;
+                        margin-bottom: 24px;
+                        position: relative;
+                    }
+                    
+                    .section-title::after {
                         content: "";
                         position: absolute;
-                        top: 0; left: 0; right: 0; bottom: 0;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        z-index: -1;
-                        opacity: 0;
-                        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        bottom: -10px;
+                        left: 0;
+                        width: 40px;
+                        height: 3px;
+                        background: #667eea;
+                        border-radius: 2px;
                     }
-                    .smooth-grad-btn:hover {
-                        color: #fff !important;
-                        transform: translateY(-5px) scale(1.02);
-                        box-shadow: 0 25px 50px -12px rgba(102, 126, 234, 0.5) !important;
-                        border-color: transparent !important;
+
+                    .price-slot-card {
+                        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+                        border-radius: 20px;
+                        padding: 24px;
                     }
-                    .smooth-grad-btn:hover::before {
-                        opacity: 1;
+
+                    .feature-pill {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        padding: 12px 16px;
+                        border-radius: 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        transition: all 0.3s ease;
+                    }
+                    .feature-pill:hover {
+                        background: #fff;
+                        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+                        transform: translateY(-2px);
+                    }
+
+                    .reservation-sidebar-card {
+                        background: #fff;
+                        border-radius: 28px;
+                        border: 1px solid #eee;
+                        padding: 32px;
+                        box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+                    }
+
+                    .review-item {
+                        padding: 24px 0;
+                        border-bottom: 1px solid #f1f1f1;
+                    }
+                    .review-item:last-child {
+                        border-bottom: none;
                     }
                 `}
             </style>
+
 
             {/* CUSTOM HEADER */}
             <header className="hotel-custom-header">
@@ -455,342 +444,246 @@ export default function RestaurantDetail() {
                 </div>
             </div>
 
-            {/* ── Luxury Section ── */}
-            <section
-                style={{
-                    ...S.luxurySection,
-                    padding: isMobile ? "64px 0 80px" : "100px 0 120px",
-                    borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-                    borderBottom: "1px solid rgba(102, 126, 234, 0.1)",
-                }}>
-                <div style={{ ...S.body, padding: isMobile ? "0 24px" : "0 48px", maxWidth: isMobile ? "100%" : "1250px" }}>
-                    <div style={isMobile
-                        ? { display: "flex", flexDirection: "column", gap: "40px" }
-                        : { ...S.twoCol, gridTemplateColumns: "1.15fr 0.85fr", gap: "48px" }
-                    }>
-                        <div style={isMobile
-                            ? { padding: "24px 0", textAlign: "center" }
-                            : { ...S.luxuryLeftPanel, textAlign: "left" }
-                        }>
-                            <div data-reveal-id="luxury-title" className={`reveal ${revealed['luxury-title'] ? 'active' : ''}`}>
-                                <h2 style={{ ...S.sectionTitle, textAlign: "left", fontSize: isMobile ? "2.5rem" : S.sectionTitle.fontSize }}>
-                                    About Us
-                                </h2>
-                            </div>
-                            <p
-                                data-reveal-id="luxury-desc"
-                                className={`reveal ${revealed['luxury-desc'] ? 'active' : ''}`}
-                                style={{ ...S.descText, margin: isMobile ? "0 auto 16px" : "0 0 16px", textAlign: isMobile ? "justify" : "left" }}
-                            >
+            {/* ── Main content layout ── */}
+            <div style={{ ...S.body, paddingBottom: "100px" }}>
+                <div className="detail-layout-container">
+                    
+                    {/* LEFT COLUMN: MAIN CONTENT */}
+                    <div className="main-content-area">
+                        
+                        {/* About Section */}
+                        <div className="section-card reveal active" data-reveal-id="about">
+                            <h2 className="section-title">Experience & Ambience</h2>
+                            <p style={{ 
+                                fontFamily: "'Inter', sans-serif", 
+                                fontSize: "1.05rem", 
+                                color: "#444", 
+                                lineHeight: "1.8", 
+                                marginBottom: "24px" 
+                            }}>
                                 {restaurant.description}
                             </p>
-
+                            
                             {Array.isArray(restaurant.nearby_attractions) && restaurant.nearby_attractions.length > 0 && (
-                                <div style={{ marginTop: "24px", width: "100%" }}>
-                                    <div style={{ fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.08em", color: "#667eeaff", marginBottom: "8px" }}>
-                                        Nearby Places
-                                    </div>
-                                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                                <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid #f0f0f0" }}>
+                                    <Typography variant="overline" sx={{ color: "#667eea", fontWeight: 700, letterSpacing: "0.1em" }}>
+                                        Nearby Attractions
+                                    </Typography>
+                                    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2, mt: 2 }}>
                                         {restaurant.nearby_attractions.map((place, idx) => (
-                                            <li key={place.id || idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", marginBottom: "6px" }}>
-                                                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "70%" }}>
-                                                    {place.name}
-                                                </span>
-                                                <span style={{ color: "#555", marginLeft: "12px" }}>
-                                                    {parseFloat(place.distance_km).toFixed(2)} km
-                                                </span>
-                                            </li>
+                                            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9f9f9", padding: "12px 16px", borderRadius: "12px" }}>
+                                                <span style={{ fontSize: "0.95rem", fontWeight: 500, color: "#333" }}>{place.name}</span>
+                                                <span style={{ fontSize: "0.85rem", color: "#666" }}>{parseFloat(place.distance_km).toFixed(1)} km</span>
+                                            </div>
                                         ))}
-                                    </ul>
-                                </div>
+                                    </Box>
+                                </Box>
                             )}
                         </div>
 
-                        <div
-                            data-reveal-id="luxury-map"
-                            style={isMobile
-                                ? { display: "flex", justifyContent: "center", width: "100%" }
-                                : S.luxuryRightPanel
-                            } className={`reveal ${revealed['luxury-map'] ? 'active' : ''}`}>
-                            <div className="map-card-hover" style={{ ...S.mapCard, maxWidth: "100%", width: "100%" }}>
-                                <iframe
-                                    height={isMobile ? "350" : "500"}
-                                    width="100%"
-                                    style={{ display: "block", border: 0 }}
-                                    loading="lazy"
-                                    src={`https://www.google.com/maps?q=${restaurant.area || 'Restaurant'}&output=embed`}
-                                    title="map"
-                                />
-                            </div>
+                        {/* Map Section */}
+                        <div className="section-card reveal active" data-reveal-id="location" style={{ padding: "8px", overflow: "hidden" }}>
+                            <iframe
+                                height="400"
+                                width="100%"
+                                style={{ display: "block", border: 0, borderRadius: "16px" }}
+                                loading="lazy"
+                                src={`https://www.google.com/maps?q=${restaurant.area || 'Restaurant'}&output=embed`}
+                                title="map"
+                            />
                         </div>
-                    </div>
-                    {/* ── REVIEWS SECTION ── */}
-                    <div
-                        data-reveal-id="reviews"
-                        className={`reveal ${revealed['reviews'] ? 'active' : ''}`}
-                        style={{ marginTop: "60px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 25px rgba(0,0,0,0.03)" }}
-                    >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", flexWrap: "wrap", gap: "15px" }}>
-                            <div>
-                                <h3 style={{ fontSize: "1.6rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "5px" }}>
-                                    Guest Reviews
-                                </h3>
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+
+                        {/* Features Section */}
+                        <div className="section-card reveal active" data-reveal-id="features">
+                            <h2 className="section-title">Amenities & Features</h2>
+                            <Box sx={{
+                                display: "grid",
+                                gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" },
+                                gap: 2
+                            }}>
+                                {[
+                                    { name: "Home Delivery", icon: <Bike size={20} /> },
+                                    { name: "Air Condition", icon: <Wind size={20} /> },
+                                    { name: "Take-away", icon: <ShoppingBag size={20} /> },
+                                    { name: "Live Music", icon: <Music size={20} /> },
+                                    { name: "Wheelchair Accessible", icon: <Accessibility size={20} /> },
+                                    { name: "Live Sports Screening", icon: <Monitor size={20} /> },
+                                    { name: "Kids Allowed", icon: <Baby size={20} /> },
+                                    { name: "5-star dining", icon: <Star size={20} /> },
+                                    { name: "Buffet", icon: <Soup size={20} /> },
+                                    { name: "Thali", icon: <Disc size={20} /> },
+                                    { name: "Luxury Dining", icon: <Crown size={20} /> },
+                                    { name: "New Year Specials", icon: <PartyPopper size={20} /> }
+                                ].map((feature, idx) => (
+                                    <div key={idx} className="feature-pill">
+                                        <div style={{ color: "#667eea" }}>{feature.icon}</div>
+                                        <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "#444" }}>{feature.name}</span>
+                                    </div>
+                                ))}
+                            </Box>
+                        </div>
+
+                        {/* Reviews Section */}
+                        <div className="section-card reveal active" data-reveal-id="reviews">
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+                                <h2 className="section-title" style={{ marginBottom: 0 }}>Guest Reviews</h2>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleWriteReviewClick}
+                                    sx={{ borderRadius: "50px", px: 3, textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
+                                >
+                                    Write a Review
+                                </Button>
+                            </div>
+
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 4, p: 3, background: "#fcfcff", borderRadius: "16px", border: "1px solid #edf2f7" }}>
+                                <div style={{ textAlign: "center" }}>
+                                    <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#1a1a1a", lineHeight: 1 }}>{restaurant?.average_rating || "N/A"}</div>
+                                    <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "4px" }}>out of 5</div>
+                                </div>
+                                <div style={{ width: "2px", height: "40px", background: "#e2e8f0" }}></div>
+                                <div>
+                                    <div style={{ display: "flex", gap: "2px", mb: 0.5 }}>
                                         {[1, 2, 3, 4, 5].map(s => (
                                             <StarIcon key={s} sx={{ color: s <= (parseFloat(restaurant?.average_rating) || 0) ? "#f59e0b" : "#d1d5db", fontSize: 20 }} />
                                         ))}
                                     </div>
-                                    <span style={{ fontWeight: 600, color: "#2c1810" }}>{restaurant?.average_rating || "New"}</span>
-                                    <span style={{ color: "#888", fontSize: "0.9rem" }}>({restaurant?.reviews_count || reviews?.length || 0} reviews)</span>
+                                    <div style={{ fontSize: "0.9rem", color: "#666", fontWeight: 500 }}>Based on {restaurant.reviews_count || reviews.length || 0} verified guest reviews</div>
                                 </div>
-                            </div>
+                            </Box>
+
+                            {!Array.isArray(reviews) || reviews.length === 0 ? (
+                                <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
+                                    <div style={{ fontSize: "3rem", marginBottom: "10px" }}>💬</div>
+                                    <p>No reviews yet for this restaurant. Be the first to share your experience!</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    {reviews.map((rev, idx) => (
+                                        <div key={rev.id || idx} className="review-item">
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                                    <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.2rem", boxShadow: "0 4px 10px rgba(102,126,234,0.3)" }}>
+                                                        {(rev.user_name || "G")[0].toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, color: "#1a1a1a" }}>{rev.user_name || "Verified Guest"}</div>
+                                                        <div style={{ fontSize: "0.8rem", color: "#718096" }}>
+                                                            {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
+                                                    {Array.from({ length: 5 }, (_, i) => (
+                                                        <StarIcon key={i} sx={{ color: i < rev.rating ? "#f59e0b" : "#d1d5db", fontSize: 16 }} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {rev.comment && (
+                                                <p style={{ color: "#4a5568", lineHeight: 1.7, fontSize: "0.98rem", margin: "0 0 16px 56px" }}>
+                                                    "{rev.comment}"
+                                                </p>
+                                            )}
+                                            {rev.images && rev.images.length > 0 && (
+                                                <div style={{ display: "flex", gap: "12px", marginLeft: "56px", flexWrap: "wrap" }}>
+                                                    {rev.images.map((img, i) => (
+                                                        <img
+                                                            key={i}
+                                                            src={img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image}
+                                                            alt="review"
+                                                            style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "12px", cursor: "pointer", border: "1px solid #edf2f7", transition: "transform 0.2s" }}
+                                                            onClick={() => window.open(img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image, '_blank')}
+                                                            onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                                                            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: SIDEBAR */}
+                    <aside className="sidebar-area">
+                        <div className="reservation-sidebar-card">
+                            <Box sx={{ mb: 3 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                                    <Typography variant="h6" fontWeight="700" color="#1a1a1a">Reservation</Typography>
+                                    <Chip 
+                                        icon={<Utensils size={14} />} 
+                                        label={restaurant.cuisine_type} 
+                                        size="small" 
+                                        sx={{ bgcolor: "rgba(102, 126, 234, 0.1)", color: "#667eea", fontWeight: 600 }} 
+                                    />
+                                </div>
+                                <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
+                                    <span style={{ fontSize: "1.8rem", fontWeight: 800, color: "#2d3748" }}>₹{Number(restaurant.average_cost_for_two).toLocaleString()}</span>
+                                    <span style={{ fontSize: "0.9rem", color: "#718096" }}>/ slot</span>
+                                </div>
+                            </Box>
+
+                            <Box sx={{ mb: 3, p: 2, background: "#fff9f2", borderRadius: "16px", border: "1px dashed #fbd38d" }}>
+                                {restaurant.total_tables > 0 ? (
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ed8936", animation: "pulse 2s infinite" }}></div>
+                                        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#c05621", letterSpacing: "0.02em" }}>
+                                            HURRY! ONLY {restaurant.total_tables} TABLES LEFT
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#e53e3e" }}>REGISTRATION CLOSED FOR NOW</span>
+                                )}
+                            </Box>
+
+                            <Box sx={{ mb: 4, display: "flex", flexDirection: "column", gap: 1.5 }}>
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#48bb78", marginTop: "6px" }}></div>
+                                    <Typography variant="body2" color="#4a5568">Amount will be deducted from your final bill.</Typography>
+                                </div>
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#f56565", marginTop: "6px" }}></div>
+                                    <Typography variant="body2" color="#4a5568">No refund for cancellations.</Typography>
+                                </div>
+                            </Box>
+
                             <Button
-                                variant="outlined"
-                                onClick={handleWriteReviewClick}
-                                sx={{ borderRadius: "10px", textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
+                                fullWidth
+                                variant="contained"
+                                onClick={handleOpenModal}
+                                disabled={restaurant.total_tables === 0}
+                                sx={{
+                                    py: 2,
+                                    borderRadius: "16px",
+                                    fontSize: "1.05rem",
+                                    fontWeight: 700,
+                                    textTransform: "none",
+                                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                    boxShadow: "0 10px 20px rgba(102, 126, 234, 0.3)",
+                                    transition: "all 0.3s ease",
+                                    "&:hover": {
+                                        transform: "translateY(-2px)",
+                                        boxShadow: "0 15px 30px rgba(102, 126, 234, 0.4)",
+                                    }
+                                }}
                             >
-                                Write a Review
+                                Reserve a Table
                             </Button>
                         </div>
 
-                        {!Array.isArray(reviews) || reviews.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
-                                <div style={{ fontSize: "3rem", marginBottom: "10px" }}>💬</div>
-                                <p>No reviews yet for this restaurant. Be the first to share your experience!</p>
-                            </div>
-                        ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
-                                {reviews.map((rev, idx) => (
-                                    <div key={rev.id || idx} style={{ borderBottom: idx === reviews.length - 1 ? "none" : "1px solid #f0f0f0", paddingBottom: "25px" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#667eaf", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.1rem" }}>
-                                                    {(rev.user_name || "G")[0].toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontWeight: 600, color: "#2c1810" }}>{rev.user_name || "Verified Guest"}</div>
-                                                    <div style={{ fontSize: "0.8rem", color: "#888" }}>
-                                                        {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
-                                                {Array.from({ length: 5 }, (_, i) => (
-                                                    <StarIcon key={i} sx={{ color: i < rev.rating ? "#f59e0b" : "#d1d5db", fontSize: 16 }} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                        {rev.comment && (
-                                            <p style={{ color: "#444", lineHeight: 1.6, fontSize: "0.95rem", margin: 0, paddingLeft: "52px" }}>
-                                                "{rev.comment}"
-                                            </p>
-                                        )}
-                                        {rev.images && rev.images.length > 0 && (
-                                            <div style={{ display: "flex", gap: "10px", marginTop: "15px", paddingLeft: "52px", flexWrap: "wrap" }}>
-                                                {rev.images.map((img, i) => (
-                                                    <img
-                                                        key={i}
-                                                        src={img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image}
-                                                        alt="review"
-                                                        style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10px", cursor: "pointer", border: "1px solid #eee" }}
-                                                        onClick={() => window.open(img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image, '_blank')}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            <div className="container my-5 px-lg-5">
-                <Card className="premium-card overflow-hidden">
-                    <CardContent sx={{ p: { xs: 2.5, sm: 4, md: 5 } }}>
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: { xs: "column", sm: "row" },
-                            justifyContent: "space-between",
-                            alignItems: { xs: "flex-start", sm: "center" },
-                            gap: 2,
-                            mb: 4
-                        }}>
-                            {restaurant.total_tables > 0 && (
-                                <Box sx={{
-                                    background: restaurant.total_tables < 3 ? "rgba(255, 152, 0, 0.1)" : "rgba(76, 175, 80, 0.1)",
-                                    color: restaurant.total_tables < 3 ? "#ef6c00" : "#2e7d32",
-                                    padding: "10px 24px",
-                                    borderRadius: "50px",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 1.5,
-                                    fontFamily: "'Poppins', sans-serif",
-                                    fontWeight: 700,
-                                    fontSize: "0.85rem",
-                                    letterSpacing: "0.1em",
-                                    border: `1px solid ${restaurant.total_tables < 3 ? "rgba(255, 152, 0, 0.2)" : "rgba(76, 175, 80, 0.2)"}`,
-                                    backdropFilter: "blur(10px)",
-                                    animation: "pulse 2s infinite ease-in-out",
-                                    whiteSpace: "nowrap"
-                                }}>
-                                    <span style={{
-                                        width: "8px",
-                                        height: "8px",
-                                        borderRadius: "50%",
-                                        background: restaurant.total_tables < 3 ? "#ef6c00" : "#2e7d32",
-                                        boxShadow: `0 0 10px ${restaurant.total_tables < 3 ? "#ef6c00" : "#2e7d32"}`
-                                    }}></span>
-                                    HURRY! ONLY {restaurant.total_tables} {restaurant.total_tables === 1 ? 'TABLE' : 'TABLES'} LEFT.
-                                </Box>
-                            )}
-
-                            <div className="smooth-grad-btn"
-                                style={{
-                                    ...S.bookBtn,
-                                    minWidth: isMobile ? "200px" : "280px",
-                                    width: "auto",
-                                    padding: "8px 20px",
-                                    marginTop: 0,
-                                    fontSize: "0.85rem",
-                                    maxHeight: "44px",
-                                    backdropFilter: "blur(10px)",
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.1em",
-                                    display: "flex",
-                                    alignItems: "center"
-                                }}>
-                                <Utensils size={14} className="me-2" />
-                                {restaurant.cuisine_type}
-                            </div>
-                        </Box>
-
-                        <Divider sx={{ mb: 4 }} />
-
-                        <Box sx={{ mb: 4 }}>
-                            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 1 }}>
-                                <span className="price-main">₹{Number(restaurant.average_cost_for_two).toLocaleString()}</span>
-                                <span style={{ color: "#636e72", fontSize: "1rem" }}>For Slot</span>
-                            </Box>
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                                <Typography variant="body2" sx={{
-                                    color: "#636e72", fontSize: "0.85rem", width: "fit-content",
-                                    backgroundColor: "rgba(76, 175, 80, 0.1)", padding: "6px 16px",
-                                    borderRadius: "50px", lineHeight: 1.4
-                                }}>
-                                    This amount will be deducted from your bill
-                                </Typography>
-                                <Typography variant="body2" sx={{
-                                    color: "#ef6c00", fontSize: "0.85rem", width: "fit-content",
-                                    backgroundColor: "rgba(255, 152, 0, 0.1)", padding: "6px 16px",
-                                    borderRadius: "50px", lineHeight: 1.4
-                                }}>
-                                    No Refund for cancellation
-                                </Typography>
-                            </Box>
-                        </Box>
-
-                        {/* Features Section */}
-                        <Box sx={{
-                            background: "rgba(255, 255, 255, 0.6)",
-                            backdropFilter: "blur(20px)",
-                            borderRadius: "32px",
-                            p: { xs: 3, md: 5 },
-                            mb: 4,
-                            border: "1px solid rgba(102, 126, 234, 0.15)",
-                            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.05)"
-                        }}>
-                            <Typography variant="h5" sx={{
-                                fontFamily: "'Poppins', sans-serif",
-                                fontWeight: 600,
-                                color: "#2d3436",
-                                mb: 4,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1.5
-                            }}>
-                                <span style={{ width: "8px", height: "32px", background: "linear-gradient(to bottom, #667eea, #764ba2)", borderRadius: "4px" }}></span>
-                                Features
+                        {/* Additional Sidebar Info */}
+                        <Box sx={{ mt: 3, textAlign: "center", p: 2 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                                <NotificationsIcon sx={{ fontSize: 16 }} />
+                                Standard ServNex Booking Policy Applies
                             </Typography>
-
-                            <Box sx={{
-                                display: "grid",
-                                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
-                                gap: 3
-                            }}>
-                                {[
-                                    { name: "Home Delivery", icon: <Bike size={22} /> },
-                                    { name: "Air Condition", icon: <Wind size={22} /> },
-                                    { name: "Take-away", icon: <ShoppingBag size={22} /> },
-                                    { name: "Live Music", icon: <Music size={22} /> },
-                                    { name: "Wheelchair Accessible", icon: <Accessibility size={22} /> },
-                                    { name: "Live Sports Screening", icon: <Monitor size={22} /> },
-                                    { name: "Kids Allowed", icon: <Baby size={22} /> },
-                                    { name: "5-star dining", icon: <Star size={22} /> },
-                                    { name: "Buffet", icon: <Soup size={22} /> },
-                                    { name: "Thali", icon: <Disc size={22} /> },
-                                    { name: "Luxury Dining", icon: <Crown size={22} /> },
-                                    { name: "New Year Specials", icon: <PartyPopper size={22} /> }
-                                ].map((feature, idx) => (
-                                    <Box
-                                        key={idx}
-                                        sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 2,
-                                            p: 2,
-                                            borderRadius: "16px",
-                                            transition: "all 0.3s ease",
-                                            "&:hover": {
-                                                background: "rgba(102, 126, 234, 0.08)",
-                                                transform: "translateY(-3px)"
-                                            }
-                                        }}
-                                    >
-                                        <Box sx={{
-                                            color: "#667eea",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            background: "rgba(102, 126, 234, 0.1)",
-                                            p: 1,
-                                            borderRadius: "12px"
-                                        }}>
-                                            {feature.icon}
-                                        </Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 500, color: "#444", fontSize: "0.95rem" }}>
-                                            {feature.name}
-                                        </Typography>
-                                    </Box>
-                                ))}
-                            </Box>
                         </Box>
-
-                        {/* Reservation Box */}
-                        <Box sx={{
-                            background: "rgba(255, 255, 255, 0.6)",
-                            backdropFilter: "blur(20px)", borderRadius: "16px", p: 3
-                        }}>
-                            {restaurant.total_tables < 5 && restaurant.total_tables > 0 && (
-                                <div className="text-center mb-3">
-                                    <Chip label="Limited Tables Available!" color="warning" size="small" sx={{ fontWeight: 600 }} />
-                                </div>
-                            )}
-                            <div className="d-flex justify-content-center">
-                                <button
-                                    className="smooth-grad-btn"
-                                    style={{ ...S.bookBtn, marginTop: 0 }}
-                                    onClick={handleOpenModal}
-                                >
-                                    Reserve a Table
-                                </button>
-                            </div>
-                        </Box>
-                    </CardContent>
-                </Card>
+                    </aside>
+                </div>
             </div>
+
 
             <Modal open={open} onClose={handleClose}>
                 <Box sx={{
