@@ -35,56 +35,62 @@ import KitchenIcon from "@mui/icons-material/Kitchen";
 import CheckIcon from "@mui/icons-material/Check";
 
 const amenityIconMap = {
-    "Wifi": <WifiIcon sx={{ color: "#667eeaff" }} />,
-    "Parking": <LocalParkingIcon sx={{ color: "#667eeaff" }} />,
-    "Restaurant": <RestaurantIcon sx={{ color: "#667eeaff" }} />,
-    "Pool": <PoolIcon sx={{ color: "#667eeaff" }} />,
-    "Gym": <FitnessCenterIcon sx={{ color: "#667eeaff" }} />,
-    "AC": <AcUnitIcon sx={{ color: "#667eeaff" }} />,
-    "Bar": <LocalBarIcon sx={{ color: "#667eeaff" }} />,
-    "Spa": <SpaIcon sx={{ color: "#667eeaff" }} />,
-    "Room Service": <RoomServiceIcon sx={{ color: "#667eeaff" }} />,
-    "Laundry": <LocalLaundryServiceIcon sx={{ color: "#667eeaff" }} />,
-    "TV": <TvIcon sx={{ color: "#667eeaff" }} />,
-    "Kitchen": <KitchenIcon sx={{ color: "#667eeaff" }} />,
+    "Wifi": <WifiIcon sx={{ fontSize: "1.25rem" }} />,
+    "Parking": <LocalParkingIcon sx={{ fontSize: "1.25rem" }} />,
+    "Restaurant": <RestaurantIcon sx={{ fontSize: "1.25rem" }} />,
+    "Pool": <PoolIcon sx={{ fontSize: "1.25rem" }} />,
+    "Gym": <FitnessCenterIcon sx={{ fontSize: "1.25rem" }} />,
+    "AC": <AcUnitIcon sx={{ fontSize: "1.25rem" }} />,
+    "Bar": <LocalBarIcon sx={{ fontSize: "1.25rem" }} />,
+    "Spa": <SpaIcon sx={{ fontSize: "1.25rem" }} />,
+    "Room Service": <RoomServiceIcon sx={{ fontSize: "1.25rem" }} />,
+    "Laundry": <LocalLaundryServiceIcon sx={{ fontSize: "1.25rem" }} />,
+    "TV": <TvIcon sx={{ fontSize: "1.25rem" }} />,
+    "Kitchen": <KitchenIcon sx={{ fontSize: "1.25rem" }} />,
 };
 
 /* ─── inline styles (no extra CSS file needed) ─── */
 const S = {
     page: {
         minHeight: "100vh",
-        backgroundColor: "#fdfaf6",
-        fontFamily: "'Cormorant Garamond', 'Georgia', serif",
-        color: "#2c1810",
+        backgroundColor: "#fcfcfd",
+        fontFamily: "'Poppins', sans-serif",
+        color: "#1a1a1a",
     },
 
     /* ── Header ── */
     header: {
-        background: "white",
-        height: "70px",
+        background: "rgba(255, 255, 255, 0.9)",
+        backdropFilter: "blur(20px)",
+        height: "80px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 1.5rem",
+        padding: "0 2rem",
         position: "sticky",
         top: 0,
         zIndex: 1000,
-        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.03)",
-        transition: "padding 0.3s ease",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.03)",
+        borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+        transition: "all 0.3s ease",
     },
 
     logoWrap: {
         fontSize: "24px",
         fontWeight: 600,
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        WebkitBackgroundClip: "text",
-        backgroundClip: "text",
-        WebkitTextFillColor: "transparent",
         letterSpacing: "0.5px",
         textDecoration: "none",
         display: "flex",
         alignItems: "center",
         gap: "12px",
+        color: "#0f172a",
+    },
+
+    logoText: {
+        color: "#5c5be5",
+        fontWeight: 600,
+        fontSize: "24px",
+        letterSpacing: "0.5px",
     },
 
     logoImg: {
@@ -96,43 +102,26 @@ const S = {
     },
 
     bellBtn: {
-        width: "42px",
-        height: "42px",
-        borderRadius: "50%",
-        border: "1.5px solid #4f46e5",
+        width: "44px",
+        height: "44px",
+        borderRadius: "14px",
+        backgroundColor: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "#4f46e5",
+        color: "#4b5563",
         cursor: "pointer",
-        transition: "all 0.3s ease",
-        position: "relative",
-        overflow: "hidden",
-    },
-
-    bellOverlay: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backdropFilter: "blur(5px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "white",
-        fontSize: "10px",
-        fontWeight: 600,
-        opacity: 0,
-        transition: "opacity 0.3s ease",
-        borderRadius: "50%",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        border: "1px solid #eef2f6",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
     },
 
     /* ── Hero carousel ── */
     heroWrap: {
         position: "relative",
         overflow: "hidden",
-        backgroundColor: "#1a1308",
+        backgroundColor: "#000",
+        borderRadius: "0 0 24px 24px",
     },
     heroOverlay: {
         position: "absolute",
@@ -140,40 +129,43 @@ const S = {
         left: 0,
         right: 0,
         bottom: 0,
-        background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.6) 100%)",
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.6) 100%)",
         zIndex: 1,
         pointerEvents: "none",
     },
     heroTitle: {
         position: "absolute",
-        bottom: "80px",
-        left: "80px",
+        bottom: "60px",
+        left: "60px",
         zIndex: 2,
         color: "#fff",
-        fontFamily: "'Playfair Display', serif",
     },
     heroBrand: {
-        fontSize: "clamp(3.5rem, 8vw, 6rem)",
-        fontWeight: 400,
-        lineHeight: 0.8,
+        fontFamily: "'Poppins', sans-serif",
+        fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+        fontWeight: 600,
+        lineHeight: 1.1,
         letterSpacing: "-0.02em",
-        marginBottom: "10px",
-        textShadow: "0 4px 20px rgba(0,0,0,0.3)",
-        position: "relative",
+        marginBottom: "12px",
+        textShadow: "0 4px 20px rgba(0,0,0,0.2)",
     },
     heroSubtitle: {
-        fontSize: "clamp(1.2rem, 3vw, 2rem)",
-        fontWeight: 500,
+        fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)",
+        fontWeight: 400,
         opacity: 0.9,
         letterSpacing: "0.03em",
+        textTransform: "uppercase",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
     },
     heroDots: {
         position: "absolute",
-        bottom: "35px",
+        bottom: "50px",
         width: "100%",
         display: "flex",
         justifyContent: "center",
-        gap: "12px",
+        gap: "8px",
         zIndex: 2,
     },
 
@@ -182,205 +174,145 @@ const S = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: "40px",
-        padding: "20px 30px",
+        gap: "60px",
+        padding: "24px 40px",
         backgroundColor: "#fff",
-        borderBottom: "1px solid rgba(139, 105, 20, 0.1)",
+        borderRadius: "16px",
+        margin: "-30px 60px 0",
+        position: "relative",
+        zIndex: 10,
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.04)",
+        border: "1px solid rgba(0,0,0,0.02)",
         flexWrap: "wrap",
     },
     infoSep: {
-        width: "2px",
+        width: "1px",
         height: "24px",
-        backgroundColor: "#667eeaff",
-        opacity: 0.6,
+        backgroundColor: "#f1f5f9",
     },
     infoItem: {
         display: "flex",
         alignItems: "center",
-        gap: "12px",
+        gap: "16px",
         fontSize: "0.95rem",
-        color: "#000",
-        fontFamily: "'Playfair Display', serif",
-        fontWeight: 500,
-        letterSpacing: "0.05em",
+        color: "#64748b",
+        fontWeight: 400,
     },
     infoIcon: {
-        fontSize: "1.3rem",
-        color: "#667eeaff",
+        fontSize: "1.25rem",
+        color: "#6366f1",
     },
 
-    /* ── Luxury Section: after carousel (pale cream, two-column) ── */
+    /* ── Luxury Section ── */
     luxurySection: {
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "transparent",
         width: "100%",
-        minHeight: "60vh",
-        padding: "80px 0 100px",
-        position: "relative",
+        padding: "80px 0",
     },
     body: {
-        maxWidth: "1400px",
+        maxWidth: "1300px",
         margin: "0 auto",
-        padding: "0 48px",
+        padding: "0 40px",
     },
     twoCol: {
         display: "grid",
-        gridTemplateColumns: "0.9fr 1.1fr", // give more space to map column on large screens
-        gap: "48px",
-        alignItems: "flex-start", // align both columns from the top
-        minHeight: "400px",
+        gridTemplateColumns: "1.2fr 0.8fr",
+        gap: "80px",
+        alignItems: "flex-start",
     },
     luxuryLeftPanel: {
-        padding: "40px 48px 40px 0",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-start", // start at top instead of vertical centering
-        alignItems: "flex-start",
-        maxWidth: "560px",
-    },
-    luxuryRightPanel: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
+        gap: "32px",
     },
     sectionTitle: {
         fontFamily: "'Poppins', sans-serif",
-        fontSize: "clamp(2.1rem, 6vw, 1.5rem)",
-        fontWeight: 400,
-        color: "#282828",
-        marginBottom: "32px",
-        lineHeight: 0.5,
+        fontSize: "clamp(2rem, 4vw, 3rem)",
+        fontWeight: 600,
+        color: "#0f172a",
+        lineHeight: 1.2,
         letterSpacing: "-0.02em",
     },
     descText: {
-        fontFamily: "'Inter', 'Roboto', 'Open Sans', sans-serif",
-        fontSize: "1.05rem",
-        color: "#555555",
-        lineHeight: 1.8,
-        marginBottom: "0",
-        maxWidth: "540px",
-    },
-    featureRow: {
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        gap: "20px",
-        marginTop: "60px",
-    },
-    featureItem: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        transition: "transform 0.5s cubic-bezier(0.2, 1, 0.3, 1)",
-        cursor: "default",
-        flex: 1,
-    },
-    featureIconWrap: {
-        width: "85px",
-        height: "85px",
-        borderRadius: "50%",
-        backgroundColor: "#fff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: "0 12px 30px rgba(139, 105, 20, 0.08)",
-        fontSize: "2rem",
-        border: "1px solid #667eea8f",
-        marginBottom: "24px",
-        transition: "all 0.6s cubic-bezier(0.2, 1, 0.3, 1)",
-        position: "relative",
-    },
-    featureDivider: {
-        width: "1px",
-        height: "100px",
-        background: "linear-gradient(to bottom, transparent, #667eea8f, transparent)",
-        margin: "0 10px",
+        fontSize: "1rem",
+        color: "#64748b",
+        lineHeight: 1.7,
+        margin: 0,
+        fontWeight: 400,
     },
     mapCard: {
         width: "100%",
-        maxWidth: "700px",
-        borderRadius: "32px",
-        overflow: "hidden",
-        boxShadow: "0 25px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.05)",
-        border: "8px solid rgba(255, 255, 255, 0.6)",
-        background: "#fff",
-        transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-    },
-    verticalLine: {
-        width: "2px",
-        height: "60px",
-        background: "linear-gradient(to bottom, #667eea, transparent)",
-        marginBottom: "24px",
-    },
-    mapWrap: {
         borderRadius: "24px",
         overflow: "hidden",
-        boxShadow: "0 25px 50px rgba(0,0,0,0.1)",
+        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.05)",
+        border: "4px solid #fff",
+        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
     },
 
     /* ── Rooms ── */
     roomsTitle: {
-        fontFamily: "'Playfair Display', serif",
-        fontSize: "clamp(2.2rem, 4vw, 3.2rem)",
-        fontWeight: 500,
-        color: "#2c1810",
-        marginBottom: "80px",
+        fontFamily: "'Poppins', sans-serif",
+        fontSize: "clamp(2rem, 4vw, 3rem)",
+        fontWeight: 600,
+        color: "#0f172a",
+        marginBottom: "48px",
         textAlign: "center",
+        letterSpacing: "-0.02em",
     },
     roomCard: {
-        borderRadius: "28px",
+        borderRadius: "24px",
         overflow: "hidden",
         backgroundColor: "#fff",
-        boxShadow: "0 10px 30px -10px rgba(0,0,0,0.1), 0 20px 50px -20px rgba(0,0,0,0.05)",
+        border: "1px solid #f1f5f9",
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.02)",
     },
     roomImg: {
-        height: "220px",
+        height: "260px",
         width: "100%",
         objectFit: "cover",
-        display: "block",
     },
     roomBody: {
         padding: "24px",
         flexGrow: 1,
         display: "flex",
         flexDirection: "column",
+        gap: "20px",
     },
     roomName: {
-        fontFamily: "'Cormorant Garamond', serif",
         fontSize: "1.5rem",
-        fontWeight: 700,
-        color: "#2c1810",
-        marginBottom: "10px",
+        fontWeight: 600,
+        color: "#0f172a",
+        letterSpacing: "-0.01em",
     },
     roomDesc: {
-        fontFamily: "'Lato', sans-serif",
         fontSize: "0.95rem",
-        color: "#7a6a4a",
+        color: "#64748b",
         lineHeight: 1.6,
-        marginBottom: "18px",
-        flexGrow: 1,
+        margin: 0,
+        fontWeight: 400,
     },
 
-    /* ── Book Now btn ── */
+    /* ── Buttons ── */
     bookBtn: {
         width: "100%",
-        padding: "14px",
-        borderRadius: "50px",
-        border: "1px solid rgba(102, 126, 234, 0.3)",
-        background: "#fff",
-        color: "#667eea",
-        fontFamily: "'Lato', sans-serif",
-        fontWeight: 700,
+        padding: "14px 24px",
+        borderRadius: "12px",
+        border: "none",
+        background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+        color: "#fff",
+        fontWeight: 500,
         fontSize: "0.95rem",
-        letterSpacing: "0.08em",
         cursor: "pointer",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        marginTop: "15px",
-        boxShadow: "0 4px 12px rgba(102, 126, 234, 0.05)",
+        transition: "all 0.3s ease",
+        boxShadow: "0 8px 16px rgba(99, 102, 241, 0.15)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "8px",
     },
 
     /* ── Modal ── */
@@ -390,60 +322,52 @@ const S = {
         left: "50%",
         transform: "translate(-50%,-50%)",
         backgroundColor: "#fff",
-        padding: "40px",
-        borderRadius: "24px",
+        padding: "32px",
+        borderRadius: "20px",
         textAlign: "center",
-        width: "min(400px, 90vw)",
-        boxShadow: "0 30px 80px rgba(0,0,0,0.2)",
+        width: "min(480px, 90vw)",
+        boxShadow: "0 15px 35px rgba(0,0,0,0.03)",
         outline: "none",
     },
     modalTitle: {
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: "1.8rem",
-        fontWeight: 700,
-        color: "#2c1810",
-        marginBottom: "28px",
+        fontSize: "1.5rem",
+        fontWeight: 600,
+        color: "#0f172a",
+        marginBottom: "20px",
+        letterSpacing: "-0.01em",
     },
     dateLabel: {
-        fontFamily: "'Lato', sans-serif",
-        fontSize: "0.85rem",
-        color: "#667eeaff",
-        fontWeight: 600,
-        letterSpacing: "0.06em",
+        fontSize: "0.8rem",
+        color: "#94a3b8",
+        fontWeight: 500,
         textTransform: "uppercase",
-        marginBottom: "10px",
+        letterSpacing: "0.04em",
+        marginBottom: "6px",
         display: "block",
     },
 };
 
-/* ─── BookNow button with hover gradient ─── */
+/* ─── BookNow button with Landing.jsx style ─── */
 function BookBtn({ onClick }) {
     return (
         <button
             onClick={onClick}
-            className="smooth-grad-btn"
-            style={{
-                ...S.bookBtn,
-            }}
+            className="premium-btn"
         >
-            Check Live Status
+            <span>Check Live Status </span>
         </button>
     );
 }
 
-/* ─── Check-availability gradient button ─── */
+/* ─── Check-availability gradient button with Landing.jsx style ─── */
 function GradBtn({ onClick, children, fullWidth }) {
     return (
         <button
             onClick={onClick}
-            className="smooth-grad-btn"
-            style={{
-                ...S.bookBtn,
-                width: fullWidth ? "100%" : "auto",
-                padding: "16px 32px",
-            }}
+            className="premium-btn"
+            style={{ width: fullWidth ? "100%" : "auto", padding: "0 2.5em" }}
         >
-            {children}
+            <span>{children} </span>
         </button>
     );
 }
@@ -457,16 +381,11 @@ function NotificationBell() {
             onMouseLeave={() => setHovered(false)}
             style={{
                 ...S.bellBtn,
+                backgroundColor: hovered ? "#e5e7eb" : "#f3f4f6",
                 transform: hovered ? "scale(1.05)" : "scale(1)",
             }}
         >
             <Bell size={20} />
-            <div style={{
-                ...S.bellOverlay,
-                opacity: hovered ? 1 : 0
-            }}>
-                Bell
-            </div>
         </div>
     );
 }
@@ -680,16 +599,16 @@ export default function HotelDetails() {
     /* ── Loading / Error ── */
     if (loading) return (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", gap: "16px" }}>
-            <CircularProgress style={{ color: "#667eeaff" }} />
-            <Typography style={{ fontFamily: "'Cormorant Garamond', serif", color: "#667eeaff" }}>
+            <CircularProgress style={{ color: "#6366f1" }} />
+            <Typography style={{ fontFamily: "'Poppins', sans-serif", color: "#6366f1", fontWeight: 500 }}>
                 Loading Hotel…
             </Typography>
         </div>
     );
     if (error || !hotel) return (
         <div style={{ textAlign: "center", padding: "80px 24px" }}>
-            <Typography variant="h5" color="error" gutterBottom>{error || "Hotel not found"}</Typography>
-            <Button variant="contained" onClick={() => navigate("/")}>Go Back Home</Button>
+            <Typography variant="h5" color="error" gutterBottom style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>{error || "Hotel not found"}</Typography>
+            <Button variant="contained" onClick={() => navigate("/")} style={{ borderRadius: "12px", textTransform: "none", fontFamily: "'Poppins', sans-serif" }}>Go Back Home</Button>
         </div>
     );
 
@@ -699,78 +618,86 @@ export default function HotelDetails() {
         <div style={S.page}>
             {/* ── Google Fonts ── */}
             <link
-                href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Lato:wght@400;600;700&display=swap"
+                href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
                 rel="stylesheet"
             />
 
             <style>
                 {`
-                    .luxury-feature-item:hover {
-                        transform: translateY(-8px);
-                    }
-                    .luxury-feature-item:hover .icon-wrap {
-                        box-shadow: 0 20px 45px rgba(139, 105, 20, 0.15);
-                        border-color: #667eeaff;
-                        transform: scale(1.05);
+                    @keyframes slideUp {
+                        from { opacity: 0; transform: translateY(30px); }
+                        to { opacity: 1; transform: translateY(0); }
                     }
 
-                    /* Ultra-smooth Gradient Button */
-                    .smooth-grad-btn {
+                    .luxury-feature-card {
+                        background: #fff;
+                        padding: 20px;
+                        border-radius: 16px;
+                        border: 1px solid #f1f5f9;
+                        transition: all 0.3s ease;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+
+                    .luxury-feature-card:hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03);
+                        border-color: #6366f133;
+                    }
+
+                    .facility-icon-wrap {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 10px;
+                        background: #f8fafc;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #6366f1;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+
+                    .luxury-feature-card:hover .facility-icon-wrap {
+                        background: #6366f1;
+                        color: #fff;
+                        transform: scale(1.1);
+                    }
+
+                    .review-card {
+                        background: #fff;
+                        padding: 32px;
+                        border-radius: 20px;
+                        border: 1px solid #f1f5f9;
+                        transition: all 0.3s ease;
                         position: relative;
                         overflow: hidden;
-                        z-index: 1;
-                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                        border: 1px solid rgba(102, 126, 234, 0.3);
-                        background: #fff;
-                        color: #667eea;
                     }
 
-                    .smooth-grad-btn::before {
-                        content: "";
+                    .review-card::before {
+                        content: '"';
                         position: absolute;
-                        top: 0; left: 0; right: 0; bottom: 0;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        z-index: -1;
-                        opacity: 0;
-                        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        top: 10px;
+                        right: 30px;
+                        font-size: 6rem;
+                        font-family: 'Poppins', sans-serif;
+                        color: #f1f5f9;
+                        line-height: 1;
+                        z-index: 0;
+                        font-weight: 700;
+                        opacity: 0.5;
                     }
 
-                    .smooth-grad-btn:hover {
-                        color: #fff !important;
-                        transform: translateY(-3px) scale(1.02);
-                        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.25);
-                        border-color: transparent;
+                    .review-content {
+                        position: relative;
+                        z-index: 1;
                     }
 
-                    .smooth-grad-btn:hover::before {
-                        opacity: 1;
-                    }
-                    .smooth-grad-btn:hover::before {
-                        opacity: 1;
-                    }
-
-                    /* Icon Animations */
-                    @keyframes drawPath {
-                        from { stroke-dashoffset: 80; }
-                        to { stroke-dashoffset: 0; }
-                    }
-                    @keyframes scaleUp {
-                        from { transform: scale(0); opacity: 0; }
-                        to { transform: scale(1); opacity: 1; }
-                    }
-                    .animate-draw {
-                        stroke-dasharray: 80;
-                        stroke-dashoffset: 80;
-                        animation: drawPath 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                    }
-                    .animate-scale {
-                        animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-                    }
-
+                    /* Reveal animations */
                     .reveal {
                         opacity: 0;
-                        transform: translateY(30px);
-                        transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+                        transform: translateY(20px);
+                        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
                     }
                     .reveal.active {
                         opacity: 1;
@@ -778,8 +705,66 @@ export default function HotelDetails() {
                     }
                     
                     .map-card-hover:hover {
-                        transform: translateY(-10px) scale(1.02);
-                        box-shadow: 0 40px 80px rgba(102, 126, 234, 0.15);
+                        transform: scale(1.01);
+                        box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+                    }
+
+                    /* ================= EXPLORE BUTTON STYLE FROM LANDING ================= */
+                    .premium-btn {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 3.5em;
+                        border-radius: 30em;
+                        font-size: 15px;
+                        font-family: inherit;
+                        text-decoration: none;
+                        border: none;
+                        position: relative;
+                        overflow: hidden;
+                        cursor: pointer;
+                        color: #1e293b;
+                        background: white;
+                        box-shadow: 4px 4px 10px #e2e8f0,
+                                    -4px -4px 10px #ffffff;
+                        transition: all 0.3s ease;
+                        font-weight: 500;
+                    }
+
+                    .premium-btn::before {
+                        content: '';
+                        position: absolute;
+                        inset: 0;
+                        border-radius: 30em;
+                        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                        transform: scaleX(0);
+                        transform-origin: left;
+                        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                        z-index: 0;
+                    }
+
+                    .premium-btn:hover::before {
+                        transform: scaleX(1);
+                    }
+
+                    .premium-btn:hover {
+                        color: white;
+                        transform: translateY(-2px);
+                        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+                    }
+
+                    .premium-btn span {
+                        position: relative;
+                        z-index: 1;
+                        transition: color 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .premium-btn:hover span {
+                        color: white;
                     }
                 `}
             </style>
@@ -787,7 +772,7 @@ export default function HotelDetails() {
             <header style={S.header}>
                 <Link to="/" style={S.logoWrap}>
                     <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
-                    ServNex
+                    <span style={S.logoText}>ServNex</span>
                 </Link>
                 <NotificationBell />
             </header>
@@ -815,28 +800,25 @@ export default function HotelDetails() {
                 ))}
                 <div style={S.heroOverlay} />
 
-                {/* Hotel name on image - TAJ STYLE */}
                 <div style={{
                     ...S.heroTitle,
-                    bottom: isMobile ? "80px" : "70px",
-                    left: isMobile ? "24px" : "50px",
-                    textAlign: isMobile ? "left" : "inherit"
+                    bottom: isMobile ? "60px" : "80px",
+                    left: isMobile ? "24px" : "80px",
                 }}>
                     <div style={{
                         ...S.heroBrand,
-                        fontSize: isMobile ? "3.2rem" : S.heroBrand.fontSize
+                        fontSize: isMobile ? "3rem" : S.heroBrand.fontSize
                     }}>
                         {hotel.name}
                     </div>
                     <div style={{
                         ...S.heroSubtitle,
-                        fontSize: isMobile ? "1.2rem" : S.heroSubtitle.fontSize
+                        fontSize: isMobile ? "1rem" : S.heroSubtitle.fontSize
                     }}>
                         {hotel.area}
                     </div>
                 </div>
 
-                {/* Carousel dots */}
                 <div style={S.heroDots}>
                     {images.map((_, i) => (
                         <div
@@ -859,124 +841,149 @@ export default function HotelDetails() {
             <div
                 data-reveal-id="info-bar"
                 className={`reveal ${revealed['info-bar'] ? 'active' : ''}`}
-                style={{ ...S.infoBar, gap: isMobile ? "20px" : S.infoBar.gap, padding: isMobile ? "20px 1.5rem" : S.infoBar.padding }}
+                style={{ 
+                    ...S.infoBar, 
+                    margin: isMobile ? "24px" : S.infoBar.margin,
+                    padding: isMobile ? "24px" : S.infoBar.padding,
+                    gap: isMobile ? "24px" : S.infoBar.gap 
+                }}
             >
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
-                    <LocationOnIcon style={{ ...S.infoIcon, fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
+                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>
+                    <LocationOnIcon style={{ ...S.infoIcon, fontSize: "1.2rem" }} />
                     {hotel.area}, {hotel.city}
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize }}>
-                    <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.1rem" : S.infoIcon.fontSize }} />
-                    <strong>{hotel.average_rating || "0.0"}</strong>&nbsp;
-                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({hotel.reviews_count || "0"} reviews)</span>
+                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>
+                    <StarIcon style={{ ...S.infoIcon, color: "#f59e0b", fontSize: "1.2rem" }} />
+                    <strong>{hotel.average_rating || "0.0"}</strong>
+                    <span style={{ fontWeight: 400, color: "#94a3b8" }}>({hotel.reviews_count || "0"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.85rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto" }}>
-                    <span style={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>🏰</span>
-                    Experience Tajness – Where luxury is a soulful indulgence.
+                <div style={{ 
+                    ...S.infoItem, 
+                    fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, 
+                    textAlign: isMobile ? "center" : "left",
+                    width: isMobile ? "100%" : "auto" 
+                }}>
+                    <span style={{ fontSize: "1.4rem" }}>✨</span>
+                    <span style={{ fontStyle: "italic", color: "#64748b" }}>Redefining Luxury & Comfort</span>
                 </div>
             </div>
 
-            {/* ── Luxury Section: after carousel — pale cream, two-column, text + map ── */}
-            <section
-                style={{
-                    ...S.luxurySection,
-                    padding: isMobile ? "64px 0 80px" : "100px 0 120px",
-                    borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-                    borderBottom: "1px solid rgba(102, 126, 234, 0.1)",
-                }}>
-                <div style={{ ...S.body, padding: isMobile ? "0 24px" : "0 48px", maxWidth: isMobile ? "100%" : "1250px" }}>
+            {/* ── Luxury Section ── */}
+            <section style={S.luxurySection}>
+                <div style={S.body}>
                     <div style={isMobile
-                        ? { display: "flex", flexDirection: "column", gap: "40px" }
-                        : { ...S.twoCol, gridTemplateColumns: "1.15fr 0.85fr", gap: "48px" }
+                        ? { display: "flex", flexDirection: "column", gap: "60px" }
+                        : S.twoCol
                     }>
-                        {/* Left: text block — descriptor, heading (name on own line), paragraph */}
-                        <div style={isMobile
-                            ? { padding: "24px 0", textAlign: "center" }
-                            : { ...S.luxuryLeftPanel, textAlign: "left" }
-                        }>
-                            <div
-                                data-reveal-id="luxury-title"
-                                className={`reveal ${revealed['luxury-title'] ? 'active' : ''}`}
-                            >
-
+                        {/* Left Panel */}
+                        <div style={S.luxuryLeftPanel}>
+                            <div data-reveal-id="luxury-header" className={`reveal ${revealed['luxury-header'] ? 'active' : ''}`}>
                                 <div style={{
-                                    fontFamily: "'Inter', 'Roboto', 'Open Sans', sans-serif",
-                                    color: "#667eeaff",
-                                    letterSpacing: "0.2em",
-                                    fontSize: "0.8rem",
-                                    fontWeight: 600,
-                                    textTransform: "uppercase",
-                                    marginBottom: "16px",
-                                }}>
-                                </div>
-
-                                <h2 style={{ ...S.sectionTitle, textAlign: isMobile ? "left" : "left", fontSize: isMobile ? "2.5rem" : S.sectionTitle.fontSize }}>
-                                    {hotel.name} </h2>
+                                     fontSize: "0.8rem",
+                                     fontWeight: 500,
+                                     color: "#6366f1",
+                                     textTransform: "uppercase",
+                                     letterSpacing: "0.1em",
+                                     marginBottom: "12px"
+                                 }}>
+                                     Experience Excellence
+                                 </div>
+                                <h2 style={S.sectionTitle}>{hotel.name}</h2>
                             </div>
-                            <p
-                                data-reveal-id="luxury-desc"
+
+                            <p 
+                                data-reveal-id="luxury-desc" 
                                 className={`reveal ${revealed['luxury-desc'] ? 'active' : ''}`}
-                                style={{ ...S.descText, margin: isMobile ? "0 auto 16px" : S.descText.margin, textAlign: isMobile ? "justify" : "left" }}
+                                style={S.descText}
                             >
                                 {hotel.description}
                             </p>
 
+                            {/* Nearby Attractions - More Premium */}
                             {Array.isArray(hotel.nearby_attractions) && hotel.nearby_attractions.length > 0 && (
-                                <div style={{ marginTop: "24px" }}>
-                                    <div style={{ fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.08em", color: "#667eeaff", marginBottom: "8px" }}>
-                                        Nearby Places
-                                    </div>
-                                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                                <div 
+                                    data-reveal-id="nearby" 
+                                    className={`reveal ${revealed['nearby'] ? 'active' : ''}`}
+                                    style={{ marginTop: "12px" }}
+                                >
+                                    <h4 style={{ 
+                                        fontSize: "1.1rem", 
+                                        fontWeight: 600, 
+                                        marginBottom: "16px",
+                                        color: "#0f172a" 
+                                    }}>
+                                        Nearby Exploration
+                                    </h4>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                                         {hotel.nearby_attractions.map((place, idx) => (
-                                            <li key={place.id || idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", marginBottom: "6px" }}>
-                                                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "70%" }}>
+                                            <div key={place.id || idx} style={{
+                                                padding: "12px 16px",
+                                                background: "#fff",
+                                                borderRadius: "12px",
+                                                border: "1px solid #f1f5f9",
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center"
+                                            }}>
+                                                <span style={{ fontWeight: 500, color: "#334155", fontSize: "0.9rem" }}>
                                                     {place.name}
                                                 </span>
-                                                <span style={{ color: "#555", marginLeft: "12px" }}>
-                                                    {parseFloat(place.distance_km).toFixed(2)} km
+                                                <span style={{ 
+                                                    background: "#f8fafc", 
+                                                    padding: "3px 8px", 
+                                                    borderRadius: "6px",
+                                                    fontSize: "0.75rem",
+                                                    fontWeight: 500,
+                                                    color: "#64748b"
+                                                }}>
+                                                    {parseFloat(place.distance_km).toFixed(1)} km
                                                 </span>
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 </div>
                             )}
-
                         </div>
 
-
-                        {/* Right: map card — rounded corners, subtle shadow */}
-                        <div
-                            data-reveal-id="luxury-map"
-                            style={isMobile
-                                ? { display: "flex", justifyContent: "center", width: "100%" }
-                                : S.luxuryRightPanel
-                            } className={`reveal ${revealed['luxury-map'] ? 'active' : ''}`}>
-                            <div
-                                className="map-card-hover"
-                                style={{
-                                    ...S.mapCard,
-                                    maxWidth: "100%",
-                                    width: "100%",
-                                }}>
+                        {/* Right Panel: Map */}
+                        <div 
+                            data-reveal-id="luxury-map" 
+                            className={`reveal ${revealed['luxury-map'] ? 'active' : ''}`}
+                        >
+                            <div className="map-card-hover" style={S.mapCard}>
                                 <iframe
-                                    height={isMobile ? "350" : isTablet ? "450" : "580"}
-                                    width={isMobile ? "100%" : "620px"}
+                                    height={isMobile ? "400" : "650"}
+                                    width="100%"
                                     style={{ display: "block", border: 0 }}
                                     loading="lazy"
-                                    src={`https://www.google.com/maps?q=${hotel.area || 'Taj Hotel'}&output=embed`}
+                                    src={`https://www.google.com/maps?q=${hotel.area || hotel.name}&output=embed`}
                                     title="map"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div
-                        style={{ marginTop: "40px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
+                    {/* Property Facilities - Redesigned */}
+                    <div 
+                        data-reveal-id="facilities"
+                        className={`reveal ${revealed['facilities'] ? 'active' : ''}`}
+                        style={{ marginTop: "100px" }}
                     >
-                        <div style={{ fontSize: "1.4rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "25px", display: "flex", alignItems: "center", gap: "10px" }}>
-                            Property Facilities
+                        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+                            <h3 style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
+                                fontWeight: 600,
+                                color: "#0f172a",
+                                marginBottom: "12px"
+                            }}>
+                                World-Class Amenities
+                            </h3>
+                            <p style={{ color: "#64748b", maxWidth: "600px", margin: "0 auto", fontSize: "0.95rem" }}>
+                                Every detail curated for your absolute comfort and convenience.
+                            </p>
                         </div>
 
                         {(Array.isArray(hotel.amenities) && hotel.amenities.length > 0) || (typeof hotel.amenities === "string" && hotel.amenities.length > 2) ? (
@@ -989,112 +996,178 @@ export default function HotelDetails() {
                                     ? hotel.amenities
                                     : hotel.amenities.split(",").map(a => a.trim()).filter(Boolean)
                                 ).map((amenity, idx) => (
-                                    <div key={idx} style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "10px",
-                                        fontSize: "0.95rem",
-                                        color: "#444",
-                                        fontWeight: 500,
-                                        padding: "10px 15px",
-                                        backgroundColor: "#fcfcfc",
-                                        borderRadius: "10px",
-                                        border: "1px solid #f0f0f0"
-                                    }}>
-                                        <span style={{ display: "flex", alignItems: "center" }}>
-                                            {amenityIconMap[amenity] || <CheckIcon sx={{ color: "#667eeaff", fontSize: 18 }} />}
-                                        </span>
-                                        {amenity}
+                                    <div key={idx} className="luxury-feature-card">
+                                        <div className="facility-icon-wrap">
+                                            {amenityIconMap[amenity] || <CheckIcon style={{ fontSize: "1.25rem" }} />}
+                                        </div>
+                                        <div style={{ fontWeight: 500, color: "#334155", fontSize: "0.9rem" }}>{amenity}</div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div style={{ color: "#888", fontStyle: "italic", fontSize: "0.9rem" }}>
-                                Selected facilities will appear here once updated in the dashboard.
+                            <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8", fontStyle: "italic", fontSize: "0.9rem" }}>
+                                Facilities information will be updated soon.
                             </div>
                         )}
                     </div>
 
-                    {/* ── REVIEWS SECTION ── */}
-                    <div
-                        style={{ marginTop: "60px", padding: "30px", backgroundColor: "#fff", borderRadius: "20px", border: "1px solid #eee", boxShadow: "0 4px 25px rgba(0,0,0,0.03)" }}
+                    {/* Guest Reviews - Redesigned */}
+                    <div 
+                        data-reveal-id="reviews"
+                        className={`reveal ${revealed['reviews'] ? 'active' : ''}`}
+                        style={{ marginTop: "100px" }}
                     >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", flexWrap: "wrap", gap: "15px" }}>
+                        <div style={{ 
+                            display: "flex", 
+                            justifyContent: "space-between", 
+                            alignItems: "flex-end", 
+                            marginBottom: "48px",
+                            flexWrap: "wrap",
+                            gap: "20px" 
+                        }}>
                             <div>
-                                <h3 style={{ fontSize: "1.6rem", fontWeight: 700, fontFamily: "'Poppins', sans-serif", color: "#2c1810", marginBottom: "5px" }}>
-                                    Guest Reviews
+                                <h3 style={{ 
+                                    fontFamily: "'Poppins', sans-serif",
+                                    fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
+                                    fontWeight: 600,
+                                    color: "#0f172a",
+                                    marginBottom: "12px"
+                                }}>
+                                    Guest Voices
                                 </h3>
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                    <div style={{ display: "flex", gap: "3px" }}>
                                         {[1, 2, 3, 4, 5].map(s => (
-                                            <StarIcon key={s} sx={{ color: s <= (hotel?.average_rating || 0) ? "#f59e0b" : "#d1d5db", fontSize: 20 }} />
+                                            <StarIcon key={s} sx={{ 
+                                                color: s <= (hotel?.average_rating || 0) ? "#f59e0b" : "#e2e8f0", 
+                                                fontSize: 20 
+                                            }} />
                                         ))}
                                     </div>
-                                    <span style={{ fontWeight: 600, color: "#2c1810" }}>{hotel?.average_rating || "New"}</span>
-                                    <span style={{ color: "#888", fontSize: "0.9rem" }}>({reviews?.length || 0} reviews)</span>
+                                    <span style={{ fontSize: "1.1rem", fontWeight: 600 }}>{hotel?.average_rating || "New"}</span>
+                                    <span style={{ color: "#64748b", fontSize: "0.9rem" }}>• {reviews?.length || 0} experiences</span>
                                 </div>
                             </div>
                             <Button
-                                variant="outlined"
                                 onClick={handleWriteReviewClick}
-                                sx={{ borderRadius: "10px", textTransform: "none", color: "#667eea", borderColor: "#667eea" }}
+                                style={{
+                                    ...S.bookBtn,
+                                    width: "auto",
+                                    padding: "12px 24px",
+                                    background: "#fff",
+                                    color: "#6366f1",
+                                    border: "1px solid #e2e8f0",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+                                    fontSize: "0.9rem"
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = "#f8fafc";
+                                    e.currentTarget.style.transform = "translateY(-1px)";
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = "#fff";
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                }}
                             >
-                                Write a Review
+                                Share Your Experience
                             </Button>
                         </div>
 
                         {!Array.isArray(reviews) || reviews.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
-                                <div style={{ fontSize: "3rem", marginBottom: "10px" }}>💬</div>
-                                <p>No reviews yet for this property. Be the first to share your experience!</p>
+                            <div style={{ 
+                                textAlign: "center", 
+                                padding: "60px 30px", 
+                                background: "#fff",
+                                borderRadius: "24px",
+                                border: "1px solid #f1f5f9"
+                            }}>
+                                <div style={{ fontSize: "2.5rem", marginBottom: "16px" }}>💭</div>
+                                <h4 style={{ fontWeight: 600, marginBottom: "4px", fontSize: "1.1rem" }}>No reviews yet</h4>
+                                <p style={{ color: "#64748b", fontSize: "0.9rem" }}>Be the first to share your thoughts about your stay.</p>
                             </div>
                         ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
-                                {Array.isArray(reviews) && reviews.map((rev, idx) => (
-                                    <div key={rev.id || idx} style={{ borderBottom: (reviews && idx === reviews.length - 1) ? "none" : "1px solid #f0f0f0", paddingBottom: "25px" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#667eaf", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.1rem" }}>
-                                                    {(rev.user_name || "G")[0].toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontWeight: 600, color: "#2c1810" }}>{rev.user_name || "Verified Guest"}</div>
-                                                    <div style={{ fontSize: "0.8rem", color: "#888" }}>
-                                                        {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
+                            <div style={{ 
+                                display: "grid", 
+                                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", 
+                                gap: "24px" 
+                            }}>
+                                {reviews.map((rev, idx) => (
+                                    <div key={rev.id || idx} className="review-card">
+                                        <div className="review-content">
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                                    <div style={{ 
+                                                        width: "48px", 
+                                                        height: "48px", 
+                                                        borderRadius: "12px", 
+                                                        background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", 
+                                                        color: "#fff", 
+                                                        display: "flex", 
+                                                        alignItems: "center", 
+                                                        justifyContent: "center", 
+                                                        fontWeight: 600, 
+                                                        fontSize: "1.1rem" 
+                                                    }}>
+                                                        {(rev.user_name || "G")[0].toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, color: "#0f172a", fontSize: "0.95rem" }}>{rev.user_name || "Verified Guest"}</div>
+                                                        <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
+                                                            {rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently"}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div style={{ display: "flex", gap: "2px" }}>
+                                                    {Array.from({ length: 5 }, (_, i) => (
+                                                        <StarIcon key={i} sx={{ 
+                                                            color: i < rev.rating ? "#f59e0b" : "#e2e8f0", 
+                                                            fontSize: 16 
+                                                        }} />
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
-                                                {Array.from({ length: 5 }, (_, i) => (
-                                                    <StarIcon key={i} sx={{ color: i < rev.rating ? "#f59e0b" : "#d1d5db", fontSize: 16 }} />
-                                                ))}
-                                            </div>
+                                            
+                                            {rev.comment && (
+                                                <p style={{ 
+                                                    color: "#475569", 
+                                                    lineHeight: 1.7, 
+                                                    fontSize: "0.95rem", 
+                                                    margin: "0 0 20px 0",
+                                                    fontStyle: "italic",
+                                                    fontWeight: 400
+                                                }}>
+                                                    "{rev.comment}"
+                                                </p>
+                                            )}
+
+                                            {Array.isArray(rev.images) && rev.images.length > 0 && (
+                                                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                                                    {rev.images.map((img, i) => (
+                                                        <img 
+                                                            key={i} 
+                                                            src={img.image} 
+                                                            alt="review" 
+                                                            style={{ 
+                                                                width: "80px", 
+                                                                height: "80px", 
+                                                                borderRadius: "12px", 
+                                                                objectFit: "cover", 
+                                                                border: "2px solid #fff",
+                                                                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                                                                cursor: "pointer"
+                                                            }} 
+                                                            onClick={() => window.open(img.image, '_blank')}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                        {rev.comment && (
-                                            <p style={{ color: "#444", lineHeight: 1.6, fontSize: "0.95rem", margin: "0 0 15px 0", paddingLeft: "52px" }}>
-                                                "{rev.comment}"
-                                            </p>
-                                        )}
-                                        {Array.isArray(rev.images) && rev.images.length > 0 && (
-                                            <div style={{ display: "flex", gap: "10px", paddingLeft: "52px", flexWrap: "wrap" }}>
-                                                {rev.images.map((img, i) => (
-                                                    <img 
-                                                        key={i} 
-                                                        src={img.image} 
-                                                        alt="review" 
-                                                        style={{ width: "80px", height: "80px", borderRadius: "10px", objectFit: "cover", border: "1px solid #eee" }} 
-                                                        onClick={() => window.open(img.image, '_blank')}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
                 </div>
-
             </section>
 
             {/* ── Available Rooms Section ── */}
@@ -1135,7 +1208,7 @@ export default function HotelDetails() {
                         <>
                             <div style={S.modalTitle}>Select Dates</div>
                             <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "left" }}>
-                                <div>
+                                        <div>
                                     <span style={S.dateLabel}>Check-in Date</span>
                                     <input
                                         type="date"
@@ -1151,7 +1224,7 @@ export default function HotelDetails() {
                                                 setCheckOut(nextDay);
                                             }
                                         }}
-                                        style={{ borderRadius: "10px", borderColor: "#667eea8f", fontFamily: "'Lato', sans-serif" }}
+                                        style={{ borderRadius: "10px", borderColor: "#f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.95rem" }}
                                     />
                                 </div>
                                 <div>
@@ -1162,7 +1235,7 @@ export default function HotelDetails() {
                                         value={checkOut}
                                         min={checkIn ? new Date(new Date(checkIn).getTime() + 86400000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
                                         onChange={e => setCheckOut(e.target.value)}
-                                        style={{ borderRadius: "10px", borderColor: "#667eea8f", fontFamily: "'Lato', sans-serif" }}
+                                        style={{ borderRadius: "10px", borderColor: "#f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.95rem" }}
                                     />
                                 </div>
                             </div>
@@ -1174,23 +1247,23 @@ export default function HotelDetails() {
 
                     {checkStatus === "checking" && (
                         <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-                            <CircularProgress style={{ color: "#667eea" }} size={50} thickness={4} />
-                            <div style={{ ...S.modalTitle, margin: 0 }}>Checking Availability…</div>
+                            <CircularProgress style={{ color: "#6366f1" }} size={40} thickness={3} />
+                            <div style={{ ...S.modalTitle, margin: 0, fontSize: "1.5rem" }}>Checking Availability…</div>
                         </div>
                     )}
 
                     {checkStatus === "available" && (
                         <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
                             <AnimatedCheck />
-                            <div style={{ ...S.modalTitle, color: "#2e7d32" }}>Rooms are Available</div>
-                            <p style={{ color: "#8a7a5a", fontFamily: "'Lato', sans-serif" }}>Preparing your booking experience…</p>
+                            <div style={{ ...S.modalTitle, color: "#10b981", fontSize: "1.5rem" }}>Rooms are Available</div>
+                            <p style={{ color: "#64748b", fontFamily: "'Poppins', sans-serif", fontSize: "0.95rem" }}>Preparing your booking experience…</p>
                         </div>
                     )}
 
                     {checkStatus === "full" && (
                         <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
                             <AnimatedCross />
-                            <div style={{ ...S.modalTitle, color: "#c62828" }}>Rooms are not Available check later</div>
+                            <div style={{ ...S.modalTitle, color: "#ef4444", fontSize: "1.5rem" }}>Rooms not available</div>
                             <div style={{ marginTop: "24px", width: "100%" }}>
                                 <GradBtn onClick={() => setCheckStatus("input")} fullWidth>
                                     TRY DIFFERENT DATES
@@ -1205,20 +1278,20 @@ export default function HotelDetails() {
             <Modal open={reviewModalOpen} onClose={() => setReviewModalOpen(false)}>
                 <Box sx={{
                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                    width: { xs: '90%', sm: 450 }, bgcolor: 'white', borderRadius: "24px", p: 4, outline: "none",
-                    boxShadow: "0 25px 50px rgba(0,0,0,0.2)"
+                    width: { xs: '90%', sm: 420 }, bgcolor: 'white', borderRadius: "20px", p: 4, outline: "none",
+                    boxShadow: "0 20px 50px rgba(0,0,0,0.1)"
                 }}>
-                    <Typography variant="h5" fontWeight="700" mb={1} sx={{ fontFamily: "'Poppins', sans-serif" }}>
+                    <Typography variant="h6" fontWeight="600" mb={1} sx={{ fontFamily: "'Poppins', sans-serif" }}>
                         Rate Your Experience
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" mb={3}>
+                    <Typography variant="body2" color="text.secondary" mb={3} sx={{ fontFamily: "'Poppins', sans-serif" }}>
                         How was your stay at {hotel?.name}? {eligibleBooking?.room_type && `(${eligibleBooking.room_type})`}
                     </Typography>
 
                     <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 3 }}>
                         {[1, 2, 3, 4, 5].map(s => (
                             <IconButton key={s} onClick={() => setReviewRating(s)}>
-                                <StarIcon sx={{ fontSize: 40, color: s <= reviewRating ? "#f59e0b" : "#d1d5db" }} />
+                                <StarIcon sx={{ fontSize: 32, color: s <= reviewRating ? "#f59e0b" : "#e2e8f0" }} />
                             </IconButton>
                         ))}
                     </Box>
@@ -1228,14 +1301,14 @@ export default function HotelDetails() {
                         value={reviewComment}
                         onChange={(e) => setReviewComment(e.target.value)}
                         style={{
-                            width: "100%", height: "120px", padding: "15px", borderRadius: "15px",
-                            border: "1px solid #ddd", fontFamily: "inherit", fontSize: "0.95rem",
-                            resize: "none", outline: "none", marginBottom: "20px"
+                            width: "100%", height: "100px", padding: "12px", borderRadius: "12px",
+                            border: "1px solid #f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.9rem",
+                            resize: "none", outline: "none", marginBottom: "16px", color: "#334155"
                         }}
                     />
 
                     <div style={{ marginBottom: "20px", textAlign: "left" }}>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "#667eeaff", display: "block", marginBottom: "8px" }}>
+                        <label style={{ fontSize: "0.8rem", fontWeight: 500, color: "#6366f1", display: "block", marginBottom: "8px" }}>
                              Add Photos (Optional)
                         </label>
                         <input 
@@ -1243,12 +1316,12 @@ export default function HotelDetails() {
                             multiple 
                             accept="image/*"
                             onChange={(e) => setReviewImages(Array.from(e.target.files))}
-                            style={{ fontSize: "0.8rem", width: "100%" }}
+                            style={{ fontSize: "0.75rem", width: "100%", color: "#64748b" }}
                         />
                         {reviewImages.length > 0 && (
                             <div style={{ display: "flex", gap: "5px", marginTop: "10px", flexWrap: "wrap" }}>
                                 {reviewImages.map((img, i) => (
-                                    <div key={i} style={{ fontSize: "0.7rem", padding: "2px 8px", background: "#f0f0f0", borderRadius: "20px" }}>
+                                    <div key={i} style={{ fontSize: "0.7rem", padding: "2px 8px", background: "#f8fafc", borderRadius: "20px", color: "#64748b" }}>
                                         {img.name}
                                     </div>
                                 ))}
@@ -1262,10 +1335,11 @@ export default function HotelDetails() {
                         onClick={handleReviewSubmit}
                         disabled={isSubmittingReview}
                         sx={{
-                            py: 1.5, borderRadius: "50px", textTransform: "none", fontWeight: 700,
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            boxShadow: "0 10px 20px rgba(102,126,234,0.3)",
-                            "&:hover": { transform: "translateY(-2px)" }
+                            py: 1.2, borderRadius: "12px", textTransform: "none", fontWeight: 500,
+                            background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                            boxShadow: "0 4px 12px rgba(99, 102, 241, 0.2)",
+                            fontFamily: "'Poppins', sans-serif",
+                            "&:hover": { transform: "translateY(-1px)" }
                         }}
                     >
                         {isSubmittingReview ? "Submitting..." : "Post Review"}
@@ -1282,18 +1356,18 @@ function RoomCard({ room, onBook }) {
     const [hovered, setHovered] = useState(false);
 
     const iconMap = {
-        wifi: <WifiIcon sx={{ fontSize: "1rem" }} />,
-        internet: <WifiIcon sx={{ fontSize: "1rem" }} />,
-        ac: <AcUnitIcon sx={{ fontSize: "1rem" }} />,
-        air: <AcUnitIcon sx={{ fontSize: "1rem" }} />,
-        parking: <LocalParkingIcon sx={{ fontSize: "1rem" }} />,
-        pool: <PoolIcon sx={{ fontSize: "1rem" }} />,
-        swimming: <PoolIcon sx={{ fontSize: "1rem" }} />,
-        gym: <FitnessCenterIcon sx={{ fontSize: "1rem" }} />,
-        fitness: <FitnessCenterIcon sx={{ fontSize: "1rem" }} />,
-        breakfast: <RestaurantIcon sx={{ fontSize: "1rem" }} />,
-        food: <RestaurantIcon sx={{ fontSize: "1rem" }} />,
-        restaurant: <RestaurantIcon sx={{ fontSize: "1rem" }} />,
+        wifi: <WifiIcon sx={{ fontSize: "0.9rem" }} />,
+        internet: <WifiIcon sx={{ fontSize: "0.9rem" }} />,
+        ac: <AcUnitIcon sx={{ fontSize: "0.9rem" }} />,
+        air: <AcUnitIcon sx={{ fontSize: "0.9rem" }} />,
+        parking: <LocalParkingIcon sx={{ fontSize: "0.9rem" }} />,
+        pool: <PoolIcon sx={{ fontSize: "0.9rem" }} />,
+        swimming: <PoolIcon sx={{ fontSize: "0.9rem" }} />,
+        gym: <FitnessCenterIcon sx={{ fontSize: "0.9rem" }} />,
+        fitness: <FitnessCenterIcon sx={{ fontSize: "0.9rem" }} />,
+        breakfast: <RestaurantIcon sx={{ fontSize: "0.9rem" }} />,
+        food: <RestaurantIcon sx={{ fontSize: "0.9rem" }} />,
+        restaurant: <RestaurantIcon sx={{ fontSize: "0.9rem" }} />,
     };
 
     return (
@@ -1302,11 +1376,10 @@ function RoomCard({ room, onBook }) {
             onMouseLeave={() => setHovered(false)}
             style={{
                 ...S.roomCard,
-                ...S.roomCard,
                 boxShadow: hovered
-                    ? "0 30px 60px -12px rgba(102, 126, 234, 0.15), 0 18px 36px -18px rgba(0, 0, 0, 0.2)"
+                    ? "0 20px 40px rgba(0, 0, 0, 0.04)"
                     : S.roomCard.boxShadow,
-                transform: hovered ? "translateY(-10px)" : "translateY(0)",
+                transform: hovered ? "translateY(-6px)" : "translateY(0)",
             }}
         >
             <div style={{ position: "relative", overflow: "hidden" }}>
@@ -1316,7 +1389,7 @@ function RoomCard({ room, onBook }) {
                     style={{
                         ...S.roomImg,
                         transition: "transform 0.6s ease",
-                        transform: hovered ? "scale(1.08)" : "scale(1)",
+                        transform: hovered ? "scale(1.05)" : "scale(1)",
                     }}
                 />
             </div>
@@ -1324,43 +1397,45 @@ function RoomCard({ room, onBook }) {
                 <div style={S.roomName}>{room.room_type}</div>
                 <div style={S.roomDesc}>
                     {room.description
-                        ? room.description.substring(0, 110) + "…"
+                        ? room.description.substring(0, 100) + "…"
                         : "Experience ultimate comfort in our beautifully appointed rooms with city views."}
                 </div>
 
                 {/* Price + Adults */}
                 <div style={{
                     display: "flex",
-                    gap: isMobile ? "8px" : "12px",
-                    marginBottom: "18px",
+                    gap: isMobile ? "8px" : "10px",
+                    marginBottom: "16px",
                     flexDirection: isMobile ? "column" : "row"
                 }}>
                     <div style={{
                         flex: 1,
                         textAlign: "center",
-                        padding: "8px 16px",
-                        borderRadius: "50px",
-                        border: "1px solid #667eea8f",
-                        fontSize: "0.85rem",
-                        color: "#5a4a2a",
-                        fontFamily: "'Lato', sans-serif",
-                        background: "linear-gradient( #667eea17)",
-                        whiteSpace: "nowrap"
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #f1f5f9",
+                        fontSize: "0.8rem",
+                        color: "#64748b",
+                        fontFamily: "'Poppins', sans-serif",
+                        background: "#f8fafc",
+                        whiteSpace: "nowrap",
+                        fontWeight: 400
                     }}>
-                        Start Price : ₹{room.price}
+                        Price : ₹{room.price}
                     </div>
                     <div style={{
                         flex: 1,
                         textAlign: "center",
-                        padding: "8px 16px",
-                        borderRadius: "50px",
-                        border: "1px solid #667eea8f",
-                        fontSize: "0.85rem",
-                        color: "#5a4a2a",
-                        fontFamily: "'Lato', sans-serif",
-                        background: "linear-gradient( #667eea17)"
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #f1f5f9",
+                        fontSize: "0.8rem",
+                        color: "#64748b",
+                        fontFamily: "'Poppins', sans-serif",
+                        background: "#f8fafc",
+                        fontWeight: 400
                     }}>
-                        Adults : {room.adults}
+                        Capacity : {room.adults}
                     </div>
                 </div>
 
