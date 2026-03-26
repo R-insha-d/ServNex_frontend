@@ -300,13 +300,21 @@ export default function HotelBooking() {
     const updateGuests = (val) => {
         const newVal = Math.max(1, val);
         setGuests(newVal);
-        setRoomsBooked(Math.ceil(newVal / 2));
+        // Auto-set rooms, but clamp to remainingRooms if known
+        const autoRooms = Math.ceil(newVal / 2);
+        const maxR = remainingRooms != null ? Math.min(newVal, remainingRooms) : newVal;
+        setRoomsBooked(Math.min(autoRooms, maxR));
     };
+
+    // Max rooms = minimum of (guests count) and (remaining rooms from API)
+    const maxRooms = remainingRooms != null ? Math.min(guests, remainingRooms) : guests;
 
     const updateRooms = (val) => {
         const newVal = Math.max(1, val);
-        // Only allow decrease if it still fits guests
+        // Only allow decrease if it still fits guests (min 1 room per 2 guests)
         if (newVal < Math.ceil(guests / 2)) return;
+        // Only allow increase up to maxRooms
+        if (newVal > maxRooms) return;
         setRoomsBooked(newVal);
     };
 
@@ -775,13 +783,13 @@ export default function HotelBooking() {
                             <div style={S.counterBox} className="counter-box">
                                 <div style={S.counterTitle}>Number of Guests</div>
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px" }}>
-                                    <button className="counter-btn" style={S.counterBtn} onClick={() => updateGuests(guests - 1)}>
+                                    <button className="counter-btn" style={{ ...S.counterBtn, ...(guests <= 1 ? { opacity: 0.35, cursor: 'not-allowed' } : {}) }} disabled={guests <= 1} onClick={() => updateGuests(guests - 1)}>
                                         <Minus size={16} strokeWidth={3} />
                                     </button>
                                     <span style={{ fontSize: "1.3rem", fontWeight: 700, minWidth: "100px", textAlign: "center", color: "#2c1810" }}>
                                         {guests} {guests === 1 ? 'Guest' : 'Guests'}
                                     </span>
-                                    <button className="counter-btn" style={S.counterBtn} onClick={() => updateGuests(guests + 1)}>
+                                    <button className="counter-btn" style={{ ...S.counterBtn, ...(remainingRooms != null && guests >= remainingRooms * 2 ? { opacity: 0.35, cursor: 'not-allowed' } : {}) }} disabled={remainingRooms != null && guests >= remainingRooms * 2} onClick={() => updateGuests(guests + 1)}>
                                         <Plus size={16} strokeWidth={3} />
                                     </button>
                                 </div>
@@ -789,14 +797,19 @@ export default function HotelBooking() {
 
                             <div style={S.counterBox} className="counter-box">
                                 <div style={S.counterTitle}>Number of Rooms</div>
+                                {remainingRooms != null && (
+                                    <div style={{ textAlign: 'center', fontSize: '0.78rem', color: roomsBooked >= maxRooms ? '#e53935' : '#667eea', marginBottom: '10px', fontFamily: "'Lato', sans-serif", fontWeight: 600 }}>
+                                        {remainingRooms === 0 ? 'No rooms available' : `${remainingRooms} room${remainingRooms === 1 ? '' : 's'} available`}
+                                    </div>
+                                )}
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px" }}>
-                                    <button className="counter-btn" style={S.counterBtn} onClick={() => updateRooms(roomsBooked - 1)}>
+                                    <button className="counter-btn" style={{ ...S.counterBtn, ...(roomsBooked <= 1 ? { opacity: 0.35, cursor: 'not-allowed' } : {}) }} disabled={roomsBooked <= 1} onClick={() => updateRooms(roomsBooked - 1)}>
                                         <Minus size={16} strokeWidth={3} />
                                     </button>
                                     <span style={{ fontSize: "1.3rem", fontWeight: 700, minWidth: "100px", textAlign: "center", color: "#2c1810" }}>
                                         {roomsBooked} {roomsBooked === 1 ? 'Room' : 'Rooms'}
                                     </span>
-                                    <button className="counter-btn" style={S.counterBtn} onClick={() => updateRooms(roomsBooked + 1)}>
+                                    <button className="counter-btn" style={{ ...S.counterBtn, ...(roomsBooked >= maxRooms ? { opacity: 0.35, cursor: 'not-allowed' } : {}) }} disabled={roomsBooked >= maxRooms} onClick={() => updateRooms(roomsBooked + 1)}>
                                         <Plus size={16} strokeWidth={3} />
                                     </button>
                                 </div>
