@@ -550,16 +550,11 @@ export default function HotelList() {
                                                 {/* PRICE + BUTTON */}
                                                 <div className="d-flex justify-content-between align-items-end mt-4 pt-3 border-top">
                                                     <div className="price-container">
-                                                        <span className="price-label">Price per night</span>
+                                                        <span className="price-label">Start from</span>
                                                         <div className="d-flex align-items-baseline gap-2">
                                                             <span className="price-value fs-5">
                                                                 ₹{Number(hotel.price).toLocaleString()}
                                                             </span>
-                                                            {hotel.old_price && (
-                                                                <span className="old-price fs-5">
-                                                                    ₹{Number(hotel.old_price).toLocaleString()}
-                                                                </span>
-                                                            )}
                                                         </div>
                                                     </div>
 

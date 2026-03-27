@@ -470,7 +470,7 @@ export default function HotelBooking() {
         printWindow.print();
     };
 
-    const totalCost = Math.round(Number(priceDetails.final_price) * 1.12);
+    const totalCost = Math.round(Number(priceDetails.final_price) * 1.02);
 
     return (
         <div style={S.page}>
@@ -667,8 +667,8 @@ export default function HotelBooking() {
                                     </div>
                                 )}
                                 <div style={S.priceRow}>
-                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Taxes (12%)</span>
-                                    <span style={{ fontWeight: 600 }}>₹{Math.round(Number(priceDetails.final_price) * 0.12).toLocaleString()}</span>
+                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Convenience Fee (2%)</span>
+                                    <span style={{ fontWeight: 600 }}>₹{Math.round(Number(priceDetails.final_price) * 0.02).toLocaleString()}</span>
                                 </div>
                                 <Divider sx={{ my: 2, opacity: 0.05 }} />
                                 <div style={{ ...S.priceRow, marginBottom: 0 }}>
