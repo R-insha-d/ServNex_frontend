@@ -114,7 +114,7 @@ export default function HotelList() {
         const fetchSuggestions = async () => {
             if (search.length >= 2) {
                 try {
-                    const res = await AxiosInstance.get(`api/search/suggestions/?q=${search}`);
+                    const res = await AxiosInstance.get(`api/search/suggestions/?q=${search}&type=hotel`);
                     setSuggestions(res.data);
                     setShowSuggestions(true);
                 } catch (err) {
@@ -397,12 +397,15 @@ export default function HotelList() {
                                                 <div
                                                     key={idx}
                                                     className="suggestion-item"
-                                                    onClick={() => {
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault(); // Prevent input from losing focus immediately
                                                         setSearch(s.value);
                                                         setShowSuggestions(false);
                                                     }}
                                                 >
-                                                    <span className="suggestion-type">{s.type === 'city' ? '📍' : s.type === 'hotel' ? '🏨' : '🍽️'}</span>
+                                                    <span className="suggestion-type">
+                                                        {s.type === 'city' ? '📍' : s.type === 'hotel' ? '🏨' : s.type === 'keyword' ? '✨' : '🍽️'}
+                                                    </span>
                                                     <span className="suggestion-label">{s.label}</span>
                                                 </div>
                                             ))}
