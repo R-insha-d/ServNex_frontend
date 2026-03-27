@@ -54,11 +54,67 @@ function Landing() {
 
             <Header />
 
+            {/* ================= NEW HERO TOP SECTION ================= */}
+            <section className="hero-top-section">
+                <div className="container">
+                    <div className="row align-items-center">
+                        {/* Left Content */}
+                        <div className="col-lg-7">
+                            <div className="hero-badge">
+                                <span className="dot"></span> SERVICE BOOKING PLATFORM
+                            </div>
+                            <h1 className="hero-main-title">
+                                Every service you need,
+                            </h1>
+                            <p className="hero-sub-title">exactly when you need it.</p>
+
+                            <p className="hero-main-desc" style={{ fontSize: "14px" }}>
+                                <span className="brand-text" style={{ fontSize: "18px" }}>ServNex</span> connects you to trusted services with real-time booking,
+                                smart location-based discovery, and bulletproof payments —
+                                delivering convenience in just a few clicks.
+                            </p>
+
+                            <div className="hero-feature-badges">
+                                <a style={{ textDecoration: "none" }} className="atag" href="#services">
+                                    <div className="explore-btns">
+                                        Explore Services
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Right Stats Grid */}
+                        <div className="col-lg-5">
+                            <div className="stats-grid">
+                                <div className="stat-card stats-main-card">
+                                    <h2 className="stat-number">6+</h2>
+                                    <p className="stat-label">Service Categories</p>
+                                </div>
+                                <div className="row g-3 mt-1">
+                                    <div className="col-6">
+                                        <div className="stat-card stat-white-card">
+                                            <h2 className="stat-number">100%</h2>
+                                            <p className="stat-label">Secure Transactions</p>
+                                        </div>
+                                    </div>
+                                    <div className="col-6">
+                                        <div className="stat-card stat-white-card">
+                                            <h2 className="stat-number">24/7</h2>
+                                            <p className="stat-label">Always Available</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* ================= HERO SERVICES SECTION ================= */}
             <section className="hero-section py-5">
                 <div className="container text-center">
                     <h2 className="section-title mb-5">Explore Our Services</h2>
-                    <div className="row g-4 justify-content-center">
+                    <div className="row g-4 justify-content-center" id="services">
 
                         <div className="col-lg-4 col-md-6">
                             <div className="service-card text-center p-4">
