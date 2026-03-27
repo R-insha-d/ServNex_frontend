@@ -719,10 +719,10 @@ export default function HotelBooking() {
                             <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>Paid: ₹{totalCost.toLocaleString()}</Typography>
                         </Box>
                     )}
-                        <button className="premium-btn" onClick={handleReviewSubmit} disabled={isSubmittingReview}>
+                        <button className="premium-btn" onClick={() => navigate('/my-bookings')} >
                             <span className="d-flex align-items-center gap-1">
-                                {isSubmittingReview ? "Submitting..." : "Continue to Dashboard"}
-                                {!isSubmittingReview && <ChevronsRight size={18} />}
+                                Go to My Bookings
+                                <ChevronsRight size={18} />
                             </span>
                         </button>
                 </Box>
