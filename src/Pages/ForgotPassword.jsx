@@ -94,6 +94,12 @@ function ForgotPassword() {
     if (value && index < 5) otpRefs.current[index + 1].focus();
   };
 
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs.current[index - 1].focus();
+    }
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: " linear-gradient(135deg, #667eea 0%, #764ba2 100%)" ,padding:"10px"}}>
       <div className="card shadow-lg border-0 rounded-4 p-4 text-center" style={{ width: "420px" }}>
@@ -137,6 +143,7 @@ function ForgotPassword() {
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpChange(e.target.value, i)}
+                  onKeyDown={(e) => handleKeyDown(e, i)}
                   className="form-control text-center"
                   style={{ width: 42, height: 42 }}
                 />
