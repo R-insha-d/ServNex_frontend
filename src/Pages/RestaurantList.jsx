@@ -502,6 +502,21 @@ export default function RestaurantList() {
                                             <div className={`hotel-type-badge ${badgeInfo.class}`}>
                                                 {badgeInfo.icon} {restaurant.badge}
                                             </div>
+                                            <div style={{
+                                                position: "absolute",
+                                                bottom: "8px",
+                                                left: "8px",
+                                                backgroundColor: restaurant.is_open ? "#10b981" : "#ef4444",
+                                                color: "white",
+                                                fontSize: "0.65rem",
+                                                fontWeight: 800,
+                                                padding: "2px 8px",
+                                                borderRadius: "4px",
+                                                textTransform: "uppercase",
+                                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                                            }}>
+                                                {restaurant.is_open ? "Open Now" : "Currently Closed"}
+                                            </div>
                                         </div>
 
                                         {/* CONTENT */}
@@ -555,12 +570,28 @@ export default function RestaurantList() {
                                                         </div>
                                                     </div>
 
-                                                    <Link
-                                                        to={`/restaurant/${restaurant.id}`}
-                                                        className="explore-btns"
-                                                    >
-                                                        <span className="d-flex align-items-center gap-1">See Details <ChevronsRight size={18} /></span>
-                                                    </Link>
+                                                    <div className="d-flex flex-column align-items-end gap-2">
+                                                        {restaurant.is_open ? (
+                                                            <Link
+                                                                to={`/restaurant/${restaurant.id}`}
+                                                                className="explore-btns"
+                                                            >
+                                                                <span className="d-flex align-items-center gap-1">See Details <ChevronsRight size={18} /></span>
+                                                            </Link>
+                                                        ) : (
+                                                            <button 
+                                                                className="explore-btns" 
+                                                                disabled 
+                                                                style={{ 
+                                                                    opacity: 0.6, 
+                                                                    cursor: 'not-allowed',
+                                                                    background: '#9ca3af'
+                                                                }}
+                                                            >
+                                                                <span className="d-flex align-items-center gap-1">Closed <ChevronsRight size={18} /></span>
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

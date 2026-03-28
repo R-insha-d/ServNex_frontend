@@ -27,6 +27,15 @@ const getInitTime = () => {
     return { initHour, initPeriod, initMinute };
 };
 
+const format12h = (time24) => {
+    if (!time24) return "";
+    const [h, m] = time24.split(":");
+    let hours = parseInt(h);
+    const period = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${m} ${period}`;
+};
+
 export default function RestaurantDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -172,10 +181,32 @@ export default function RestaurantDetail() {
 
     const handleReservation = () => {
         if (!reservationDate) { alert("Please select a date"); return; }
+        
         let hour = parseInt(timeHour);
         if (timePeriod === "AM" && hour === 12) hour = 0;
         if (timePeriod === "PM" && hour !== 12) hour += 12;
         const formattedTime = `${String(hour).padStart(2, "0")}:${timeMinute}`;
+        
+        // --- Added Operating Hours Validation ---
+        if (restaurant.opening_time && restaurant.closing_time) {
+            const resvTimeVal = hour * 60 + parseInt(timeMinute);
+            const [oH, oM] = restaurant.opening_time.split(":");
+            const openVal = parseInt(oH) * 60 + parseInt(oM);
+            const [cH, cM] = restaurant.closing_time.split(":");
+            const closeVal = parseInt(cH) * 60 + parseInt(cM);
+
+            if (resvTimeVal < openVal || resvTimeVal > closeVal) {
+                toast.error(`Restaurant is only open from ${format12h(restaurant.opening_time)} to ${format12h(restaurant.closing_time)}`);
+                return;
+            }
+        }
+
+        if (!restaurant.is_open) {
+            toast.error("This restaurant is currently closed and not accepting reservations.");
+            return;
+        }
+        // ----------------------------------------
+
         const selected = new Date(`${reservationDate}T${formattedTime}`);
         if (selected < new Date(new Date().setSeconds(0, 0))) {
             alert("❌ Cannot book a past date or time! Please select a future time.");
@@ -430,6 +461,18 @@ export default function RestaurantDetail() {
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
                     <LocationOnIcon style={{ ...S.infoIcon, fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
                     {restaurant.area}, {restaurant.city}
+                    <Chip 
+                        label={restaurant.is_open ? "OPEN" : "CLOSED"} 
+                        size="small"
+                        sx={{ 
+                            ml: 1.5,
+                            bgcolor: restaurant.is_open ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                            color: restaurant.is_open ? "#10b981" : "#ef4444",
+                            fontWeight: 700, 
+                            fontSize: "0.7rem",
+                            height: "20px"
+                        }} 
+                    />
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
@@ -589,10 +632,10 @@ export default function RestaurantDetail() {
                                                     {rev.images.map((img, i) => (
                                                         <img
                                                             key={i}
-                                                            src={img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image}
+                                                            src={img.image.startsWith("http") ? img.image : (AxiosInstance.defaults.baseURL || "http://127.0.0.1:8000") + img.image}
                                                             alt="review"
                                                             style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "12px", cursor: "pointer", border: "1px solid #edf2f7", transition: "transform 0.2s" }}
-                                                            onClick={() => window.open(img.image.startsWith("http") ? img.image : "http://127.0.0.1:8000" + img.image, '_blank')}
+                                                            onClick={() => window.open(img.image.startsWith("http") ? img.image : (AxiosInstance.defaults.baseURL || "http://127.0.0.1:8000") + img.image, '_blank')}
                                                             onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                                                             onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
                                                         />
@@ -653,23 +696,32 @@ export default function RestaurantDetail() {
                                 fullWidth
                                 variant="contained"
                                 onClick={handleOpenModal}
-                                disabled={restaurant.total_tables === 0}
+                                disabled={!restaurant.is_open}
                                 sx={{
                                     py: 2,
                                     borderRadius: "16px",
                                     fontSize: "1.05rem",
                                     fontWeight: 700,
                                     textTransform: "none",
-                                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                    boxShadow: "0 10px 20px rgba(102, 126, 234, 0.3)",
+                                    background: restaurant.is_open 
+                                        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                                        : "#9ca3af",
+                                    boxShadow: restaurant.is_open 
+                                        ? "0 10px 20px rgba(102, 126, 234, 0.3)"
+                                        : "none",
                                     transition: "all 0.3s ease",
                                     "&:hover": {
-                                        transform: "translateY(-2px)",
-                                        boxShadow: "0 15px 30px rgba(102, 126, 234, 0.4)",
+                                        transform: restaurant.is_open ? "translateY(-2px)" : "none",
+                                        boxShadow: restaurant.is_open 
+                                            ? "0 15px 30px rgba(102, 126, 234, 0.4)"
+                                            : "none",
+                                        background: restaurant.is_open 
+                                            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                                            : "#9ca3af",
                                     }
                                 }}
                             >
-                                Reserve a Table
+                                {restaurant.is_open ? "Reserve a Table" : "Currently Closed"}
                             </Button>
                         </div>
 
@@ -721,6 +773,11 @@ export default function RestaurantDetail() {
                                     <option value="PM">PM</option>
                                 </select>
                             </div>
+                            {restaurant.opening_time && (
+                                <Typography variant="caption" sx={{ mt: 1, display: 'block', color: "#667eea", fontWeight: 600 }}>
+                                    🕒 Hours: {format12h(restaurant.opening_time)} - {format12h(restaurant.closing_time)}
+                                </Typography>
+                            )}
                         </Box>
                         <Box>
                             <Typography variant="subtitle2" color="text.secondary" mb={1}>Guest Count / Table Capacity</Typography>

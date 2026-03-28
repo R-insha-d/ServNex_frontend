@@ -202,7 +202,7 @@ export default function MyBookings() {
     const getImageUrl = (url) => {
         if (!url) return "";
         if (url.startsWith("http")) return url;
-        return "http://127.0.0.1:8000" + url;
+        return (AxiosInstance.defaults.baseURL || "http://127.0.0.1:8000") + url;
     };
 
     const renderStars = (rating, interactive = false, onSelect = null) => {
@@ -223,6 +223,7 @@ export default function MyBookings() {
     const getStatusChipColor = (status) => {
         if (status === "Your Table Is Ready" || status === "confirmed" || status === "paid") return "success";
         if (status === "completed" || status === "visited") return "info";
+        if (status === "Table Pending") return "warning";
         if (status === "cancelled" || status === "failed" || status === "pending") return "error";
         return "primary";
     };
@@ -488,6 +489,17 @@ export default function MyBookings() {
                                                 />
                                             </div>
 
+                                            {reservation.status === "pending" && (
+                                                <Box sx={{ bgcolor: "#fff1f2", p: 1.5, borderRadius: "10px", border: "1px dashed #fecaca", mb: 2 }}>
+                                                    <Typography variant="caption" color="#e11d48" fontWeight="600" sx={{ display: "block", mb: 0.5 }}>
+                                                        ⚠️ Payment was not completed.
+                                                    </Typography>
+                                                    <Link to={`/restaurant/${reservation.restaurant}`} style={{ fontSize: "0.75rem", color: "#e11d48", fontWeight: 700, textDecoration: "underline" }}>
+                                                        Retry Reservation
+                                                    </Link>
+                                                </Box>
+                                            )}
+
                                             <Box display="flex" flexDirection="column" gap={1} bgcolor="#f8f9fa" p={2} borderRadius={2} mb={1.5}>
                                                 <div className="d-flex align-items-center gap-2 text-dark fw-medium">
                                                     <Calendar size={16} className="text-primary" /> {reservation.reservation_date}
@@ -555,7 +567,7 @@ export default function MyBookings() {
                                                 Reservation Details
                                             </Button>
 
-                                            {(reservation.status === "Your Table Is Ready" || reservation.status === "confirmed" || reservation.status === "paid") && (
+                                            {(reservation.payment_status === "paid" && (reservation.status === "Your Table Is Ready" || reservation.status === "Table Pending")) && (
                                                 <Button
                                                     variant="outlined"
                                                     color="error"

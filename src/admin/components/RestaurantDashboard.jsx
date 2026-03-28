@@ -17,6 +17,7 @@ export default function RestaurantDashboard() {
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [togglingStatus, setTogglingStatus] = useState(false);
   const [editForm, setEditForm] = useState(null);
   const [editImagePreview, setEditImagePreview] = useState("");
   const [menuImagePreview, setMenuImagePreview] = useState("");
@@ -34,13 +35,31 @@ export default function RestaurantDashboard() {
   const getImageUrl = (url) => {
     if (!url) return "";
     if (url.startsWith("http")) return url;
-    return "http://127.0.0.1:8000" + url;
+    return (AxiosInstance.defaults.baseURL || "http://127.0.0.1:8000") + url;
   };
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <span key={i} style={{ color: i < rating ? "#9b722d" : "#d1d5db", fontSize: "1rem" }}>&#9733;</span>
     ));
+  };
+
+  // --- Time Helpers for 12-hour Format ---
+  const formatTo24h = (h, m, p) => {
+    let hour = parseInt(h);
+    if (p === "AM" && hour === 12) hour = 0;
+    if (p === "PM" && hour !== 12) hour += 12;
+    return `${String(hour).padStart(2, "0")}:${m}`;
+  };
+
+  const parseFrom24h = (timeStr) => {
+    if (!timeStr) return { h: "09", m: "00", p: "AM" };
+    const [h24, m] = timeStr.split(":");
+    let h = parseInt(h24);
+    const p = h >= 12 ? "PM" : "AM";
+    h = h % 12;
+    if (h === 0) h = 12;
+    return { h: String(h).padStart(2, "0"), m, p };
   };
 
   useEffect(() => { fetchMyRestaurant(); }, []);
@@ -131,6 +150,21 @@ export default function RestaurantDashboard() {
   const completedCount = reservations.filter((r) => r.status === "Your Table Is Ready").length;
   const cancelledCount = reservations.filter((r) => r.status === "cancelled").length;
 
+  const handleToggleStatus = async () => {
+    if (!myRestaurant || togglingStatus) return;
+    try {
+      setTogglingStatus(true);
+      const newStatus = !myRestaurant.is_open;
+      const res = await AxiosInstance.patch("api/restaurants/me/", { is_open: newStatus });
+      setMyRestaurant(res.data);
+      toast.success(`Restaurant is now ${newStatus ? "OPEN" : "CLOSED"}`);
+    } catch (error) {
+      toast.error("Failed to update status.");
+    } finally {
+      setTogglingStatus(false);
+    }
+  };
+
   const statusBadgeClass = (s) => {
     if (s === "Table Pending") return "bg-warning text-dark";
     if (s === "cancelled") return "bg-danger";
@@ -148,6 +182,9 @@ export default function RestaurantDashboard() {
       tables_6_capacity: myRestaurant.tables_6_capacity || 0,
       tables_8_capacity: myRestaurant.tables_8_capacity || 0,
       tables_10_capacity: myRestaurant.tables_10_capacity || 0,
+      is_open: myRestaurant.is_open,
+      opening_time: myRestaurant.opening_time || "09:00",
+      closing_time: myRestaurant.closing_time || "22:00",
       description: myRestaurant.description || "",
       keywords: myRestaurant.keywords || "",
       image: null, menu_image: null, interior_image: null,
@@ -174,7 +211,13 @@ export default function RestaurantDashboard() {
     const formData = new FormData();
     Object.entries(editForm).forEach(([key, val]) => {
       if (val instanceof File) formData.append(key, val);
-      else if (val !== null && val !== "") formData.append(key, val);
+      else if (val !== null && val !== "") {
+        if (typeof val === "boolean") {
+          formData.append(key, val ? "true" : "false");
+        } else {
+          formData.append(key, val);
+        }
+      }
     });
     try {
       const res = await AxiosInstance.patch(
@@ -294,15 +337,50 @@ export default function RestaurantDashboard() {
           <div className="col-md-9 col-lg-10 p-0">
             {/* TOPBAR */}
             <div className="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center">
-              <button className="btn d-md-none" style={{ background: theme.secondary, color: "white", borderRadius: "8px" }} onClick={() => setSidebarOpen(true)}>☰</button>
-              <h5 className="fw-semibold mb-0" style={{ color: theme.primary, fontFamily: "'Playfair Display', serif" }}>
-                {activeTab === "dashboard" && "Overview"}
-                {activeTab === "reservations" && "Table Reservations"}
-                {activeTab === "records" && "Previous Records"}
-                {activeTab === "reviews" && "Guest Reviews"}
-                {activeTab === "edit" && "Edit Restaurant"}
-              </h5>
-              <span className="info-pill">{myRestaurant.badge || "Restaurant"}</span>
+              <div className="d-flex align-items-center gap-3">
+                <button className="btn d-md-none" style={{ background: theme.secondary, color: "white", borderRadius: "8px" }} onClick={() => setSidebarOpen(true)}>☰</button>
+                <h5 className="fw-semibold mb-0" style={{ color: theme.primary, fontFamily: "'Playfair Display', serif" }}>
+                  {activeTab === "dashboard" && "Overview"}
+                  {activeTab === "reservations" && "Table Reservations"}
+                  {activeTab === "records" && "Previous Records"}
+                  {activeTab === "reviews" && "Guest Reviews"}
+                  {activeTab === "edit" && "Edit Restaurant"}
+                </h5>
+              </div>
+
+              {/* Status Toggle Button */}
+              <div className="d-flex align-items-center">
+                <button 
+                  onClick={handleToggleStatus}
+                  disabled={togglingStatus}
+                  className="btn d-flex align-items-center gap-2 px-4 py-2 rounded-pill shadow-sm transition-all"
+                  style={{ 
+                    background: myRestaurant.is_open ? "#10b981" : "#ef4444",
+                    color: "white",
+                    border: "none",
+                    fontWeight: "700",
+                    fontSize: "0.9rem",
+                    transition: "all 0.3s ease",
+                    transform: "scale(1)",
+                    opacity: togglingStatus ? 0.8 : 1,
+                    cursor: togglingStatus ? "not-allowed" : "pointer"
+                  }}
+                  onMouseEnter={(e) => !togglingStatus && (e.currentTarget.style.transform = "scale(1.05)")}
+                  onMouseLeave={(e) => !togglingStatus && (e.currentTarget.style.transform = "scale(1)")}
+                >
+                  {togglingStatus ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: "1.1rem" }}>{myRestaurant.is_open ? "🟢" : "🔴"}</span>
+                      {myRestaurant.is_open ? "RESTAURANT IS OPEN" : "RESTAURANT IS CLOSED"}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="p-4">
@@ -436,6 +514,11 @@ export default function RestaurantDashboard() {
                             <span className="text-muted small">👥 {r.number_of_guests} guests · 🪑 {r.tables_reserved} table(s)</span>
                             {r.special_requests && <span className="text-muted small">💬 <em>{r.special_requests}</em></span>}
                             <span className="text-muted small">🕐 Time: {new Date(r.created_at).toLocaleString()}</span>
+                            {r.payment_info && (
+                              <span className="small fw-semibold" style={{ color: "#16a34a" }}>
+                                💳 Paid: ₹{parseFloat(r.payment_info.amount).toLocaleString()} &nbsp;|&nbsp; Txn: {r.payment_info.transaction_id}
+                              </span>
+                            )}
                           </div>
                           <div className="d-flex flex-column align-items-end gap-2 ms-3">
                             <span className={"badge " + statusBadgeClass(r.status)} style={{ whiteSpace: "nowrap" }}>{r.status}</span>
@@ -657,6 +740,63 @@ export default function RestaurantDashboard() {
                     <div className="col-md-6">
                       <label className="form-label small fw-semibold">Avg Cost for Two (Rs.)</label>
                       <input type="number" className="form-control" min="0" value={editForm.average_cost_for_two} onChange={(e) => setEditForm({ ...editForm, average_cost_for_two: e.target.value })} />
+                    </div>
+                    <div className="col-md-6 border rounded-3 p-3 bg-light">
+                      <label className="form-label small fw-bold text-primary mb-3">🕒 Operating Hours *</label>
+                      <div className="row g-3">
+                        <div className="col-12">
+                          <label className="form-label x-small fw-semibold text-muted">Opening Time</label>
+                          <div className="d-flex gap-1">
+                            <select className="form-select form-select-sm" value={parseFrom24h(editForm.opening_time).h} 
+                              onChange={(e) => {
+                                const { m, p } = parseFrom24h(editForm.opening_time);
+                                setEditForm({ ...editForm, opening_time: formatTo24h(e.target.value, m, p) });
+                              }}>
+                              {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(h => <option key={h} value={h}>{h}</option>)}
+                            </select>
+                            <select className="form-select form-select-sm" value={parseFrom24h(editForm.opening_time).m} 
+                              onChange={(e) => {
+                                const { h, p } = parseFrom24h(editForm.opening_time);
+                                setEditForm({ ...editForm, opening_time: formatTo24h(h, e.target.value, p) });
+                              }}>
+                              {["00", "15", "30", "45"].map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <select className="form-select form-select-sm" value={parseFrom24h(editForm.opening_time).p} 
+                              onChange={(e) => {
+                                const { h, m } = parseFrom24h(editForm.opening_time);
+                                setEditForm({ ...editForm, opening_time: formatTo24h(h, m, e.target.value) });
+                              }}>
+                              <option value="AM">AM</option><option value="PM">PM</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label x-small fw-semibold text-muted">Closing Time</label>
+                          <div className="d-flex gap-1">
+                            <select className="form-select form-select-sm" value={parseFrom24h(editForm.closing_time).h} 
+                              onChange={(e) => {
+                                const { m, p } = parseFrom24h(editForm.closing_time);
+                                setEditForm({ ...editForm, closing_time: formatTo24h(e.target.value, m, p) });
+                              }}>
+                              {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(h => <option key={h} value={h}>{h}</option>)}
+                            </select>
+                            <select className="form-select form-select-sm" value={parseFrom24h(editForm.closing_time).m} 
+                              onChange={(e) => {
+                                const { h, p } = parseFrom24h(editForm.closing_time);
+                                setEditForm({ ...editForm, closing_time: formatTo24h(h, e.target.value, p) });
+                              }}>
+                              {["00", "15", "30", "45"].map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <select className="form-select form-select-sm" value={parseFrom24h(editForm.closing_time).p} 
+                              onChange={(e) => {
+                                const { h, m } = parseFrom24h(editForm.closing_time);
+                                setEditForm({ ...editForm, closing_time: formatTo24h(h, m, e.target.value) });
+                              }}>
+                              <option value="AM">AM</option><option value="PM">PM</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div className="col-12">
                       <label className="form-label small fw-semibold text-muted text-uppercase" style={{ letterSpacing: "0.05em", fontSize: "0.75rem" }}>Table Counts by Capacity</label>
