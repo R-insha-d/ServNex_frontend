@@ -37,6 +37,7 @@ import {
 import StarIcon from "@mui/icons-material/Star";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
+import NotificationDropdown from "../Component/NotificationDropdown";
 
 /* ─── inline styles ─── */
 const S = {
@@ -200,14 +201,6 @@ const S = {
     }
 };
 
-/* ─── Components ─── */
-function NotificationBell() {
-    return (
-        <div style={S.bellBtn}>
-            <Bell size={20} />
-        </div>
-    );
-}
 
 const StepIndicator = ({ currentStep, isMobile }) => {
     const steps = ["Details", "Summary", "Payment"];
@@ -494,7 +487,7 @@ export default function HotelBooking() {
                     <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
                     <span style={S.logoText}>ServNex</span>
                 </Link>
-                <NotificationBell />
+                <NotificationDropdown />
             </header>
 
             <div style={S.body}>

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
 import { Bell } from "lucide-react";
+import NotificationDropdown from "../Component/NotificationDropdown";
 
 import {
     Card,
@@ -373,23 +374,7 @@ function GradBtn({ onClick, children, fullWidth }) {
     );
 }
 
-/* ─── Notification Bell with overlay ─── */
-function NotificationBell() {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <div
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                ...S.bellBtn,
-                backgroundColor: hovered ? "#e5e7eb" : "#f3f4f6",
-                transform: hovered ? "scale(1.05)" : "scale(1)",
-            }}
-        >
-            <Bell size={20} />
-        </div>
-    );
-}
+
 
 export default function HotelDetails() {
     const { id } = useParams();
@@ -861,7 +846,8 @@ export default function HotelDetails() {
                     <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
                     <span style={S.logoText}>ServNex</span>
                 </Link>
-                <NotificationBell />
+                <NotificationDropdown />
+
             </header>
 
             {/* ── Hero Carousel ── */}

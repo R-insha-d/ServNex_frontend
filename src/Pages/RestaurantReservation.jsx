@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
+import NotificationDropdown from "../Component/NotificationDropdown";
 import {
     AppBar,
     Toolbar,
@@ -202,13 +203,7 @@ const S = {
     }
 };
 
-function NotificationBell() {
-    return (
-        <div style={S.bellBtn}>
-            <Bell size={20} />
-        </div>
-    );
-}
+
 
 const AnimatedCheck = () => (
     <div className="animate-scale" style={{ marginBottom: "20px" }}>
@@ -364,7 +359,8 @@ export default function RestaurantReservation() {
                     <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
                     <span style={S.logoText}>ServNex</span>
                 </Link>
-                <NotificationBell />
+                <NotificationDropdown />
+
             </header>
 
             <div style={S.body}>

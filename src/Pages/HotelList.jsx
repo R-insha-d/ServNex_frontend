@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { MapPin, Search, Filter, Globe, Bell, ChevronDown, ChevronUp, Check, LocateFixed, ChevronsRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
+import NotificationDropdown from "../Component/NotificationDropdown";
 import "./HotelList.css";
 
 // ─── Custom Dropdown Component ───────────────────────────────────────────────
@@ -316,10 +317,7 @@ export default function HotelList() {
                         }} />
                     ServNex
                 </Link>
-                <div className="notification-bell-circle">
-                    <Bell size={20} />
-                    <div className="bell-overlay">Bell</div>
-                </div>
+                <NotificationDropdown />
             </header>
 
             {/* FILTERS SECTION */}

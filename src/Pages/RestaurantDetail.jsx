@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
+import NotificationDropdown from "../Component/NotificationDropdown";
 import { toast } from "react-toastify";
 import {
     AppBar, Toolbar, Card, CardContent, Typography, Box,
@@ -377,10 +378,7 @@ export default function RestaurantDetail() {
                     <img src="/logo.jpeg" alt="ServNex Logo" style={{ height: "40px", width: "40px", borderRadius: "10px", objectFit: "cover", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
                     ServNex
                 </Link>
-                <div className="notification-bell-circle">
-                    <Bell size={20} />
-                    <div className="bell-overlay">Bell</div>
-                </div>
+                <NotificationDropdown />
             </header>
 
             {/* ── Hero Carousel ── */}

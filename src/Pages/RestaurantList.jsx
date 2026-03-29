@@ -3,6 +3,7 @@ import { MapPin, ArrowRight, Search, Filter, Globe, Bell, UtensilsCrossed, Chevr
 import { TbCurrentLocation } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
+import NotificationDropdown from "../Component/NotificationDropdown";
 import "./HotelList.css";
 
 // ─── Custom Dropdown Component ───────────────────────────────────────────────
@@ -318,10 +319,7 @@ export default function RestaurantList() {
                         }} />
                     ServNex
                 </Link>
-                <div className="notification-bell-circle">
-                    <Bell size={20} />
-                    <div className="bell-overlay">Bell</div>
-                </div>
+                <NotificationDropdown />
             </header>
 
             {/* FILTERS SECTION */}

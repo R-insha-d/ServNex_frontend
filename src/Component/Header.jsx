@@ -7,12 +7,10 @@ import Typography from "@mui/material/Typography";
 import { FaUser } from "react-icons/fa6";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
-import { FaHome } from "react-icons/fa";
-import { FaCalendarAlt } from "react-icons/fa";
-import { FaPhoneAlt } from "react-icons/fa";
-import { FaInfo } from "react-icons/fa";
+import { FaHome, FaCalendarAlt, FaPhoneAlt, FaInfo } from "react-icons/fa";
 import { BiSolidMessageRoundedDetail } from "react-icons/bi";
 import { IoIosLogOut } from "react-icons/io";
+import NotificationDropdown from "./NotificationDropdown";
 
 function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -141,6 +139,9 @@ function Header() {
           borderBottom: "1px solid rgba(0,0,0,0.05)",
           paddingTop: "14px",
           paddingBottom: "14px",
+          position: "sticky",
+          top: 0,
+          zIndex: 1050,
         }}
       >
         <Link
@@ -252,49 +253,52 @@ function Header() {
             )}
 
             {isLoggedIn && (
-              <Button
-                onClick={toggleSidebar}
-                style={{
-                  background: "white",
-                  borderRadius: "50%",
-                  width: "42px",
-                  height: "42px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                  transition: "all 0.3s ease",
-                  padding: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 20px rgba(0,0,0,0.12)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(0,0,0,0.08)";
-                }}
-              >
-                {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    style={{
-                      width: "30px",
-                      height: "30px",
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <FaUser
-                    size={18}
-                    style={{ color: "#667eea" }}
-                  />
-                )}
-              </Button>
+              <div className="d-flex align-items-center gap-3">
+                <NotificationDropdown />
+                <Button
+                  onClick={toggleSidebar}
+                  style={{
+                    background: "white",
+                    borderRadius: "50%",
+                    width: "42px",
+                    height: "42px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                    transition: "all 0.3s ease",
+                    padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 20px rgba(0,0,0,0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 12px rgba(0,0,0,0.08)";
+                  }}
+                >
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <FaUser
+                      size={18}
+                      style={{ color: "#667eea" }}
+                    />
+                  )}
+                </Button>
+              </div>
             )}
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AxiosInstance from "../Component/AxiosInstance";
+import NotificationDropdown from "../Component/NotificationDropdown";
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs, Tab, Modal, IconButton } from "@mui/material";
 import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed } from "lucide-react";
@@ -328,10 +329,7 @@ export default function MyBookings() {
                         }} />
                     ServNex
                 </Link>
-                <div className="notification-bell-circle">
-                    <Bell size={20} />
-                    <div className="bell-overlay">Bell</div>
-                </div>
+                <NotificationDropdown />
             </header>
 
 
