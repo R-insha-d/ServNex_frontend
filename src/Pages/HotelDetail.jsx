@@ -55,9 +55,10 @@ const amenityIconMap = {
 const S = {
     page: {
         minHeight: "100vh",
-        backgroundColor: "#fcfcfd",
+        backgroundColor: "#6365f127",
         fontFamily: "'Poppins', sans-serif",
         color: "#1a1a1a",
+        
     },
 
     /* ── Header ── */
@@ -888,7 +889,7 @@ export default function HotelDetails() {
                         ...S.heroSubtitle,
                         fontSize: isMobile ? "1rem" : S.heroSubtitle.fontSize
                     }}>
-                        {hotel.area}
+                        {hotel.area.slice(0,35)}...
                     </div>
                 </div>
 
@@ -923,7 +924,7 @@ export default function HotelDetails() {
             >
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>
                     <LocationOnIcon style={{ ...S.infoIcon, fontSize: "1.2rem" }} />
-                    {hotel.area}, {hotel.city}
+                    {hotel.area.slice(0,25)}...  &nbsp;, {hotel.city}
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>

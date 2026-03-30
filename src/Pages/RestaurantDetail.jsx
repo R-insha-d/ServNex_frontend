@@ -262,7 +262,7 @@ export default function RestaurantDetail() {
 
 
     return (
-        <div style={{ minHeight: "100vh", fontFamily: "'Cormorant Garamond', 'Georgia', serif" }}>
+        <div style={{ minHeight: "100vh", fontFamily: "'Cormorant Garamond', 'Georgia', serif",backgroundColor:"#6365f127" }}>
             <link
                 href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Lato:wght@400;600;700&display=swap"
                 rel="stylesheet"
@@ -421,7 +421,7 @@ export default function RestaurantDetail() {
                         ...S.heroSubtitle,
                         fontSize: isMobile ? "1.2rem" : S.heroSubtitle.fontSize
                     }}>
-                        {restaurant.area}
+                         {restaurant.city}
                     </div>
                 </div>
 
@@ -458,7 +458,7 @@ export default function RestaurantDetail() {
             >
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
                     <LocationOnIcon style={{ ...S.infoIcon, fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
-                    {restaurant.area}, {restaurant.city}
+                    {restaurant.area.slice(0, 25)}, {restaurant.city}
                     <Chip 
                         label={restaurant.is_open ? "OPEN" : "CLOSED"} 
                         size="small"

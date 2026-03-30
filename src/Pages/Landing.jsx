@@ -111,10 +111,10 @@ function Landing() {
             </section>
 
             {/* ================= HERO SERVICES SECTION ================= */}
-            <section className="hero-section py-5">
+            <section className="hero-section py-5" id="services">
                 <div className="container text-center">
                     <h2 className="section-title mb-5">Explore Our Services</h2>
-                    <div className="row g-4 justify-content-center" id="services">
+                    <div className="row g-4 justify-content-center" >
 
                         <div className="col-lg-4 col-md-6">
                             <div className="service-card text-center p-4">

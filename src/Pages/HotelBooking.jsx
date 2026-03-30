@@ -43,7 +43,7 @@ import NotificationDropdown from "../Component/NotificationDropdown";
 const S = {
     page: {
         minHeight: "100vh",
-        backgroundColor: "#fcfcfd",
+        backgroundColor: "#6365f127",
         backgroundImage: "radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.03) 0px, transparent 50%)",
         fontFamily: "'Poppins', sans-serif",
         color: "#0f172a",

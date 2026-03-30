@@ -1,7 +1,7 @@
 /* NEW HERO TOP SECTION */
 .hero-top-section {
   padding: 80px 0;
-  background: #ffffff;
+  background: #6365f127;
   position: relative;
   overflow: hidden;
   height: 100vh;
@@ -203,7 +203,7 @@
 .service-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1);
-  border-top: 10px solid #667eea;
+  border-top: 10px solid #7a66ea;
   transition: border-top 0.4s ease;
 }
 
@@ -335,11 +335,18 @@
   }
 }
 
+
+/* ================= HERO SECTION ================= */
+
+.hero-section {
+  background: #6365f127;
+}
+
 /* ================= WHY SECTION ================= */
 
 .why-section {
   padding: 100px 0;
-  background: rgba(246, 247, 251, 0.7);
+  background: #6365f127;
   position: relative;
 }
 
