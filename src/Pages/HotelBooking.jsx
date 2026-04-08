@@ -375,7 +375,8 @@ export default function HotelBooking() {
                     let url = `api/coupons/?hotel=${id}`;
                     if (startDate) url += `&check_in=${startDate}`;
                     const res = await AxiosInstance.get(url);
-                    setAvailableCoupons(res.data);
+                    const data = res.data;
+                    setAvailableCoupons(Array.isArray(data) ? data : (data.results || []));
                 } catch (error) {}
             };
             fetchAvailableCoupons();

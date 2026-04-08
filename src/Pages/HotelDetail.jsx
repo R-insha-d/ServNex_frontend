@@ -431,8 +431,10 @@ export default function HotelDetails() {
         Promise.all([fetchHotel, fetchRooms, fetchReviews])
             .then(([hotelRes, roomRes, reviewsRes]) => {
                 setHotel(hotelRes.data);
-                setRooms(roomRes.data);
-                setReviews(reviewsRes.data);
+                const rData = roomRes.data;
+                setRooms(Array.isArray(rData) ? rData : (rData.results || []));
+                const revData = reviewsRes.data;
+                setReviews(Array.isArray(revData) ? revData : (revData.results || []));
                 setLoading(false);
             })
             .catch(err => {
