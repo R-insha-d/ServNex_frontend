@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Hotel, Utensils, 
-  CalendarCheck, LogOut, Menu, X, Bell, Search 
+  CalendarCheck, LogOut, Menu, X, Bell, Search,
+  CreditCard, MessageSquare
 } from 'lucide-react';
 import AxiosInstance from '../Component/AxiosInstance';
 import { toast } from 'react-toastify';
@@ -21,6 +22,8 @@ const AdminLayout = () => {
         { name: 'Hotels', icon: <Hotel size={20} />, path: '/custom-admin/hotels' },
         { name: 'Restaurants', icon: <Utensils size={20} />, path: '/custom-admin/restaurants' },
         { name: 'Bookings', icon: <CalendarCheck size={20} />, path: '/custom-admin/bookings' },
+        { name: 'Payments', icon: <CreditCard size={20} />, path: '/custom-admin/payments' },
+        { name: 'Reviews', icon: <MessageSquare size={20} />, path: '/custom-admin/reviews' },
     ];
 
     useEffect(() => {

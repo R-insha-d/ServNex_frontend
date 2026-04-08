@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, Hotel, Utensils, 
-  TrendingUp, CreditCard, Calendar, Activity,
-  ArrowUpRight, ArrowDownRight, Server
-} from 'lucide-react';
+   Users, Hotel, Utensils, 
+   TrendingUp, CreditCard, Calendar, Activity,
+   ArrowUpRight, ArrowDownRight, Server, ShieldCheck,
+   Clock
+ } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -68,6 +69,7 @@ const DashboardOverview = () => {
         restaurant_reservations: 0
     });
     const [analytics, setAnalytics] = useState(null);
+    const [activities, setActivities] = useState([]);
     const [range, setRange] = useState('180'); // Default 6 months
     const [loading, setLoading] = useState(true);
 
@@ -75,12 +77,14 @@ const DashboardOverview = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [statsRes, analyticsRes] = await Promise.all([
+                const [statsRes, analyticsRes, activityRes] = await Promise.all([
                     AxiosInstance.get(`api/admin/stats/?days=${range}`),
-                    AxiosInstance.get(`api/admin/analytics/?days=${range}`)
+                    AxiosInstance.get(`api/admin/analytics/?days=${range}`),
+                    AxiosInstance.get(`api/admin/activity/`)
                 ]);
                 setStats(statsRes.data);
                 setAnalytics(analyticsRes.data);
+                setActivities(activityRes.data.results.slice(0, 5));
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             } finally {
@@ -281,21 +285,86 @@ const DashboardOverview = () => {
                     </div>
                 </div>
 
-                <div className="col-12 mt-4">
-                    <div className="card border-0 shadow-sm rounded-4 p-4" style={{ backgroundColor: '#1a202c', color: '#fff' }}>
-                        <div className="row align-items-center">
-                            <div className="col-md-8">
-                                <div className="d-flex align-items-center gap-3 mb-2">
-                                    <div className="p-2 rounded-3" style={{ backgroundColor: 'rgba(72, 187, 120, 0.2)', color: '#48bb78' }}>
-                                        <Server size={20} />
-                                    </div>
-                                    <h5 className="fw-bold mb-0">System Infrastructure Health</h5>
+                <div className="col-lg-8 mt-4">
+                    <div className="card border-0 shadow-sm rounded-4 p-4 h-100" style={{ border: '1px solid rgba(102, 126, 234, 0.1)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h5 className="fw-bold mb-0" style={{ color: '#2d3748' }}>Recent Management Actions</h5>
+                                <p className="text-muted small mb-0">Audit log of latest administrative operations</p>
+                            </div>
+                            <ShieldCheck size={24} className="text-primary opacity-50" />
+                        </div>
+                        
+                        <div className="activity-feed">
+                            {activities.length === 0 ? (
+                                <div className="text-center py-5 opacity-50">
+                                    <Clock size={32} className="mb-2" />
+                                    <p className="small fw-bold">No recent activities found</p>
                                 </div>
-                                <p className="text-secondary small mb-0">All systems are operational. Platform processing overhead is currently at 4.2% capacity.</p>
+                            ) : (
+                                activities.map((act, index) => (
+                                    <div key={act.id} className={`d-flex gap-3 pb-3 ${index !== activities.length - 1 ? 'border-bottom mb-3' : ''}`}>
+                                        <div className={`p-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm h-fit`} 
+                                            style={{ 
+                                                width: '36px', 
+                                                height: '36px',
+                                                backgroundColor: act.action === 'DELETE' ? 'rgba(229, 62, 62, 0.1)' : 
+                                                                act.action === 'CREATE' ? 'rgba(72, 187, 120, 0.1)' : 'rgba(102, 126, 234, 0.1)',
+                                                color: act.action === 'DELETE' ? '#e53e3e' : 
+                                                       act.action === 'CREATE' ? '#48bb78' : '#667eea'
+                                            }}>
+                                            <Activity size={18} />
+                                        </div>
+                                        <div className="flex-grow-1">
+                                            <div className="d-flex justify-content-between">
+                                                <h6 className="fw-bold mb-0" style={{ fontSize: '13px', color: '#2d3748' }}>
+                                                    {act.admin_name} {act.action.toLowerCase()}d <span className="text-primary">{act.model_name}</span>
+                                                </h6>
+                                                <span className="text-muted" style={{ fontSize: '10px' }}>{new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                            <p className="small text-secondary mb-0 mt-1" style={{ fontSize: '11px' }}>
+                                                {act.object_repr}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-lg-4 mt-4">
+                    <div className="card border-0 shadow-sm rounded-4 p-4 h-100" style={{ backgroundColor: '#1a202c', color: '#fff' }}>
+                        <div className="d-flex align-items-center gap-3 mb-3">
+                            <div className="p-2 rounded-3" style={{ backgroundColor: 'rgba(72, 187, 120, 0.2)', color: '#48bb78' }}>
+                                <Server size={20} />
                             </div>
-                            <div className="col-md-4 text-md-end mt-3 mt-md-0">
-                                <button className="btn btn-primary rounded-pill px-4 fw-bold border-0" style={{ backgroundColor: '#667eea' }}>View Logs</button>
+                            <h5 className="fw-bold mb-0">Infrastructure</h5>
+                        </div>
+                        <div className="mb-4">
+                            <div className="d-flex justify-content-between mb-1">
+                                <span className="small text-secondary fw-bold">CPU USAGE</span>
+                                <span className="small text-success fw-bold">4.2%</span>
                             </div>
+                            <div className="progress rounded-pill overflow-hidden" style={{ height: '6px', backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                                <div className="progress-bar bg-success" style={{ width: '4.2%' }}></div>
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <div className="d-flex justify-content-between mb-1">
+                                <span className="small text-secondary fw-bold">API LATENCY</span>
+                                <span className="small text-warning fw-bold">124ms</span>
+                            </div>
+                            <div className="progress rounded-pill overflow-hidden" style={{ height: '6px', backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                                <div className="progress-bar bg-warning" style={{ width: '25%' }}></div>
+                            </div>
+                        </div>
+                        <div className="p-3 rounded-4" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                            <div className="d-flex align-items-center gap-2 mb-2 text-success">
+                                <div className="rounded-circle bg-success shadow-glow" style={{ width: '8px', height: '8px' }}></div>
+                                <span className="small fw-bold">All Systems Nominal</span>
+                            </div>
+                            <p className="text-secondary small mb-0" style={{ fontSize: '10px' }}>Last security audit passed 14 minutes ago. Platform instances running on AWS-Mumbai (ap-south-1).</p>
                         </div>
                     </div>
                 </div>
@@ -308,6 +377,8 @@ const DashboardOverview = () => {
                 .transition-all {
                     transition: all 0.3s ease;
                 }
+                .h-fit { height: fit-content; }
+                .shadow-glow { box-shadow: 0 0 10px rgba(72, 187, 120, 0.5); }
             `}</style>
         </div>
     );

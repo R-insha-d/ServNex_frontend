@@ -26,6 +26,8 @@ import UserManagement from './custom-admin/UserManagement'
 import HotelManagement from './custom-admin/HotelManagement'
 import RestaurantManagement from './custom-admin/RestaurantManagement'
 import GlobalBookings from './custom-admin/GlobalBookings'
+import PaymentManagement from './custom-admin/PaymentManagement'
+import ReviewManagement from './custom-admin/ReviewManagement'
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("access");
@@ -119,6 +121,8 @@ function App() {
           <Route path="hotels" element={<HotelManagement />} />
           <Route path="restaurants" element={<RestaurantManagement />} />
           <Route path="bookings" element={<GlobalBookings />} />
+          <Route path="payments" element={<PaymentManagement />} />
+          <Route path="reviews" element={<ReviewManagement />} />
         </Route>
         
         {/* Redirect common typo */}

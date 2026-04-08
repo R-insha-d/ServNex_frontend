@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Hotel, Plus, Search, 
-  Edit, Trash2, 
+  Edit, Trash2, Filter,
   MapPin, Star, XCircle, AlertCircle, Upload,
   ChevronLeft, ChevronRight, Download
 } from 'lucide-react';
 import AxiosInstance from '../Component/AxiosInstance';
 import { toast } from 'react-toastify';
 import AdminModal from './AdminModal';
+import FilterSidebar from './FilterSidebar';
 
 const HotelManagement = () => {
     const [hotels, setHotels] = useState([]);
@@ -35,18 +36,31 @@ const HotelManagement = () => {
         badge: 'Luxury Stays',
         price: '',
         description: '',
-        owner: ''
+        owner: '',
+        rooms: [] // Nested room data
     });
     const [selectedImage, setSelectedImage] = useState(null);
+    const [activeModalTab, setActiveModalTab] = useState('general');
+    
+    // Filter States
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [activeFilters, setActiveFilters] = useState({
+        badge: '',
+        city: ''
+    });
 
     useEffect(() => {
         fetchHotels(1);
-    }, [searchTerm]);
+    }, [searchTerm, activeFilters]);
 
     const fetchHotels = async (page = 1) => {
         setLoading(true);
+        let url = `api/admin/hotels/?page=${page}&search=${searchTerm}`;
+        if (activeFilters.badge) url += `&badge=${activeFilters.badge}`;
+        if (activeFilters.city) url += `&city=${activeFilters.city}`;
+
         try {
-            const response = await AxiosInstance.get(`api/admin/hotels/?page=${page}&search=${searchTerm}`);
+            const response = await AxiosInstance.get(url);
             setHotels(response.data.results);
             setPagination({
                 count: response.data.count,
@@ -81,15 +95,12 @@ const HotelManagement = () => {
     const handleOpenAdd = () => {
         setSelectedHotel(null);
         setFormData({
-            name: '',
-            city: '',
-            area: '',
-            badge: 'Luxury Stays',
-            price: '',
             description: '',
-            owner: ''
+            owner: '',
+            rooms: []
         });
         setSelectedImage(null);
+        setActiveModalTab('general');
         setShowFormModal(true);
     };
 
@@ -102,9 +113,11 @@ const HotelManagement = () => {
             badge: hotel.badge || 'Luxury Stays',
             price: hotel.price || '',
             description: hotel.description || '',
-            owner: hotel.owner || ''
+            owner: hotel.owner || '',
+            rooms: hotel.rooms || []
         });
         setSelectedImage(null);
+        setActiveModalTab('general');
         setShowFormModal(true);
     };
 
@@ -122,7 +135,9 @@ const HotelManagement = () => {
         setFormLoading(true);
         const data = new FormData();
         Object.keys(formData).forEach(key => {
-            if (formData[key] !== null && formData[key] !== undefined) {
+            if (key === 'rooms') {
+                data.append(key, JSON.stringify(formData[key]));
+            } else if (formData[key] !== null && formData[key] !== undefined) {
                 data.append(key, formData[key]);
             }
         });
@@ -246,7 +261,16 @@ const HotelManagement = () => {
                         />
                     </div>
 
-                    <div className="d-flex gap-2">
+                    <button 
+                        onClick={() => setIsFilterOpen(true)}
+                        className={`btn rounded-pill px-4 d-flex align-items-center gap-2 border shadow-sm ${Object.values(activeFilters).some(v => v !== '') ? 'btn-primary text-white border-0' : 'btn-light bg-white text-secondary'}`}
+                        style={{ fontSize: '13px' }}
+                    >
+                        <Filter size={18} />
+                        <span className="fw-bold">Filters</span>
+                    </button>
+
+                    <div className="d-flex gap-2 ms-auto">
                         <button 
                             disabled={!pagination.previous || loading}
                             onClick={() => fetchHotels(pagination.currentPage - 1)}
@@ -370,91 +394,198 @@ const HotelManagement = () => {
                 loading={formLoading}
                 size="lg"
             >
-                <div className="row g-3">
-                    <div className="col-md-8">
-                        <label className="form-label small fw-bold text-muted">Property Name</label>
-                        <input 
-                            type="text" 
-                            className="form-control rounded-3 border-0 py-2 px-3" 
-                            style={{ backgroundColor: '#f4f7ff' }}
-                            value={formData.name}
-                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        />
-                    </div>
-                    <div className="col-md-4">
-                        <label className="form-label small fw-bold text-muted">Property Badge</label>
-                        <select 
-                            className="form-select rounded-3 border-0 py-2 px-3" 
-                            style={{ backgroundColor: '#f4f7ff' }}
-                            value={formData.badge}
-                            onChange={(e) => setFormData({...formData, badge: e.target.value})}
-                        >
-                            <option value="Luxury Stays">Luxury Stays</option>
-                            <option value="Cheap & Best">Cheap & Best</option>
-                            <option value="Dormitory">Dormitory</option>
-                        </select>
-                    </div>
-                    <div className="col-md-4">
-                        <label className="form-label small fw-bold text-muted">City</label>
-                        <input 
-                            type="text" 
-                            className="form-control rounded-3 border-0 py-2 px-3" 
-                            style={{ backgroundColor: '#f4f7ff' }}
-                            value={formData.city}
-                            onChange={(e) => setFormData({...formData, city: e.target.value})}
-                        />
-                    </div>
-                    <div className="col-md-4">
-                        <label className="form-label small fw-bold text-muted">Area</label>
-                        <input 
-                            type="text" 
-                            className="form-control rounded-3 border-0 py-2 px-3" 
-                            style={{ backgroundColor: '#f4f7ff' }}
-                            value={formData.area}
-                            onChange={(e) => setFormData({...formData, area: e.target.value})}
-                        />
-                    </div>
-                    <div className="col-md-4">
-                        <label className="form-label small fw-bold text-muted">Nightly Price (₹)</label>
-                        <input 
-                            type="number" 
-                            className="form-control rounded-3 border-0 py-2 px-3" 
-                            style={{ backgroundColor: '#f4f7ff' }}
-                            value={formData.price}
-                            onChange={(e) => setFormData({...formData, price: e.target.value})}
-                        />
-                    </div>
-                    <div className="col-12">
-                        <label className="form-label small fw-bold text-muted">Property Description</label>
-                        <textarea 
-                            rows="3"
-                            className="form-control rounded-3 border-0 py-2 px-3" 
-                            style={{ backgroundColor: '#f4f7ff' }}
-                            value={formData.description}
-                            onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        ></textarea>
-                    </div>
-                    <div className="col-12">
-                        <label className="form-label small fw-bold text-muted">Hotel Image</label>
-                        <div 
-                            className="p-3 rounded-3 d-flex flex-column align-items-center justify-content-center border-dashed"
-                            style={{ backgroundColor: '#f4f7ff', border: '2px dashed #e0e6ff', cursor: 'pointer' }}
-                            onClick={() => document.getElementById('hotel_image_input').click()}
-                        >
-                            <Upload size={24} className="text-secondary mb-2" />
-                            <span className="small text-muted fw-bold">
-                                {selectedImage ? selectedImage.name : 'Click to upload main property image'}
-                            </span>
+                <div className="mb-4 d-flex gap-2 p-1 bg-light rounded-pill w-fit" style={{ width: 'fit-content' }}>
+                    <button 
+                        className={`btn rounded-pill px-4 py-2 fw-bold small ${activeModalTab === 'general' ? 'bg-white shadow-sm text-primary' : 'text-muted border-0'}`}
+                        onClick={() => setActiveModalTab('general')}
+                        style={{ fontSize: '12px' }}
+                    >
+                        General Info
+                    </button>
+                    <button 
+                        className={`btn rounded-pill px-4 py-2 fw-bold small ${activeModalTab === 'rooms' ? 'bg-white shadow-sm text-primary' : 'text-muted border-0'}`}
+                        onClick={() => setActiveModalTab('rooms')}
+                        style={{ fontSize: '12px' }}
+                    >
+                        Rooms & Pricing ({formData.rooms.length})
+                    </button>
+                </div>
+
+                {activeModalTab === 'general' ? (
+                    <div className="row g-3 animate__animated animate__fadeIn">
+                        <div className="col-md-8">
+                            <label className="form-label small fw-bold text-muted">Property Name</label>
                             <input 
-                                id="hotel_image_input"
-                                type="file" 
-                                hidden 
-                                accept="image/*"
-                                onChange={(e) => setSelectedImage(e.target.files[0])}
+                                type="text" 
+                                className="form-control rounded-3 border-0 py-2 px-3" 
+                                style={{ backgroundColor: '#f4f7ff' }}
+                                value={formData.name}
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
                             />
                         </div>
+                        <div className="col-md-4">
+                            <label className="form-label small fw-bold text-muted">Property Badge</label>
+                            <select 
+                                className="form-select rounded-3 border-0 py-2 px-3" 
+                                style={{ backgroundColor: '#f4f7ff' }}
+                                value={formData.badge}
+                                onChange={(e) => setFormData({...formData, badge: e.target.value})}
+                            >
+                                <option value="Luxury Stays">Luxury Stays</option>
+                                <option value="Cheap & Best">Cheap & Best</option>
+                                <option value="Dormitory">Dormitory</option>
+                            </select>
+                        </div>
+                        <div className="col-md-4">
+                            <label className="form-label small fw-bold text-muted">City</label>
+                            <input 
+                                type="text" 
+                                className="form-control rounded-3 border-0 py-2 px-3" 
+                                style={{ backgroundColor: '#f4f7ff' }}
+                                value={formData.city}
+                                onChange={(e) => setFormData({...formData, city: e.target.value})}
+                            />
+                        </div>
+                        <div className="col-md-4">
+                            <label className="form-label small fw-bold text-muted">Area</label>
+                            <input 
+                                type="text" 
+                                className="form-control rounded-3 border-0 py-2 px-3" 
+                                style={{ backgroundColor: '#f4f7ff' }}
+                                value={formData.area}
+                                onChange={(e) => setFormData({...formData, area: e.target.value})}
+                            />
+                        </div>
+                        <div className="col-md-4">
+                            <label className="form-label small fw-bold text-muted">Nightly Price (₹)</label>
+                            <input 
+                                type="number" 
+                                className="form-control rounded-3 border-0 py-2 px-3" 
+                                style={{ backgroundColor: '#f4f7ff' }}
+                                value={formData.price}
+                                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                            />
+                        </div>
+                        <div className="col-12">
+                            <label className="form-label small fw-bold text-muted">Property Description</label>
+                            <textarea 
+                                rows="3"
+                                className="form-control rounded-3 border-0 py-2 px-3" 
+                                style={{ backgroundColor: '#f4f7ff' }}
+                                value={formData.description}
+                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                            ></textarea>
+                        </div>
+                        <div className="col-12">
+                            <label className="form-label small fw-bold text-muted">Hotel Image</label>
+                            <div 
+                                className="p-3 rounded-3 d-flex flex-row align-items-center justify-content-center border-dashed gap-2"
+                                style={{ backgroundColor: '#f4f7ff', border: '2px dashed #e0e6ff', cursor: 'pointer' }}
+                                onClick={() => document.getElementById('hotel_image_input').click()}
+                            >
+                                <Upload size={18} className="text-secondary" />
+                                <span className="small text-muted fw-bold">
+                                    {selectedImage ? selectedImage.name : 'Click to upload main image'}
+                                </span>
+                                <input id="hotel_image_input" type="file" hidden accept="image/*" onChange={(e) => setSelectedImage(e.target.files[0])} />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="animate__animated animate__fadeIn">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h6 className="fw-bold text-dark mb-0">Room Configurations</h6>
+                            <button 
+                                className="btn btn-sm btn-primary rounded-pill px-3 fw-bold"
+                                onClick={() => setFormData({
+                                    ...formData, 
+                                    rooms: [...formData.rooms, { room_type: 'Standard Room', price: 999, adults: 2, children: 0, total_rooms: 5 }]
+                                })}
+                            >
+                                <Plus size={16} className="me-1" /> Add Room Type
+                            </button>
+                        </div>
+
+                        {formData.rooms.length === 0 ? (
+                            <div className="text-center py-4 bg-light rounded-4">
+                                <p className="text-muted small mb-0">No rooms added yet. Click 'Add Room Type' to start.</p>
+                            </div>
+                        ) : (
+                            <div className="row g-2">
+                                {formData.rooms.map((room, index) => (
+                                    <div key={index} className="col-12">
+                                        <div className="p-3 rounded-4 bg-light border-0 position-relative">
+                                            <button 
+                                                className="btn btn-sm btn-light rounded-circle position-absolute top-0 end-0 mt-2 me-2 shadow-sm text-danger"
+                                                onClick={() => {
+                                                    const newRooms = [...formData.rooms];
+                                                    newRooms.splice(index, 1);
+                                                    setFormData({...formData, rooms: newRooms});
+                                                }}
+                                            >
+                                                <XCircle size={16} />
+                                            </button>
+                                            <div className="row g-3">
+                                                <div className="col-md-5">
+                                                    <label className="form-label sx-small fw-bold text-muted mb-1">Room Type</label>
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control form-control-sm rounded-3 border-0 px-2" 
+                                                        value={room.room_type}
+                                                        onChange={(e) => {
+                                                            const newRooms = [...formData.rooms];
+                                                            newRooms[index].room_type = e.target.value;
+                                                            setFormData({...formData, rooms: newRooms});
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label className="form-label sx-small fw-bold text-muted mb-1">Price (₹)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="form-control form-control-sm rounded-3 border-0 px-2" 
+                                                        value={room.price}
+                                                        onChange={(e) => {
+                                                            const newRooms = [...formData.rooms];
+                                                            newRooms[index].price = e.target.value;
+                                                            setFormData({...formData, rooms: newRooms});
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <label className="form-label sx-small fw-bold text-muted mb-1">Adults</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="form-control form-control-sm rounded-3 border-0 px-2" 
+                                                        value={room.adults}
+                                                        onChange={(e) => {
+                                                            const newRooms = [...formData.rooms];
+                                                            newRooms[index].adults = e.target.value;
+                                                            setFormData({...formData, rooms: newRooms});
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <label className="form-label sx-small fw-bold text-muted mb-1">Total</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="form-control form-control-sm rounded-3 border-0 px-2" 
+                                                        value={room.total_rooms}
+                                                        onChange={(e) => {
+                                                            const newRooms = [...formData.rooms];
+                                                            newRooms[index].total_rooms = e.target.value;
+                                                            setFormData({...formData, rooms: newRooms});
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </AdminModal>
 
             {/* Delete Confirmation Modal */}
@@ -477,6 +608,32 @@ const HotelManagement = () => {
                     </p>
                 </div>
             </AdminModal>
+
+            <FilterSidebar 
+                isOpen={isFilterOpen}
+                onHide={() => setIsFilterOpen(false)}
+                filters={[
+                    { 
+                        name: 'badge', 
+                        label: 'Property Type', 
+                        type: 'select', 
+                        options: [
+                            { label: 'Luxury Stays', value: 'Luxury Stays' },
+                            { label: 'Cheap & Best', value: 'Cheap & Best' },
+                            { label: 'Dormitory', value: 'Dormitory' }
+                        ]
+                    },
+                    {
+                        name: 'city',
+                        label: 'Location City',
+                        type: 'select',
+                        options: Array.from(new Set(hotels.map(h => h.city))).map(city => ({ label: city, value: city }))
+                    }
+                ]}
+                activeFilters={activeFilters}
+                onFilterChange={(name, value) => setActiveFilters({...activeFilters, [name]: value})}
+                onReset={() => setActiveFilters({ badge: '', city: '' })}
+            />
             
             <style>{`
                 .btn-icon:hover {
@@ -489,6 +646,8 @@ const HotelManagement = () => {
                     border-color: #667eea !important;
                     background-color: #f0f3ff !important;
                 }
+                .sx-small { font-size: 10px; }
+                .w-fit { width: fit-content; }
                 .table-primary-subtle {
                     background-color: rgba(102, 126, 234, 0.05) !important;
                 }
