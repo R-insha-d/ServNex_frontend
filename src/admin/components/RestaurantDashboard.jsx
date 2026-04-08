@@ -81,7 +81,8 @@ export default function RestaurantDashboard() {
     try {
       setLoadingReservations(true);
       const res = await AxiosInstance.get("api/restaurant-dashboard/reservations/");
-      setReservations(res.data);
+      const data = res.data;
+      setReservations(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Reservations error:", error);
     } finally {
@@ -93,7 +94,8 @@ export default function RestaurantDashboard() {
     try {
       setLoadingRecords(true);
       const res = await AxiosInstance.get("api/restaurant-dashboard/previous-records/");
-      setPreviousRecords(res.data);
+      const data = res.data;
+      setPreviousRecords(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Records error:", error);
     } finally {
@@ -106,7 +108,8 @@ export default function RestaurantDashboard() {
       setLoadingReviews(true);
       if (myRestaurant) {
           const res = await AxiosInstance.get(`api/restaurants/${myRestaurant.id}/reviews/`);
-          setReviews(res.data);
+          const data = res.data;
+          setReviews(Array.isArray(data) ? data : (data.results || []));
       }
     } catch (error) {
       console.error("Reviews error:", error);

@@ -95,7 +95,8 @@ export default function Dashboard() {
   const fetchRooms = async (hotelId) => {
     try {
       const res = await AxiosInstance.get(`api/rooms/?hotel=${hotelId}`);
-      setRooms(res.data);
+      const data = res.data;
+      setRooms(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Error fetching rooms:", error);
     }
@@ -104,7 +105,8 @@ export default function Dashboard() {
   const fetchGallery = async (hotelId) => {
     try {
       const res = await AxiosInstance.get(`api/gallery/?hotel=${hotelId}`);
-      setGalleryImages(res.data);
+      const data = res.data;
+      setGalleryImages(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Error fetching gallery:", error);
     }
@@ -113,7 +115,8 @@ export default function Dashboard() {
   const fetchNearby = async (hotelId) => {
     try {
       const res = await AxiosInstance.get(`api/nearby-attractions/?hotel=${hotelId}`);
-      setNearby(res.data);
+      const data = res.data;
+      setNearby(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Error fetching nearby attractions:", error);
     }
@@ -122,7 +125,8 @@ export default function Dashboard() {
   const fetchCoupons = async (hotelId) => {
     try {
       const res = await AxiosInstance.get(`api/coupons/?hotel=${hotelId}`);
-      setCoupons(res.data);
+      const data = res.data;
+      setCoupons(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Error fetching coupons:", error);
     }
@@ -134,9 +138,10 @@ export default function Dashboard() {
       setLoadingBookings(true);
       const res = await AxiosInstance.get("api/hotel-dashboard/bookings/");
       const data = res.data || [];
-      setBookings(data);
-      if (Array.isArray(data)) {
-        const uniqueHotels = [...new Set(data.map((b) => b.hotel_name))];
+      const actualData = Array.isArray(data) ? data : (data.results || []);
+      setBookings(actualData);
+      if (Array.isArray(actualData)) {
+        const uniqueHotels = [...new Set(actualData.map((b) => b.hotel_name))];
         setHotels(uniqueHotels);
       }
     } catch (error) {
@@ -155,7 +160,8 @@ export default function Dashboard() {
     try {
       // Changed to all_owner_reviews to get all reviews for the owner
       const res = await AxiosInstance.get(`api/hotel-reviews/all_owner_reviews/`);
-      setReviews(res.data);
+      const data = res.data;
+      setReviews(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }

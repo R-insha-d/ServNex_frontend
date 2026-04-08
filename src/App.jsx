@@ -19,6 +19,15 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Preloader from './Credentials/Preloader'
 import CustomCursor from './Component/CustomCursor'
+import AdminProtectedRoute from './Component/AdminProtectedRoute'
+import AdminLayout from './custom-admin/AdminLayout'
+import DashboardOverview from './custom-admin/DashboardOverview'
+import UserManagement from './custom-admin/UserManagement'
+import HotelManagement from './custom-admin/HotelManagement'
+import RestaurantManagement from './custom-admin/RestaurantManagement'
+import GlobalBookings from './custom-admin/GlobalBookings'
+import PaymentManagement from './custom-admin/PaymentManagement'
+import ReviewManagement from './custom-admin/ReviewManagement'
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("access");
@@ -97,6 +106,27 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Custom Admin Panel */}
+        <Route
+          path="/custom-admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminLayout />
+            </AdminProtectedRoute>
+          }
+        >
+          <Route index element={<DashboardOverview />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="hotels" element={<HotelManagement />} />
+          <Route path="restaurants" element={<RestaurantManagement />} />
+          <Route path="bookings" element={<GlobalBookings />} />
+          <Route path="payments" element={<PaymentManagement />} />
+          <Route path="reviews" element={<ReviewManagement />} />
+        </Route>
+        
+        {/* Redirect common typo */}
+        <Route path="/custom_admin" element={<Navigate to="/custom-admin" replace />} />
 
       </Routes>
 

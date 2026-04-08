@@ -24,19 +24,35 @@ const Auth = ({ onSuccess }) => {
     useEffect(() => {
         const token = localStorage.getItem("access");
         const role = localStorage.getItem("role");
-        if (token) {
-            const isBusiness = ["Hotel", "Restaurant", "Saloon", "Business"].includes(role);
+        const userStr = localStorage.getItem("user");
+        let isStaff = false;
 
-            if (isBusiness) {
-                if (role === "Hotel") {
-                    navigate("/admin-dashboard", { replace: true });
-                } else if (["Restaurant", "Saloon"].includes(role)) {
-                    navigate("/restaurant-dashboard", { replace: true });
-                } else {
-                    navigate("/login-business", { replace: true });
-                }
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                isStaff = user.is_staff || user.is_superuser;
+            } catch (e) {
+                console.error("Error parsing user in Auth useEffect", e);
+            }
+        }
+
+        if (token) {
+            if (isStaff) {
+                navigate("/custom-admin", { replace: true });
             } else {
-                navigate("/", { replace: true });
+                const isBusiness = ["Hotel", "Restaurant", "Saloon", "Business"].includes(role);
+
+                if (isBusiness) {
+                    if (role === "Hotel") {
+                        navigate("/admin-dashboard", { replace: true });
+                    } else if (["Restaurant", "Saloon"].includes(role)) {
+                        navigate("/restaurant-dashboard", { replace: true });
+                    } else {
+                        navigate("/login-business", { replace: true });
+                    }
+                } else {
+                    navigate("/", { replace: true });
+                }
             }
         }
     }, [navigate]);
@@ -58,6 +74,7 @@ const Auth = ({ onSuccess }) => {
 
             localStorage.setItem("access", response.data.access);
             localStorage.setItem("refresh", response.data.refresh);
+            localStorage.setItem("user", JSON.stringify(response.data.user)); // Store full object
             localStorage.setItem("role", response.data.user.role || "User");
             localStorage.setItem("username", response.data.user.first_name);
             localStorage.setItem("email", response.data.user.email);
@@ -68,6 +85,7 @@ const Auth = ({ onSuccess }) => {
             }
 
             const role = response.data.user.role;
+            const isStaff = response.data.user.is_staff || response.data.user.is_superuser;
             const accountType = ["Hotel", "Restaurant", "Saloon", "Business"].includes(role)
                 ? "business"
                 : "user";
@@ -76,8 +94,12 @@ const Auth = ({ onSuccess }) => {
 
             if (onSuccess) onSuccess();
 
-            // Redirect based on role and account type
-            if (accountType === "business") {
+            // 1. Check for Admin first
+            if (isStaff) {
+                navigate("/custom-admin", { replace: true });
+            }
+            // 2. Then check for Business
+            else if (accountType === "business") {
                 if (role === "Hotel") {
                     navigate("/admin-dashboard", { replace: true });
                 } else if (["Restaurant", "Saloon"].includes(role)) {
@@ -85,7 +107,9 @@ const Auth = ({ onSuccess }) => {
                 } else {
                     navigate("/login-business", { replace: true });
                 }
-            } else {
+            } 
+            // 3. Default to home
+            else {
                 navigate("/", { replace: true });
             }
         } catch (error) {

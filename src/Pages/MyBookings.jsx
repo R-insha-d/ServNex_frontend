@@ -28,8 +28,10 @@ export default function MyBookings() {
             AxiosInstance.get("api/bookings/"),
             AxiosInstance.get("api/my-reservations/")
         ]).then(([bookingsRes, reservationsRes]) => {
-            setBookings(bookingsRes.data);
-            setReservations(reservationsRes.data);
+            const bData = bookingsRes.data;
+            const rData = reservationsRes.data;
+            setBookings(Array.isArray(bData) ? bData : (bData.results || []));
+            setReservations(Array.isArray(rData) ? rData : (rData.results || []));
             setLoading(false);
         }).catch(err => {
             console.error("Error fetching bookings:", err);
@@ -352,7 +354,8 @@ export default function MyBookings() {
                         </div>
                     ) : (
                         <div className="row g-4">
-                            {bookings.map(booking => {
+                            {
+                            bookings.map(booking => {
                                 const hotel = booking.hotel_details || {};
                                 return (
                                     <div key={booking.id} className="col-md-6 col-lg-4">

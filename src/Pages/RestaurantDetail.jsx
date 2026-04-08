@@ -72,7 +72,8 @@ export default function RestaurantDetail() {
         Promise.all([fetchRestaurant, fetchReviews])
             .then(([res1, res2]) => {
                 setRestaurant(res1.data);
-                setReviews(Array.isArray(res2.data) ? res2.data : []);
+                const revData = res2.data;
+                setReviews(Array.isArray(revData) ? revData : (revData.results || []));
                 setLoading(false);
             })
             .catch(err => {
