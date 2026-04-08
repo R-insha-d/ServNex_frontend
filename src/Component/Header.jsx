@@ -150,18 +150,17 @@ function Header() {
             textDecoration: "none",
             display: "flex",
             alignItems: "center",
-            gap: "12px",
+            gap: "2px",
           }}
         >
           <img
-            src="/logo.jpeg"
+            src="/logo.png"
             alt="ServNex Logo"
             style={{
               height: "40px",
               width: "40px",
               borderRadius: "10px",
               objectFit: "cover",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             }}
           />
           <span className="header-logo">

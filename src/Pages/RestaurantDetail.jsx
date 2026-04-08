@@ -11,7 +11,7 @@ import {
 import {
     Bell, Calendar, MapPin, Utensils, Hotel,
     Bike, Wind, ShoppingBag, Music, Accessibility, Monitor,
-    Baby, Star, Soup, Disc, Crown, PartyPopper
+    Baby, Star, Soup, Disc, Crown, PartyPopper, Sparkles
 } from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -237,26 +237,73 @@ export default function RestaurantDetail() {
     const heroHeight = isMobile ? 300 : 560;
 
     const S = {
-        heroWrap: { position: "relative", overflow: "hidden", backgroundColor: "#1a1308" },
+        heroWrap: { 
+            position: "relative", 
+            overflow: "hidden", 
+            backgroundColor: "#000",
+            borderRadius: "0 0 24px 24px",
+        },
         heroOverlay: {
             position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%)",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.6) 100%)",
             zIndex: 1, pointerEvents: "none"
         },
-        heroTitle: { position: "absolute", bottom: "60px", left: "60px", zIndex: 2, color: "#fff", fontFamily: "'Playfair Display', serif" },
-        heroBrand: { fontSize: "clamp(3rem, 7vw, 5.5rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.01em", marginBottom: "8px", textShadow: "0 4px 20px rgba(0,0,0,0.4)" },
-        heroSubtitle: { fontSize: "clamp(1.1rem, 2.5vw, 1.8rem)", fontWeight: 500, opacity: 0.95, letterSpacing: "0.02em" },
+        heroTitle: { 
+            position: "absolute", 
+            bottom: isMobile ? "60px" : "80px", 
+            left: isMobile ? "24px" : "80px", 
+            zIndex: 2, 
+            color: "#fff", 
+            fontFamily: "'Poppins', sans-serif" 
+        },
+        heroBrand: { 
+            fontSize: "clamp(2.5rem, 6vw, 4.5rem)", 
+            fontWeight: 600, 
+            lineHeight: 1.1, 
+            letterSpacing: "-0.02em", 
+            marginBottom: "12px", 
+            textShadow: "0 4px 20px rgba(0,0,0,0.2)" 
+        },
+        heroSubtitle: { 
+            fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)", 
+            fontWeight: 400, 
+            opacity: 0.9, 
+            letterSpacing: "0.03em",
+            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+        },
+        heroDots: {
+            position: "absolute",
+            bottom: "50px",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            gap: "8px",
+            zIndex: 2,
+        },
         infoBar: {
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "40px",
-            padding: "24px 30px", backgroundColor: "#fff", borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: isMobile ? "24px" : "60px",
+            padding: isMobile ? "24px" : "24px 40px",
+            backgroundColor: "#fff",
+            borderRadius: "16px",
+            margin: isMobile ? "24px 24px 0" : "-30px 60px 0",
+            position: "relative",
+            zIndex: 10,
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.04)",
+            border: "1px solid rgba(0,0,0,0.02)",
             flexWrap: "wrap",
         },
-        infoSep: { width: "1px", height: "30px", backgroundColor: "#e0e0e0" },
+        infoSep: { width: "1px", height: "24px", backgroundColor: "#f1f5f9" },
         infoItem: {
-            display: "flex", alignItems: "center", gap: "10px", fontSize: "1rem",
-            color: "#333", fontFamily: "'Inter', sans-serif", fontWeight: 500,
+            display: "flex", alignItems: "center", gap: "12px", fontSize: "0.95rem",
+            color: "#64748b", fontFamily: "'Poppins', sans-serif", fontWeight: 500,
         },
-        infoIcon: { fontSize: "1.4rem", color: "#667eeaff" },
+        infoIcon: { fontSize: "1.25rem", color: "#6366f1" },
         body: { maxWidth: "1350px", margin: "0 auto", padding: "0 24px" },
     };
 
@@ -405,22 +452,12 @@ export default function RestaurantDetail() {
                 <div style={S.heroOverlay} />
 
                 {/* Restaurant name on image */}
-                <div style={{
-                    ...S.heroTitle,
-                    bottom: isMobile ? "80px" : "70px",
-                    left: isMobile ? "24px" : "50px",
-                    textAlign: isMobile ? "left" : "inherit"
-                }}>
-                    <div style={{
-                        ...S.heroBrand,
-                        fontSize: isMobile ? "3.2rem" : S.heroBrand.fontSize
-                    }}>
+                <div style={S.heroTitle}>
+                    <div style={S.heroBrand}>
                         {restaurant.name}
                     </div>
-                    <div style={{
-                        ...S.heroSubtitle,
-                        fontSize: isMobile ? "1.2rem" : S.heroSubtitle.fontSize
-                    }}>
+                    <div style={S.heroSubtitle}>
+                        <LocationOnIcon sx={{ fontSize: "1.2rem", opacity: 0.8 }} />
                          {restaurant.city}
                     </div>
                 </div>
@@ -448,40 +485,38 @@ export default function RestaurantDetail() {
             <div
                 data-reveal-id="info-bar"
                 className={`reveal ${revealed['info-bar'] ? 'active' : ''}`}
-                style={{ 
-                    ...S.infoBar, 
-                    flexDirection: isMobile ? "column" : "row",
-                    alignItems: "center",
-                    gap: isMobile ? "12px" : S.infoBar.gap,
-                    padding: isMobile ? "24px 1.5rem" : S.infoBar.padding 
-                }}
+                style={S.infoBar}
             >
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-                    <LocationOnIcon style={{ ...S.infoIcon, fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
-                    {restaurant.area.slice(0, 25)}, {restaurant.city}
+                <div style={S.infoItem}>
+                    <LocationOnIcon style={S.infoIcon} />
+                    <span style={{ fontWeight: 500 }}>{restaurant.area.slice(0, 25)}, {restaurant.city}</span>
+                </div>
+                {!isMobile && <div style={S.infoSep} />}
+                <div style={S.infoItem}>
+                    <StarIcon style={{ ...S.infoIcon, color: "#f59e0b" }} />
+                    <span style={{ fontWeight: 700, color: "#1e293b" }}>{restaurant.average_rating || "4.5"}
+                    <span style={{ fontSize: "0.85rem", color: "#94a3b8", marginLeft: "4px" }}>({restaurant.reviews_count || "0"} reviews)</span>
+                    </span>
+                </div>
+                {!isMobile && <div style={S.infoSep} />}
+                <div style={S.infoItem}>
                     <Chip 
-                        label={restaurant.is_open ? "OPEN" : "CLOSED"} 
+                        label={restaurant.is_open ? "OPEN NOW" : "CLOSED NOW"} 
                         size="small"
                         sx={{ 
-                            ml: 1.5,
                             bgcolor: restaurant.is_open ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
                             color: restaurant.is_open ? "#10b981" : "#ef4444",
                             fontWeight: 700, 
                             fontSize: "0.7rem",
-                            height: "20px"
+                            borderRadius: "6px",
+                            height: "24px"
                         }} 
                     />
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-                    <StarIcon style={{ ...S.infoIcon, color: "#f4c430", fontSize: isMobile ? "1.2rem" : S.infoIcon.fontSize }} />
-                    <strong>{restaurant.average_rating || "New"}</strong>&nbsp;
-                    <span style={{ fontWeight: 400, color: "#667eeaff" }}>({restaurant.reviews_count || "0"} reviews)</span>
-                </div>
-                {!isMobile && <div style={S.infoSep} />}
-                <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, textAlign: "center", width: isMobile ? "100%" : "auto", justifyContent: "center" }}>
-                    <span style={{ fontSize: isMobile ? "1.2rem" : "1.4rem", marginRight: "8px" }}>🍽️</span>
-                    Experience Gastronomy – Where every meal is a celebration.
+                <div style={S.infoItem}>
+                    <Sparkles size={20} style={{ color: "#f59e0b" }} />
+                    <span style={{ fontStyle: "italic", color: "#64748b", marginLeft: "8px" }}>Redefining Luxury & Comfort</span>
                 </div>
             </div>
 

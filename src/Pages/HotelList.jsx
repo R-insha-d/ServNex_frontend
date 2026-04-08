@@ -519,7 +519,7 @@ export default function HotelList() {
                                         <div className="col-lg-8 col-md-7">
                                             <div className="card-body p-4 d-flex flex-column h-100">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
-                                                    <h3 className="hotel-title fs-5">
+                                                    <h3 className="hotel-title">
                                                         <HighlightText text={hotel.name} highlight={search} />
                                                     </h3>
                                                     {hotel.rating && (
@@ -530,13 +530,13 @@ export default function HotelList() {
                                                 </div>
 
                                                 <div className="hotel-location mb-3">
-                                                    <MapPin size={16} />
+                                                    <MapPin size={18} />
                                                     <HighlightText text={`${hotel.area}, ${hotel.city}`} highlight={search} />
                                                 </div>
 
                                                 {/* DESCRIPTION */}
                                                 <p
-                                                    className="hotel-description small flex-grow-1"
+                                                    className="hotel-description flex-grow-1"
                                                     style={{
                                                         display: "-webkit-box",
                                                         WebkitLineClamp: 3,

@@ -176,7 +176,6 @@ export default function RestaurantList() {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
-                setCoords({ lat: latitude, lng: longitude });
                 try {
                     const res = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
@@ -187,17 +186,19 @@ export default function RestaurantList() {
                         data.address?.city ||
                         data.address?.town ||
                         data.address?.village ||
+                        data.address?.suburb ||
+                        data.address?.district ||
                         data.address?.county ||
+                        data.address?.state_district ||
                         "";
 
                     if (detectedCity) {
-                        const matched = uniqueCities.find(
-                            (c) => c.toLowerCase() === detectedCity.toLowerCase()
-                        );
-                        if (matched) setCity(matched);
+                        setCity(detectedCity);
                     }
+                    setCoords({ lat: latitude, lng: longitude });
                 } catch {
                     console.error("Failed to fetch location data");
+                    setCoords({ lat: latitude, lng: longitude });
                 } finally {
                     setLocationLoading(false);
                 }
@@ -521,7 +522,7 @@ export default function RestaurantList() {
                                         <div className="col-lg-8 col-md-7">
                                             <div className="card-body p-4 d-flex flex-column h-100">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
-                                                    <h3 className="hotel-title fs-5">
+                                                    <h3 className="hotel-title">
                                                         <HighlightText text={restaurant.name} highlight={search} />
                                                     </h3>
                                                     {restaurant.rating && (
@@ -532,7 +533,7 @@ export default function RestaurantList() {
                                                 </div>
 
                                                 <div className="hotel-location mb-3">
-                                                    <MapPin size={16} />
+                                                    <MapPin size={18} />
                                                     <HighlightText text={`${restaurant.area}, ${restaurant.city}`} highlight={search} />
                                                 </div>
 
@@ -545,7 +546,7 @@ export default function RestaurantList() {
 
                                                 {/* DESCRIPTION */}
                                                 <p
-                                                    className="hotel-description small flex-grow-1"
+                                                    className="hotel-description flex-grow-1"
                                                     style={{
                                                         display: "-webkit-box",
                                                         WebkitLineClamp: 3,
@@ -562,7 +563,7 @@ export default function RestaurantList() {
                                                     <div className="price-container">
                                                         <span className="price-label">Average cost for two</span>
                                                         <div className="d-flex align-items-baseline gap-2">
-                                                            <span className="price-value fs-5">
+                                                            <span className="price-value">
                                                                 ₹{Number(restaurant.average_cost_for_two).toLocaleString()}
                                                             </span>
                                                         </div>

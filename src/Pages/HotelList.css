@@ -251,7 +251,7 @@
     left: 15px;
     padding: 6px 14px;
     border-radius: 50px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -284,7 +284,7 @@
     padding: 4px 10px;
     border-radius: 50px;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -292,6 +292,7 @@
 
 /* Typography styles */
 .hotel-title {
+    font-size: 1.45rem;
     font-weight: 700;
     color: #1a202c;
     margin-bottom: 0.5rem;
@@ -299,14 +300,15 @@
 
 .hotel-location {
     color: #718096;
-    font-size: 0.85rem;
+    font-size: 1rem;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .hotel-description {
     color: #4a5568;
+    font-size: 1rem;
     line-height: 1.6;
     margin: 1rem 0;
 }
@@ -318,7 +320,7 @@
 }
 
 .price-label {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #a0aec0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
