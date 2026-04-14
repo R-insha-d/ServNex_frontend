@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import NotificationDropdown from "../Component/NotificationDropdown";
 import {
@@ -14,31 +14,36 @@ import {
     CircularProgress,
     Divider,
 } from "@mui/material";
-import { 
-    XCircle, 
-    AlertCircle, 
-    Bell, 
-    MapPin, 
-    ArrowRight, 
-    Search, 
-    Filter, 
-    Globe, 
-    Minus, 
-    Plus, 
-    Download, 
-    CheckCircle2, 
-    ShieldCheck, 
-    Zap, 
+import {
+    XCircle,
+    AlertCircle,
+    Bell,
+    MapPin,
+    ArrowRight,
+    Search,
+    Filter,
+    Globe,
+    Minus,
+    Plus,
+    Download,
+    CheckCircle2,
+    ShieldCheck,
+    Zap,
     Clock,
     CreditCard,
     Info,
     ChevronRight,
+    ChevronLeft,
     ChevronsRight,
     Users,
-    Calendar, 
+    Calendar,
     Tag
 } from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
 
@@ -153,24 +158,30 @@ const S = {
     },
     formLabel: {
         fontSize: "0.8rem",
-        color: "#64748b",
-        fontWeight: 500,
+        color: "#6366f1",
+        fontWeight: 600,
         textTransform: "uppercase",
-        letterSpacing: "0.05em",
+        letterSpacing: "0.08em",
         marginBottom: "10px",
-        display: "block",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
     },
     input: {
         width: "100%",
-        padding: "14px 20px",
-        borderRadius: "12px",
-        border: "1px solid #f1f5f9",
+        height: "50px",
+        padding: "0 16px",
+        borderRadius: "14px",
+        border: "1.5px solid #e2e8f0",
         backgroundColor: "#f8fafc",
         fontFamily: "'Poppins', sans-serif",
         fontSize: "0.95rem",
+        fontWeight: 600,
         color: "#0f172a",
         outline: "none",
-        transition: "all 0.3s ease",
+        transition: "all 0.2s ease",
+        boxSizing: "border-box",
+        cursor: "pointer",
     },
     sidebar: {
         position: "sticky",
@@ -203,8 +214,384 @@ const S = {
     }
 };
 
+// ─── Custom Date Picker ────────────────────────────────────────────────────────
+function CustomDatePicker({ value, onChange, minDate }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
 
+    const today = new Date();
+    const minD = minDate ? new Date(minDate) : today;
 
+    const parseDate = (str) => {
+        if (!str) return null;
+        const [y, m, d] = str.split("-").map(Number);
+        return new Date(y, m - 1, d);
+    };
+
+    const selected = parseDate(value);
+    const [viewYear, setViewYear] = useState(selected ? selected.getFullYear() : today.getFullYear());
+    const [viewMonth, setViewMonth] = useState(selected ? selected.getMonth() : today.getMonth());
+
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        }
+        if (open) document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [open]);
+
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+    const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+    const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    const cells = [];
+    for (let i = 0; i < firstDay; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+    const isDisabled = (d) => {
+        const dt = new Date(viewYear, viewMonth, d);
+        dt.setHours(0, 0, 0, 0);
+        const mn = new Date(minD);
+        mn.setHours(0, 0, 0, 0);
+        return dt < mn;
+    };
+
+    const isSelected = (d) => {
+        if (!selected) return false;
+        return selected.getFullYear() === viewYear && selected.getMonth() === viewMonth && selected.getDate() === d;
+    };
+
+    const isToday = (d) => {
+        return today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === d;
+    };
+
+    const handleSelect = (d) => {
+        if (!d || isDisabled(d)) return;
+        const mm = String(viewMonth + 1).padStart(2, "0");
+        const dd = String(d).padStart(2, "0");
+        onChange(`${viewYear}-${mm}-${dd}`);
+        setOpen(false);
+    };
+
+    const handlePrev = () => {
+        if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+        else setViewMonth(m => m - 1);
+    };
+
+    const handleNext = () => {
+        if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+        else setViewMonth(m => m + 1);
+    };
+
+    const formatDisplay = () => {
+        if (!value) return "Select Date";
+        const d = parseDate(value);
+        return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+    };
+
+    const goToToday = () => {
+        setViewYear(today.getFullYear());
+        setViewMonth(today.getMonth());
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        onChange(`${today.getFullYear()}-${mm}-${dd}`);
+        setOpen(false);
+    };
+
+    const handleClear = () => { onChange(""); setOpen(false); };
+
+    return (
+        <div ref={ref} style={{ position: "relative", width: "100%" }}>
+            {/* Trigger */}
+            <div
+                onClick={() => setOpen(o => !o)}
+                style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    height: "52px", padding: "0 16px",
+                    borderRadius: "14px",
+                    border: open ? "2px solid #6366f1" : "1.5px solid #e2e8f0",
+                    backgroundColor: open ? "#fff" : "#f8fafc",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "0.95rem", fontWeight: 600, color: "#0f172a",
+                    cursor: "pointer", boxSizing: "border-box",
+                    boxShadow: open ? "0 0 0 3px rgba(99,102,241,0.12)" : "none",
+                    transition: "all 0.2s ease",
+                    userSelect: "none",
+                }}
+            >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <Calendar size={16} color="#6366f1" />
+                    <span>{formatDisplay()}</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>
+                    <path d="M4 6l4 4 4-4" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </div>
+
+            {/* Dropdown Calendar */}
+            {open && (
+                <div style={{
+                    position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 999,
+                    background: "#fff", borderRadius: "20px",
+                    border: "1.5px solid #e8eaf6",
+                    boxShadow: "0 20px 60px rgba(99,102,241,0.12), 0 4px 20px rgba(0,0,0,0.06)",
+                    padding: "20px", minWidth: "300px", width: "100%", boxSizing: "border-box",
+                    fontFamily: "'Poppins', sans-serif",
+                }}>
+                    {/* Month Navigation */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+                        <button onClick={handlePrev} style={{ background: "#f1f5f9", border: "none", borderRadius: "10px", width: "32px", height: "32px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", transition: "all 0.2s" }}>
+                            <ChevronLeftIcon sx={{ color: "#64748b", fontSize: 20 }} />
+                        </button>
+                        <span style={{ fontWeight: 600, fontSize: "1rem", color: "#0f172a" }}>{monthNames[viewMonth]} {viewYear}</span>
+                        <button onClick={handleNext} style={{ background: "#f1f5f9", border: "none", borderRadius: "10px", width: "32px", height: "32px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", transition: "all 0.2s" }}>
+                            <ChevronRightIcon sx={{ color: "#64748b", fontSize: 20 }} />
+                        </button>
+                    </div>
+
+                    {/* Day Headers */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", marginBottom: "8px" }}>
+                        {dayNames.map(d => (
+                            <div key={d} style={{ textAlign: "center", fontSize: "0.72rem", fontWeight: 600, color: "#94a3b8", padding: "4px 0" }}>{d}</div>
+                        ))}
+                    </div>
+
+                    {/* Date Grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
+                        {cells.map((d, i) => {
+                            if (!d) return <div key={`empty-${i}`} />;
+                            const disabled = isDisabled(d);
+                            const sel = isSelected(d);
+                            const tod = isToday(d);
+                            return (
+                                <div
+                                    key={d}
+                                    onClick={() => handleSelect(d)}
+                                    style={{
+                                        textAlign: "center", padding: "8px 4px",
+                                        borderRadius: "10px", fontSize: "0.875rem", fontWeight: sel ? 700 : 500,
+                                        cursor: disabled ? "not-allowed" : "pointer",
+                                        background: sel ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : tod && !sel ? "rgba(99,102,241,0.08)" : "transparent",
+                                        color: sel ? "#fff" : disabled ? "#cbd5e1" : tod ? "#6366f1" : "#0f172a",
+                                        transition: "all 0.15s ease",
+                                        userSelect: "none",
+                                    }}
+                                    onMouseEnter={e => { if (!disabled && !sel) e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+                                    onMouseLeave={e => { if (!disabled && !sel) e.currentTarget.style.background = tod ? "rgba(99,102,241,0.08)" : "transparent"; }}
+                                >
+                                    {d}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px", paddingTop: "12px", borderTop: "1px solid #f1f5f9" }}>
+                        <button onClick={handleClear} style={{ background: "none", border: "none", color: "#6366f1", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'Poppins', sans-serif", padding: "4px 8px", borderRadius: "8px" }}>
+                            CLEAR
+                        </button>
+                        <button onClick={goToToday} style={{ background: "none", border: "none", color: "#6366f1", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'Poppins', sans-serif", padding: "4px 8px", borderRadius: "8px" }}>
+                            TODAY
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Custom Time Picker ────────────────────────────────────────────────────────
+function CustomTimePicker({ value, onChange }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
+
+    const parseTime = (str) => {
+        if (!str) return { h: 12, m: 0, period: "PM" };
+        const [hStr, mStr] = str.split(":");
+        let h = parseInt(hStr, 10);
+        const m = parseInt(mStr, 10);
+        const period = h >= 12 ? "PM" : "AM";
+        if (h > 12) h -= 12;
+        if (h === 0) h = 12;
+        return { h, m, period };
+    };
+
+    const { h: initH, m: initM, period: initP } = parseTime(value);
+    const [hour, setHour] = useState(initH);
+    const [minute, setMinute] = useState(initM);
+    const [period, setPeriod] = useState(initP);
+
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        }
+        if (open) document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [open]);
+
+    const emitChange = (h, m, p) => {
+        let h24 = h;
+        if (p === "AM" && h === 12) h24 = 0;
+        if (p === "PM" && h !== 12) h24 = h + 12;
+        onChange(`${String(h24).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    };
+
+    const handleHour = (h) => { setHour(h); emitChange(h, minute, period); };
+    const handleMinute = (m) => { setMinute(m); emitChange(hour, m, period); };
+    const handlePeriod = (p) => { setPeriod(p); emitChange(hour, minute, p); };
+
+    const formatDisplay = () => {
+        if (!value) return "Select Time";
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}`;
+    };
+
+    const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+    const minutes = Array.from({ length: 60 }, (_, i) => i);
+
+    return (
+        <div ref={ref} style={{ position: "relative", width: "100%" }}>
+            {/* Trigger */}
+            <div
+                onClick={() => setOpen(o => !o)}
+                style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    height: "52px", padding: "0 16px",
+                    borderRadius: "14px",
+                    border: open ? "2px solid #6366f1" : "1.5px solid #e2e8f0",
+                    backgroundColor: open ? "#fff" : "#f8fafc",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "0.95rem", fontWeight: 600, color: "#0f172a",
+                    cursor: "pointer", boxSizing: "border-box",
+                    boxShadow: open ? "0 0 0 3px rgba(99,102,241,0.12)" : "none",
+                    transition: "all 0.2s ease",
+                    userSelect: "none",
+                }}
+            >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <Clock size={16} color="#6366f1" />
+                    <span>{formatDisplay()}</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>
+                    <path d="M4 6l4 4 4-4" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </div>
+
+            {/* Dropdown Time Picker */}
+            {open && (
+                <div style={{
+                    position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 999,
+                    background: "#fff", borderRadius: "20px",
+                    border: "1.5px solid #e8eaf6",
+                    boxShadow: "0 20px 60px rgba(99,102,241,0.12), 0 4px 20px rgba(0,0,0,0.06)",
+                    padding: "20px", minWidth: "280px", width: "100%", boxSizing: "border-box",
+                    fontFamily: "'Poppins', sans-serif",
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px" }}>
+                        <Clock size={16} color="#6366f1" />
+                        <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "#0f172a" }}>Select Time</span>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                        {/* Hours */}
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#94a3b8", textAlign: "center", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hour</div>
+                            <div style={{ maxHeight: "180px", overflowY: "auto", borderRadius: "12px", border: "1px solid #f1f5f9", scrollbarWidth: "thin" }}>
+                                {hours.map(h => (
+                                    <div
+                                        key={h}
+                                        onClick={() => handleHour(h)}
+                                        style={{
+                                            padding: "8px 12px", textAlign: "center", cursor: "pointer",
+                                            fontSize: "0.9rem", fontWeight: h === hour ? 700 : 500,
+                                            background: h === hour ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
+                                            color: h === hour ? "#fff" : "#374151",
+                                            borderRadius: h === hour ? "8px" : "0",
+                                            margin: h === hour ? "2px 4px" : "0",
+                                            transition: "all 0.15s",
+                                        }}
+                                        onMouseEnter={e => { if (h !== hour) e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
+                                        onMouseLeave={e => { if (h !== hour) e.currentTarget.style.background = "transparent"; }}
+                                    >
+                                        {String(h).padStart(2, "0")}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ display: "flex", alignItems: "center", paddingTop: "44px", color: "#6366f1", fontWeight: 700, fontSize: "1.2rem" }}>:</div>
+
+                        {/* Minutes */}
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#94a3b8", textAlign: "center", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Min</div>
+                            <div style={{ maxHeight: "180px", overflowY: "auto", borderRadius: "12px", border: "1px solid #f1f5f9", scrollbarWidth: "thin" }}>
+                                {minutes.map(m => (
+                                    <div
+                                        key={m}
+                                        onClick={() => handleMinute(m)}
+                                        style={{
+                                            padding: "8px 12px", textAlign: "center", cursor: "pointer",
+                                            fontSize: "0.9rem", fontWeight: m === minute ? 700 : 500,
+                                            background: m === minute ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
+                                            color: m === minute ? "#fff" : "#374151",
+                                            borderRadius: m === minute ? "8px" : "0",
+                                            margin: m === minute ? "2px 4px" : "0",
+                                            transition: "all 0.15s",
+                                        }}
+                                        onMouseEnter={e => { if (m !== minute) e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
+                                        onMouseLeave={e => { if (m !== minute) e.currentTarget.style.background = "transparent"; }}
+                                    >
+                                        {String(m).padStart(2, "0")}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* AM / PM */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "30px" }}>
+                            {["AM", "PM"].map(p => (
+                                <div
+                                    key={p}
+                                    onClick={() => handlePeriod(p)}
+                                    style={{
+                                        padding: "10px 14px", borderRadius: "12px", cursor: "pointer",
+                                        fontWeight: 700, fontSize: "0.85rem",
+                                        background: period === p ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
+                                        color: period === p ? "#fff" : "#64748b",
+                                        border: period === p ? "none" : "1px solid #e2e8f0",
+                                        transition: "all 0.2s",
+                                        userSelect: "none",
+                                    }}
+                                >
+                                    {p}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Done */}
+                    <button
+                        onClick={() => setOpen(false)}
+                        style={{
+                            marginTop: "16px", width: "100%", padding: "10px",
+                            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                            color: "#fff", border: "none", borderRadius: "12px",
+                            fontFamily: "'Poppins', sans-serif", fontWeight: 600, fontSize: "0.9rem",
+                            cursor: "pointer", transition: "opacity 0.2s",
+                        }}
+                    >
+                        Done
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Animated Icons ────────────────────────────────────────────────────────────
 const AnimatedCheck = () => (
     <div className="animate-scale" style={{ marginBottom: "20px" }}>
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
@@ -223,6 +610,7 @@ const AnimatedCross = () => (
     </div>
 );
 
+// ─── Main Component ────────────────────────────────────────────────────────────
 export default function RestaurantReservation() {
     const { id } = useParams();
     const location = useLocation();
@@ -248,7 +636,7 @@ export default function RestaurantReservation() {
     const isMobile = useMediaQuery("(max-width:768px)");
 
     const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * Math.ceil(guests / 2) : 0;
-    const convenienceFee = subtotal * 0.05; // 5% of subtotal
+    const convenienceFee = subtotal * 0.05;
     const totalCost = subtotal + convenienceFee;
 
     useEffect(() => {
@@ -263,7 +651,7 @@ export default function RestaurantReservation() {
         if (date && restaurant) {
             AxiosInstance.get(`api/restaurants/${id}/availability/?date=${date}`)
                 .then(res => setAvailability(res.data))
-                .catch(() => {});
+                .catch(() => { });
         }
     }, [date, restaurant, id]);
 
@@ -343,7 +731,7 @@ export default function RestaurantReservation() {
             <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
             <style>{`
                 .counter-btn:hover { background: #6366f1 !important; color: white !important; border-color: #6366f1 !important; transform: scale(1.05); }
-                .booking-input:focus { border-color: #6366f1 !important; background: white !important; }
+                .booking-input:focus { border-color: #6366f1 !important; background: white !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important; }
                 .premium-btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 3.5em; border-radius: 30em; font-size: 15px; font-family: inherit; text-decoration: none; border: none; position: relative; overflow: hidden; cursor: pointer; color: #1e293b; background: white; box-shadow: 4px 4px 10px #e2e8f0, -4px -4px 10px #ffffff; transition: all 0.3s ease; font-weight: 500; }
                 .premium-btn::before { content: ''; position: absolute; inset: 0; border-radius: 30em; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); transform: scaleX(0); transform-origin: left; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0; }
                 .premium-btn:hover::before { transform: scaleX(1); }
@@ -360,7 +748,6 @@ export default function RestaurantReservation() {
                     <span style={S.logoText}>ServNex</span>
                 </Link>
                 <NotificationDropdown />
-
             </header>
 
             <div style={S.body}>
@@ -380,11 +767,29 @@ export default function RestaurantReservation() {
                             </div>
                         </div>
 
+                        {/* ── Reservation Details with Custom Pickers ── */}
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Calendar size={20} color="#6366f1" /> Reservation Details</div>
                             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "24px" }}>
-                                <div><span style={S.formLabel}>Date</span><input type="date" style={S.input} className="booking-input" value={date} min={new Date().toLocaleDateString('en-CA')} onChange={e => setDate(e.target.value)} /></div>
-                                <div><span style={S.formLabel}>Time</span><input type="time" style={S.input} className="booking-input" value={time} onChange={e => setTime(e.target.value)} /></div>
+                                <div>
+                                    <span style={S.formLabel}>
+                                        <Calendar size={13} color="#6366f1" /> Reservation Date
+                                    </span>
+                                    <CustomDatePicker
+                                        value={date}
+                                        onChange={setDate}
+                                        minDate={new Date().toLocaleDateString('en-CA')}
+                                    />
+                                </div>
+                                <div>
+                                    <span style={S.formLabel}>
+                                        <Clock size={13} color="#6366f1" /> Time
+                                    </span>
+                                    <CustomTimePicker
+                                        value={time}
+                                        onChange={setTime}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -392,9 +797,9 @@ export default function RestaurantReservation() {
                             <div style={S.sectionTitle}><Users size={20} color="#6366f1" /> Guests</div>
                             <div style={{ textAlign: "center", padding: "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginTop: "12px" }}>
-                                    <button className="counter-btn" style={{...S.counterBtn, width: 44, height: 44}} disabled={guests <= 1} onClick={() => setGuests(guests - 1)}><Minus size={16} /></button>
+                                    <button className="counter-btn" style={{ width: 44, height: 44, borderRadius: "12px", border: "1.5px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }} disabled={guests <= 1} onClick={() => setGuests(guests - 1)}><RemoveIcon sx={{ fontSize: 20 }} /></button>
                                     <span style={{ fontSize: "1.5rem", fontWeight: 600, minWidth: "80px", textAlign: "center" }}>{guests} {guests > 1 ? 'Guests' : 'Guest'}</span>
-                                    <button className="counter-btn" style={{...S.counterBtn, width: 44, height: 44}} onClick={() => setGuests(guests + 1)}><Plus size={16} /></button>
+                                    <button className="counter-btn" style={{ width: 44, height: 44, borderRadius: "12px", border: "1.5px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }} onClick={() => setGuests(guests + 1)}><AddIcon sx={{ fontSize: 20 }} /></button>
                                 </div>
                             </div>
                         </div>
@@ -402,7 +807,7 @@ export default function RestaurantReservation() {
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Info size={20} color="#6366f1" /> Special Requests</div>
                             <textarea
-                                style={{...S.input, height: "120px"}}
+                                style={{ ...S.input, height: "120px", padding: "16px", resize: "none", cursor: "text", fontWeight: 500 }}
                                 className="booking-input"
                                 placeholder="Any dietary restrictions, special occasions, seating preferences, etc."
                                 value={specialRequests}
@@ -415,7 +820,7 @@ export default function RestaurantReservation() {
                     <div style={S.sidebar}>
                         <div style={S.summaryCard}>
                             <h3 style={{ fontSize: "1.2rem", fontWeight: 600, marginBottom: "24px", color: "#0f172a" }}>Booking Summary</h3>
-                            
+
                             <div style={{ background: "#f8fafc", borderRadius: "16px", padding: "20px", marginBottom: "24px" }}>
                                 <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
                                     <img src={restaurant.image} style={{ width: "80px", height: "60px", borderRadius: "10px", objectFit: "cover" }} alt="Restaurant" />
@@ -484,7 +889,7 @@ export default function RestaurantReservation() {
                     <Typography sx={{ color: '#64748b', fontSize: '1rem', mb: 3, fontFamily: "'Poppins', sans-serif" }}>Your table at <strong>{restaurant?.name}</strong> is reserved.</Typography>
                     {resvDetails && (
                         <Box sx={{ background: "#f8fafc", p: 2.5, borderRadius: "16px", mb: 3, textAlign: "left" }}>
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>ID: #SNX-RES-${resvDetails.id}</Typography>
                                     <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>Paid: ₹{totalCost.toLocaleString()}</Typography>

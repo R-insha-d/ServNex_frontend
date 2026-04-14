@@ -278,6 +278,169 @@ const AnimatedCross = () => (
     </div>
 );
 
+/* ─── IOS Wheel Picker Popup Components ─── */
+const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) => {
+    const scrollRef = React.useRef(null);
+    const [activeIndex, setActiveIndex] = useState(items.indexOf(value) !== -1 ? items.indexOf(value) : 0);
+    const scrollTimeout = React.useRef(null);
+
+    useEffect(() => {
+        const index = items.indexOf(value);
+        if (index !== -1 && scrollRef.current && activeIndex !== index) {
+            scrollRef.current.scrollTop = index * 40;
+            setActiveIndex(index);
+        }
+    }, [value, items]);
+
+    const handleScroll = (e) => {
+        const scrollTop = e.target.scrollTop;
+        const index = Math.round(scrollTop / 40);
+        if (index !== activeIndex && index >= 0 && index < items.length) {
+            setActiveIndex(index);
+            if (!disabledItems.includes(items[index])) {
+                onChange(items[index]);
+            }
+        }
+
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+        scrollTimeout.current = setTimeout(() => {
+            const finalIndex = Math.round(scrollRef.current.scrollTop / 40);
+            if (disabledItems.includes(items[finalIndex])) {
+                let validIndex = items.findIndex(item => !disabledItems.includes(item));
+                if (validIndex !== -1) {
+                    scrollRef.current.scrollTo({ top: validIndex * 40, behavior: 'smooth' });
+                    setActiveIndex(validIndex);
+                    onChange(items[validIndex]);
+                }
+            }
+        }, 150);
+    };
+
+    return (
+        <div className="ios-wheel-column" ref={scrollRef} onScroll={handleScroll} style={{ flex }}>
+            <div style={{ height: '80px', flexShrink: 0 }} />
+            {items.map((item, idx) => (
+                <div key={idx} className={`ios-wheel-item ${idx === activeIndex ? 'active' : ''} ${disabledItems.includes(item) ? 'disabled' : ''}`}>
+                    {item}
+                </div>
+            ))}
+            <div style={{ height: '80px', flexShrink: 0 }} />
+        </div>
+    );
+};
+
+const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    // Default value if not set
+    const defaultDate = new Date();
+    defaultDate.setMinutes(0); // Optional rounding
+    const dateObj = value && value.includes("T") ? new Date(value) : defaultDate;
+    
+    const dates = [];
+    const dateValues = [];
+    const disabledDates = [];
+    
+    const minDate = minDateRaw ? new Date(minDateRaw) : new Date();
+    const startDate = new Date(minDate);
+    startDate.setHours(0,0,0,0);
+    
+    const todayLabel = new Date();
+    todayLabel.setHours(0,0,0,0);
+
+    for (let i = -60; i < 90; i++) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+        const ymd = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        dateValues.push(ymd);
+        
+        let dLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        if (d.getTime() === todayLabel.getTime() && !minDateRaw) {
+            dLabel = "Today";
+        }
+        
+        dates.push(dLabel);
+        if (d.getTime() < startDate.getTime()) {
+            disabledDates.push(dLabel);
+        }
+    }
+
+    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+    const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
+    const periods = ["AM", "PM"];
+
+    let currentDateVal = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
+    if (!dateValues.includes(currentDateVal)) currentDateVal = dateValues[0]; // fallback
+    
+    const currentHour24 = dateObj.getHours();
+    const currentHour12 = (currentHour24 % 12 || 12).toString();
+    const currentMinute = (Math.round(dateObj.getMinutes() / 5) * 5 % 60).toString().padStart(2, '0');
+    const currentPeriod = currentHour24 >= 12 ? "PM" : "AM";
+
+    const updateValue = (newPart) => {
+        const parts = {
+            date: currentDateVal,
+            hour: currentHour12,
+            min: currentMinute,
+            period: currentPeriod,
+            ...newPart
+        };
+        let h = parseInt(parts.hour);
+        if (parts.period === "PM" && h < 12) h += 12;
+        if (parts.period === "AM" && h === 12) h = 0;
+        const newStr = `${parts.date}T${h.toString().padStart(2, '0')}:${parts.min}`;
+        onChange(newStr);
+    };
+
+    useEffect(() => {
+        if (isOpen && !value) {
+            updateValue({});
+        }
+    }, [isOpen]);
+
+    const displayStr = value ? new Date(value).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+    }) : 'Select Date & Time';
+
+    return (
+        <div style={{ position: "relative" }}>
+            <span style={S.formLabel}>{label}</span>
+            <div 
+                className="booking-input" 
+                onClick={() => setIsOpen(!isOpen)}
+                style={{ ...S.input, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", height: "54px", boxSizing: "border-box" }}
+            >
+                {displayStr}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+
+            {isOpen && (
+                <div style={{
+                    position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100,
+                    background: "#fff", borderRadius: "16px", marginTop: "8px",
+                    boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", overflow: "hidden"
+                }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#64748b" }}>Select Date & Time</span>
+                        <button onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} style={{ color: "#6366f1", fontWeight: 600, border: "none", background: "none", cursor: "pointer", fontSize: "1rem" }}>Done</button>
+                    </div>
+                    <div className="ios-datepicker-container" style={{ margin: 0, borderRadius: 0, gap: 0 }}>
+                        <div className="ios-wheel-view">
+                            <div className="ios-wheel-highlight" />
+                            <div className="ios-wheel-gradient-top" />
+                            <div className="ios-wheel-gradient-bottom" />
+                            <WheelColumn flex={1.8} items={dates} value={dates[dateValues.indexOf(currentDateVal)] || dates[dates.findIndex(d => !disabledDates.includes(d))]} onChange={(val) => updateValue({ date: dateValues[dates.indexOf(val)] })} disabledItems={disabledDates} />
+                            <WheelColumn flex={0.7} items={hours} value={currentHour12} onChange={(val) => updateValue({ hour: val })} />
+                            <WheelColumn flex={0.7} items={minutes} value={currentMinute} onChange={(val) => updateValue({ min: val })} />
+                            <WheelColumn flex={0.7} items={periods} value={currentPeriod} onChange={(val) => updateValue({ period: val })} />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function HotelBooking() {
     const { id } = useParams();
     const location = useLocation();
@@ -343,7 +506,7 @@ export default function HotelBooking() {
         if (startDate && endDate && hotel) {
             const fetchAvailability = async () => {
                 try {
-                    let url = `api/bookings/check_availability/?hotel_id=${hotel.id}&check_in=${startDate}&check_out=${endDate}&rooms_booked=${roomsBooked}`;
+                    let url = `api/bookings/check_availability/?hotel_id=${hotel.id}&check_in=${startDate.split("T")[0]}&check_out=${endDate.split("T")[0]}&rooms_booked=${roomsBooked}`;
                     if (room) url += `&room_id=${room.id}`;
                     const res = await AxiosInstance.get(url);
                     if (res.data) setRemainingRooms(res.data.remaining_rooms);
@@ -357,7 +520,7 @@ export default function HotelBooking() {
         if (startDate && endDate && hotel) {
             const fetchPricePreview = async () => {
                 try {
-                    const payload = { hotel: hotel.id, check_in: startDate, check_out: endDate, rooms_booked: roomsBooked, coupon_code: couponCode };
+                    const payload = { hotel: hotel.id, check_in: startDate.split("T")[0], check_out: endDate.split("T")[0], rooms_booked: roomsBooked, coupon_code: couponCode };
                     if (room) payload.room = room.id;
                     const res = await AxiosInstance.post("api/bookings/price_preview/", payload);
                     setPriceDetails(res.data);
@@ -373,7 +536,7 @@ export default function HotelBooking() {
             const fetchAvailableCoupons = async () => {
                 try {
                     let url = `api/coupons/?hotel=${id}`;
-                    if (startDate) url += `&check_in=${startDate}`;
+                    if (startDate) url += `&check_in=${startDate.split("T")[0]}`;
                     const res = await AxiosInstance.get(url);
                     const data = res.data;
                     setAvailableCoupons(Array.isArray(data) ? data : (data.results || []));
@@ -399,12 +562,14 @@ export default function HotelBooking() {
     const handleBooking = async () => {
         if (!startDate || !endDate) { setError("Please select Check-in and Check-out dates."); return; }
         const today = new Date().toISOString().split("T")[0];
-        if (startDate < today) { setError("Check-in date cannot be in the past."); return; }
-        if (startDate >= endDate) { setError("Check-out date must be after check-in date."); return; }
+        const sdDate = startDate.split("T")[0];
+        const edDate = endDate.split("T")[0];
+        if (sdDate < today) { setError("Check-in date cannot be in the past."); return; }
+        if (sdDate >= edDate) { setError("Check-out date must be after check-in date."); return; }
         setIsBooking(true);
         setError(null);
         try {
-            const payload = { hotel: hotel.id, check_in: startDate, check_out: endDate, number_of_guests: guests, rooms_booked: roomsBooked, coupon_code: couponCode };
+            const payload = { hotel: hotel.id, check_in: sdDate, check_out: edDate, number_of_guests: guests, rooms_booked: roomsBooked, coupon_code: couponCode };
             if (room) payload.room = room.id;
             const bookingRes = await AxiosInstance.post("api/bookings/", payload);
             const bookingId = bookingRes.data.id;
@@ -458,7 +623,7 @@ export default function HotelBooking() {
     const handleDownloadReceipt = () => {
         if (!bookingDetails) return;
         const printWindow = window.open('', '_blank');
-        const content = `<html><head><title>Booking Receipt - ${hotel.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Hotels</h1><p>Booking Confirmation Receipt</p></div><div class="details"><div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div><div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div><div class="item"><div class="label">Check In</div><div class="val">${startDate}</div></div><div class="item"><div class="label">Check Out</div><div class="val">${endDate}</div></div><div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div><div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div></div><div class="total"><div class="label">Total Amount Paid</div><div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.12).toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p></body></html>`;
+        const content = `<html><head><title>Booking Receipt - ${hotel.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Hotels</h1><p>Booking Confirmation Receipt</p></div><div class="details"><div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div><div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div><div class="item"><div class="label">Check In</div><div class="val">${startDate.split("T")[0]}</div></div><div class="item"><div class="label">Check Out</div><div class="val">${endDate.split("T")[0]}</div></div><div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div><div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div></div><div class="total"><div class="label">Total Amount Paid</div><div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.12).toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p></body></html>`;
         printWindow.document.write(content);
         printWindow.document.close();
         printWindow.print();
@@ -481,6 +646,18 @@ export default function HotelBooking() {
                 .premium-btn:hover span { color: white; }
                 @keyframes scaleUp { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
                 .animate-scale { animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+                /* iOS Picker Styles */
+                .ios-wheel-item { height: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-family: 'Poppins', sans-serif; font-size: 16px; color: #64748b; transition: all 0.2s ease; white-space: nowrap; padding: 0 4px; }
+                .ios-wheel-item.disabled { color: #94a3b8; opacity: 0.5; }
+                .ios-wheel-item.active { color: #0f172a; font-weight: 600; font-size: 19px; transform: scale(1.05); }
+                .ios-datepicker-container { display: flex; flex-direction: column; background: #fff; padding: 0; overflow: hidden; }
+                .ios-wheel-view { display: flex; height: 200px; position: relative; background: #fff; overflow: hidden; }
+                .ios-wheel-column { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; display: flex; flex-direction: column; }
+                .ios-wheel-column::-webkit-scrollbar { display: none; }
+                .ios-wheel-highlight { position: absolute; top: 80px; left: 10px; right: 10px; height: 40px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; pointer-events: none; background: rgba(99, 102, 241, 0.03); }
+                .ios-wheel-gradient-top { position: absolute; top: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%); pointer-events: none; z-index: 2; }
+                .ios-wheel-gradient-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to top, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%); pointer-events: none; z-index: 2; }
             `}</style>
 
             <header style={S.header}>
@@ -513,8 +690,23 @@ export default function HotelBooking() {
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Clock size={20} color="#6366f1" /> Stay Duration</div>
                             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "24px" }}>
-                                <div><span style={S.formLabel}>Check-In</span><input type="date" style={S.input} className="booking-input" value={startDate} min={new Date().toLocaleDateString('en-CA')} onChange={e => { const newIn = e.target.value; setStartDate(newIn); const nextDay = new Date(new Date(newIn).getTime() + 86400000).toISOString().split("T")[0]; if (!endDate || endDate <= newIn) setEndDate(nextDay); }} /></div>
-                                <div><span style={S.formLabel}>Check-Out</span><input type="date" style={S.input} className="booking-input" value={endDate} min={startDate ? new Date(new Date(startDate).getTime() + 86400000).toISOString().split("T")[0] : new Date().toLocaleDateString('en-CA')} onChange={e => setEndDate(e.target.value)} /></div>
+                                <IOSDateTimePickerPopup 
+                                    label="Check-In" 
+                                    value={startDate} 
+                                    onChange={(newIn) => {
+                                        setStartDate(newIn);
+                                        const d = new Date(newIn);
+                                        d.setDate(d.getDate() + 1);
+                                        const nextDay = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}T12:00`;
+                                        if (!endDate || endDate <= newIn) setEndDate(nextDay);
+                                    }} 
+                                />
+                                <IOSDateTimePickerPopup 
+                                    label="Check-Out" 
+                                    value={endDate} 
+                                    onChange={setEndDate} 
+                                    minDateRaw={startDate ? startDate.split("T")[0] : null} 
+                                />
                             </div>
                         </div>
 
@@ -582,11 +774,11 @@ export default function HotelBooking() {
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                                     <div style={{ background: "#fff", padding: "12px", borderRadius: "12px", border: "1px solid #f1f5f9" }}>
                                         <div style={S.formLabel}>Check-In</div>
-                                        <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{startDate || "Not selected"}</div>
+                                        <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{startDate ? startDate.split("T")[0] : "Not selected"}</div>
                                     </div>
                                     <div style={{ background: "#fff", padding: "12px", borderRadius: "12px", border: "1px solid #f1f5f9" }}>
                                         <div style={S.formLabel}>Check-Out</div>
-                                        <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{endDate || "Not selected"}</div>
+                                        <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{endDate ? endDate.split("T")[0] : "Not selected"}</div>
                                     </div>
                                 </div>
                             </div>

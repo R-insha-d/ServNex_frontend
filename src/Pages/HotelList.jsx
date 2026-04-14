@@ -76,15 +76,17 @@ function CustomDropdown({ icon, options, value, onChange, placeholder, isLoading
 // ─── Highlight Text Component ────────────────────────────────────────────────
 function HighlightText({ text, highlight }) {
     if (!highlight.trim()) {
-        return <span>{text}</span>;
+        return <>{text}</>;
     }
-    const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+
+    const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
     const parts = text.split(regex);
 
     return (
-        <span>
+        <>
             {parts.map((part, i) =>
-                regex.test(part) ? (
+                part.toLowerCase() === highlight.toLowerCase() ? (
                     <mark key={i} className="highlight">
                         {part}
                     </mark>
@@ -92,7 +94,7 @@ function HighlightText({ text, highlight }) {
                     <span key={i}>{part}</span>
                 )
             )}
-        </span>
+        </>
     );
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -232,8 +234,8 @@ export default function HotelList() {
 
     const cityOptions = [
         { value: "All", label: "All Cities" },
-        { 
-            value: "__locate__", 
+        {
+            value: "__locate__",
             label: (
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <LocateFixed size={16} color="#667eea" />
@@ -242,8 +244,8 @@ export default function HotelList() {
             )
         },
         ...(city !== "All" && city !== "__locate__" && !uniqueCities.includes(city)
-            ? [{ 
-                value: city, 
+            ? [{
+                value: city,
                 label: (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <MapPin size={16} color="#667eea" />
@@ -277,13 +279,13 @@ export default function HotelList() {
     const getBadgeInfo = (badge) => {
         switch (badge) {
             case "Luxury Stays":
-                return { class: "badge-luxury", icon: "💎" };
+                return { class: "badge-luxury", icon: "" };
             case "Cheap & Best":
-                return { class: "badge-budget", icon: "💰" };
+                return { class: "badge-budget", icon: "" };
             case "Dormitory":
-                return { class: "badge-dorm", icon: "🏠" };
+                return { class: "badge-dorm", icon: "" };
             default:
-                return { class: "badge-default", icon: "🏢" };
+                return { class: "badge-default", icon: "" };
         }
     };
 
@@ -519,7 +521,13 @@ export default function HotelList() {
                                         <div className="col-lg-8 col-md-7">
                                             <div className="card-body p-4 d-flex flex-column h-100">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
-                                                    <h3 className="hotel-title">
+                                                    <h3 className="hotel-title"
+                                                        style={{
+                                                            fontWeight: 700,
+                                                            fontSize: "22px",
+                                                            color: "#1a202c"
+                                                        }}
+                                                    >
                                                         <HighlightText text={hotel.name} highlight={search} />
                                                     </h3>
                                                     {hotel.rating && (
@@ -529,8 +537,8 @@ export default function HotelList() {
                                                     )}
                                                 </div>
 
-                                                <div className="hotel-location mb-3">
-                                                    <MapPin size={18} />
+                                                <div className="hotel-location mb-3 d-flex align-items-start gap-2">
+                                                    <MapPin size={18} style={{ marginTop: "4.2px" }} />
                                                     <HighlightText text={`${hotel.area}, ${hotel.city}`} highlight={search} />
                                                 </div>
 

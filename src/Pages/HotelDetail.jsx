@@ -58,7 +58,7 @@ const S = {
         backgroundColor: "#6365f127",
         fontFamily: "'Poppins', sans-serif",
         color: "#1a1a1a",
-        
+
     },
 
     /* ── Header ── */
@@ -375,6 +375,171 @@ function GradBtn({ onClick, children, fullWidth }) {
     );
 }
 
+/* ─── IOS Wheel Picker Popup Components ─── */
+const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) => {
+    const scrollRef = React.useRef(null);
+    const [activeIndex, setActiveIndex] = useState(items.indexOf(value) !== -1 ? items.indexOf(value) : 0);
+    const scrollTimeout = React.useRef(null);
+
+    useEffect(() => {
+        const index = items.indexOf(value);
+        if (index !== -1 && scrollRef.current && activeIndex !== index) {
+            scrollRef.current.scrollTop = index * 40;
+            setActiveIndex(index);
+        }
+    }, [value, items]);
+
+    const handleScroll = (e) => {
+        const scrollTop = e.target.scrollTop;
+        const index = Math.round(scrollTop / 40);
+
+        if (index !== activeIndex && index >= 0 && index < items.length) {
+            setActiveIndex(index);
+            if (!disabledItems.includes(items[index])) {
+                onChange(items[index]);
+            }
+        }
+
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+        scrollTimeout.current = setTimeout(() => {
+            const finalIndex = Math.round(scrollRef.current.scrollTop / 40);
+            if (disabledItems.includes(items[finalIndex])) {
+                let validIndex = items.findIndex(item => !disabledItems.includes(item));
+                if (validIndex !== -1) {
+                    scrollRef.current.scrollTo({ top: validIndex * 40, behavior: 'smooth' });
+                    setActiveIndex(validIndex);
+                    onChange(items[validIndex]);
+                }
+            }
+        }, 150);
+    };
+
+    return (
+        <div className="ios-wheel-column" ref={scrollRef} onScroll={handleScroll} style={{ flex }}>
+            <div style={{ height: '80px', flexShrink: 0 }} />
+            {items.map((item, idx) => (
+                <div key={idx} className={`ios-wheel-item ${idx === activeIndex ? 'active' : ''} ${disabledItems.includes(item) ? 'disabled' : ''}`}>
+                    {item}
+                </div>
+            ))}
+            <div style={{ height: '80px', flexShrink: 0 }} />
+        </div>
+    );
+};
+
+const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Default value if not set
+    const defaultDate = new Date();
+    defaultDate.setMinutes(0); // Optional rounding
+    const dateObj = value && value.includes("T") ? new Date(value) : defaultDate;
+
+    const dates = [];
+    const dateValues = [];
+    const disabledDates = [];
+
+    const minDate = minDateRaw ? new Date(minDateRaw) : new Date();
+    const startDate = new Date(minDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const todayLabel = new Date();
+    todayLabel.setHours(0, 0, 0, 0);
+
+    for (let i = -60; i < 90; i++) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+        const ymd = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        dateValues.push(ymd);
+
+        let dLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        if (d.getTime() === todayLabel.getTime() && !minDateRaw) {
+            dLabel = "Today";
+        }
+
+        dates.push(dLabel);
+
+        if (d.getTime() < startDate.getTime()) {
+            disabledDates.push(dLabel);
+        }
+    }
+
+    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+    const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
+    const periods = ["AM", "PM"];
+
+    let currentDateVal = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
+    if (!dateValues.includes(currentDateVal)) currentDateVal = dateValues[0]; // fallback
+
+    const currentHour24 = dateObj.getHours();
+    const currentHour12 = (currentHour24 % 12 || 12).toString();
+    const currentMinute = (Math.round(dateObj.getMinutes() / 5) * 5 % 60).toString().padStart(2, '0');
+    const currentPeriod = currentHour24 >= 12 ? "PM" : "AM";
+
+    const updateValue = (newPart) => {
+        const parts = {
+            date: currentDateVal,
+            hour: currentHour12,
+            min: currentMinute,
+            period: currentPeriod,
+            ...newPart
+        };
+        let h = parseInt(parts.hour);
+        if (parts.period === "PM" && h < 12) h += 12;
+        if (parts.period === "AM" && h === 12) h = 0;
+        const newStr = `${parts.date}T${h.toString().padStart(2, '0')}:${parts.min}`;
+        onChange(newStr);
+    };
+
+    // Ensure state defaults on open if empty
+    useEffect(() => {
+        if (isOpen && !value) {
+            updateValue({});
+        }
+    }, [isOpen]);
+
+    const displayStr = value ? new Date(value).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+    }) : 'Select Date & Time';
+
+    return (
+        <div style={{ position: "relative", marginBottom: "16px" }}>
+            <span style={S.dateLabel}>{label}</span>
+            <div
+                className="form-control form-control-lg"
+                onClick={() => setIsOpen(!isOpen)}
+                style={{ borderRadius: "10px", borderColor: "#f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.95rem", cursor: "pointer", display: "flex", alignItems: "center", background: "#fff", height: "48px" }}
+            >
+                {displayStr}
+            </div>
+
+            {isOpen && (
+                <div style={{
+                    position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100,
+                    background: "#fff", borderRadius: "16px", marginTop: "8px",
+                    boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", overflow: "hidden"
+                }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#64748b" }}>Select Date & Time</span>
+                        <button onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} style={{ color: "#6366f1", fontWeight: 600, border: "none", background: "none", cursor: "pointer", fontSize: "1rem" }}>Done</button>
+                    </div>
+                    <div className="ios-datepicker-container" style={{ margin: 0, borderRadius: 0, gap: 0 }}>
+                        <div className="ios-wheel-view">
+                            <div className="ios-wheel-highlight" />
+                            <div className="ios-wheel-gradient-top" />
+                            <div className="ios-wheel-gradient-bottom" />
+                            <WheelColumn flex={1.8} items={dates} value={dates[dateValues.indexOf(currentDateVal)] || dates[dates.findIndex(d => !disabledDates.includes(d))]} onChange={(val) => updateValue({ date: dateValues[dates.indexOf(val)] })} disabledItems={disabledDates} />
+                            <WheelColumn flex={0.7} items={hours} value={currentHour12} onChange={(val) => updateValue({ hour: val })} />
+                            <WheelColumn flex={0.7} items={minutes} value={currentMinute} onChange={(val) => updateValue({ min: val })} />
+                            <WheelColumn flex={0.7} items={periods} value={currentPeriod} onChange={(val) => updateValue({ period: val })} />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 
 export default function HotelDetails() {
@@ -491,8 +656,13 @@ export default function HotelDetails() {
     const performCheck = async () => {
         if (!checkIn || !checkOut) { toast.warning("Please select dates"); return; }
         const today = new Date().toISOString().split("T")[0];
-        if (checkIn < today) { toast.error("Check-in date cannot be in the past."); return; }
-        if (checkIn >= checkOut) { toast.error("Check-out date must be after check-in date."); return; }
+
+        // Exact original functionality mapping: use only date prefix
+        const checkInDate = checkIn.split("T")[0];
+        const checkOutDate = checkOut.split("T")[0];
+
+        if (checkInDate < today) { toast.error("Check-in date cannot be in the past."); return; }
+        if (checkInDate >= checkOutDate) { toast.error("Check-out date must be after check-in date."); return; }
 
         setCheckStatus("checking");
 
@@ -500,13 +670,13 @@ export default function HotelDetails() {
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         try {
-            let url = `api/bookings/check_availability/?hotel_id=${id}&check_in=${checkIn}&check_out=${checkOut}`;
+            let url = `api/bookings/check_availability/?hotel_id=${id}&check_in=${checkInDate}&check_out=${checkOutDate}`;
             if (selectedRoom) url += `&room_id=${selectedRoom.id}`;
             const res = await AxiosInstance.get(url);
             if (res.data.available) {
                 setCheckStatus("available");
                 setTimeout(() => {
-                    navigate(`/booking/${id}`, { state: { hotel, room: selectedRoom, checkIn, checkOut } });
+                    navigate(`/booking/${id}`, { state: { hotel, room: selectedRoom, checkIn: checkInDate, checkOut: checkOutDate } });
                 }, 2000);
             } else {
                 setCheckStatus("full");
@@ -841,6 +1011,109 @@ export default function HotelDetails() {
                     .premium-btn:hover span {
                         color: white;
                     }
+
+                    /* iOS Picker Styles */
+                    .ios-datepicker-container {
+                        display: flex;
+                        flex-direction: column;
+                        background: #fff;
+                        padding: 0;
+                        overflow: hidden;
+                    }
+
+                    .ios-wheel-view {
+                        display: flex;
+                        height: 200px;
+                        position: relative;
+                        background: #fff;
+                        overflow: hidden;
+                    }
+
+                    .ios-wheel-column {
+                        flex: 1;
+                        height: 100%;
+                        overflow-y: scroll;
+                        scroll-snap-type: y mandatory;
+                        scrollbar-width: none;
+                        -ms-overflow-style: none;
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .ios-wheel-column::-webkit-scrollbar {
+                        display: none;
+                    }
+
+                    .ios-wheel-item {
+                        height: 40px;
+                        min-height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        scroll-snap-align: center;
+                        font-family: 'Poppins', sans-serif;
+                        font-size: 16px;
+                        color: #64748b; /* Darker slate for better visibility */
+                        transition: all 0.2s ease;
+                        white-space: nowrap;
+                        padding: 0 4px;
+                    }
+
+                    .ios-wheel-item.disabled {
+                        color: #94a3b8; /* Keep it visible but clearly disabled */
+                        opacity: 0.5;
+                    }
+
+                    .ios-wheel-item.active {
+                        color: #0f172a;
+                        font-weight: 600;
+                        font-size: 19px;
+                        transform: scale(1.05);
+                    }
+
+                    .ios-wheel-highlight {
+                        position: absolute;
+                        top: 80px;
+                        left: 10px;
+                        right: 10px;
+                        height: 40px;
+                        border-top: 1px solid #e2e8f0;
+                        border-bottom: 1px solid #e2e8f0;
+                        pointer-events: none;
+                        background: rgba(99, 102, 241, 0.03);
+                    }
+
+                    .ios-wheel-gradient-top {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 80px;
+                        background: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+                        pointer-events: none;
+                        z-index: 2;
+                    }
+
+                    .ios-wheel-gradient-bottom {
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        height: 80px;
+                        background: linear-gradient(to top, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+                        pointer-events: none;
+                        z-index: 2;
+                    }
+
+                    .ios-label {
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        color: #6366f1;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        margin-bottom: 8px;
+                        display: block;
+                    }
                 `}
             </style>
             {/* ── Header ── */}
@@ -891,7 +1164,7 @@ export default function HotelDetails() {
                         ...S.heroSubtitle,
                         fontSize: isMobile ? "1rem" : S.heroSubtitle.fontSize
                     }}>
-                        {hotel.area.slice(0,35)}...
+                        {hotel.area.slice(0, 35)}...
                     </div>
                 </div>
 
@@ -917,16 +1190,16 @@ export default function HotelDetails() {
             <div
                 data-reveal-id="info-bar"
                 className={`reveal ${revealed['info-bar'] ? 'active' : ''}`}
-                style={{ 
-                    ...S.infoBar, 
+                style={{
+                    ...S.infoBar,
                     margin: isMobile ? "24px" : S.infoBar.margin,
                     padding: isMobile ? "24px" : S.infoBar.padding,
-                    gap: isMobile ? "24px" : S.infoBar.gap 
+                    gap: isMobile ? "24px" : S.infoBar.gap
                 }}
             >
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>
                     <LocationOnIcon style={{ ...S.infoIcon, fontSize: "1.2rem" }} />
-                    {hotel.area.slice(0,25)}...  &nbsp;, {hotel.city}
+                    {hotel.area.slice(0, 25)}...  &nbsp;, {hotel.city}
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>
@@ -935,11 +1208,11 @@ export default function HotelDetails() {
                     <span style={{ fontWeight: 400, color: "#94a3b8" }}>({hotel.reviews_count || "0"} reviews)</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={{ 
-                    ...S.infoItem, 
-                    fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize, 
+                <div style={{
+                    ...S.infoItem,
+                    fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize,
                     textAlign: isMobile ? "center" : "left",
-                    width: isMobile ? "100%" : "auto" 
+                    width: isMobile ? "100%" : "auto"
                 }}>
                     <span style={{ fontSize: "1.4rem" }}>✨</span>
                     <span style={{ fontStyle: "italic", color: "#64748b" }}>Redefining Luxury & Comfort</span>
@@ -949,23 +1222,23 @@ export default function HotelDetails() {
             {/* ── Main content layout ── */}
             <div style={{ ...S.body, paddingBottom: "100px" }}>
                 <div className="detail-layout-container">
-                    
+
                     {/* LEFT COLUMN: MAIN CONTENT */}
                     <div className="main-content-area">
-                        
+
                         {/* About Section */}
                         <div className="section-card reveal active" data-reveal-id="about">
                             <h2 className="section-title">Experience & Ambience</h2>
-                            <p style={{ 
-                                fontFamily: "'Poppins', sans-serif", 
-                                fontSize: "1rem", 
-                                color: "#475569", 
-                                lineHeight: "1.8", 
-                                marginBottom: "24px" 
+                            <p style={{
+                                fontFamily: "'Poppins', sans-serif",
+                                fontSize: "1rem",
+                                color: "#475569",
+                                lineHeight: "1.8",
+                                marginBottom: "24px"
                             }}>
                                 {hotel.description}
                             </p>
-                            
+
                             {Array.isArray(hotel.nearby_attractions) && hotel.nearby_attractions.length > 0 && (
                                 <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid #f0f0f0" }}>
                                     <Typography variant="overline" sx={{ color: "#6366f1", fontWeight: 700, letterSpacing: "0.1em" }}>
@@ -1130,11 +1403,11 @@ export default function HotelDetails() {
                             <Box sx={{ mb: 3 }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                                     <Typography variant="h6" fontWeight="700" color="#0f172a">Booking</Typography>
-                                    <Chip 
-                                        icon={<CheckIcon style={{ fontSize: 14 }} />} 
-                                        label="Premium Stay" 
-                                        size="small" 
-                                        sx={{ bgcolor: "rgba(99, 102, 241, 0.1)", color: "#6366f1", fontWeight: 600 }} 
+                                    <Chip
+                                        icon={<CheckIcon style={{ fontSize: 14 }} />}
+                                        label="Premium Stay"
+                                        size="small"
+                                        sx={{ bgcolor: "rgba(99, 102, 241, 0.1)", color: "#6366f1", fontWeight: 600 }}
                                     />
                                 </div>
                                 <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
@@ -1169,7 +1442,7 @@ export default function HotelDetails() {
                                 variant="contained"
                                 onClick={() => {
                                     const el = document.getElementById("rooms");
-                                    if(el) el.scrollIntoView({ behavior: 'smooth' });
+                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
                                 }}
                                 sx={{
                                     py: 2,
@@ -1208,37 +1481,27 @@ export default function HotelDetails() {
                     {checkStatus === "input" && (
                         <>
                             <div style={S.modalTitle}>Select Dates</div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "left" }}>
-                                        <div>
-                                    <span style={S.dateLabel}>Check-in Date</span>
-                                    <input
-                                        type="date"
-                                        className="form-control form-control-lg"
-                                        value={checkIn}
-                                        min={new Date().toLocaleDateString('en-CA')}
-                                        onChange={e => {
-                                            const newIn = e.target.value;
-                                            setCheckIn(newIn);
-                                            // Handle check-out auto-update
-                                            const nextDay = new Date(new Date(newIn).getTime() + 86400000).toISOString().split("T")[0];
-                                            if (!checkOut || checkOut <= newIn) {
-                                                setCheckOut(nextDay);
-                                            }
-                                        }}
-                                        style={{ borderRadius: "10px", borderColor: "#f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.95rem" }}
-                                    />
-                                </div>
-                                <div>
-                                    <span style={S.dateLabel}>Check-out Date</span>
-                                    <input
-                                        type="date"
-                                        className="form-control form-control-lg"
-                                        value={checkOut}
-                                        min={checkIn ? new Date(new Date(checkIn).getTime() + 86400000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
-                                        onChange={e => setCheckOut(e.target.value)}
-                                        style={{ borderRadius: "10px", borderColor: "#f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.95rem" }}
-                                    />
-                                </div>
+                            <div style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                                <IOSDateTimePickerPopup
+                                    label="Check-in Date"
+                                    value={checkIn}
+                                    onChange={(newIn) => {
+                                        setCheckIn(newIn);
+                                        // Handle check-out auto-update
+                                        const d = new Date(newIn);
+                                        d.setDate(d.getDate() + 1);
+                                        const nextDay = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}T12:00`;
+                                        if (!checkOut || checkOut <= newIn) {
+                                            setCheckOut(nextDay);
+                                        }
+                                    }}
+                                />
+                                <IOSDateTimePickerPopup
+                                    label="Check-out Date"
+                                    value={checkOut}
+                                    onChange={setCheckOut}
+                                    minDateRaw={checkIn}
+                                />
                             </div>
                             <div style={{ marginTop: "28px" }}>
                                 <GradBtn onClick={performCheck} fullWidth>Check Availability</GradBtn>
@@ -1310,11 +1573,11 @@ export default function HotelDetails() {
 
                     <div style={{ marginBottom: "20px", textAlign: "left" }}>
                         <label style={{ fontSize: "0.8rem", fontWeight: 500, color: "#6366f1", display: "block", marginBottom: "8px" }}>
-                             Add Photos (Optional)
+                            Add Photos (Optional)
                         </label>
-                        <input 
-                            type="file" 
-                            multiple 
+                        <input
+                            type="file"
+                            multiple
                             accept="image/*"
                             onChange={(e) => setReviewImages(Array.from(e.target.files))}
                             style={{ fontSize: "0.75rem", width: "100%", color: "#64748b" }}

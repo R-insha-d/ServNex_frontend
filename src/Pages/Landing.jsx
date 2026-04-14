@@ -100,7 +100,7 @@ function Landing() {
                                     <div className="col-6">
                                         <div className="stat-card stat-white-card">
                                             <h2 className="stat-number">24/7</h2>
-                                            <p className="stat-label">Always Available</p>
+                                            <p className="stat-label" >Always Available</p>
                                         </div>
                                     </div>
                                 </div>
@@ -111,9 +111,9 @@ function Landing() {
             </section>
 
             {/* ================= HERO SERVICES SECTION ================= */}
-            <section className="hero-section py-5" id="services">
+            <section className="hero-section py-5" id="services" >
                 <div className="container text-center">
-                    <h2 className="section-title mb-5">Explore Our Services</h2>
+                    <h2 className="section-title mb-5" style={{ marginTop: "25px" }} >Explore Our Services</h2>
                     <div className="row g-4 justify-content-center" >
 
                         <div className="col-lg-4 col-md-6">

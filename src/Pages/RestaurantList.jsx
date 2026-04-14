@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import NotificationDropdown from "../Component/NotificationDropdown";
 import "./HotelList.css";
+import "./RestaurantList.css";
 
 // ─── Custom Dropdown Component ───────────────────────────────────────────────
 function CustomDropdown({ icon, options, value, onChange, placeholder, isLoading, loadingText }) {
@@ -77,23 +78,25 @@ function CustomDropdown({ icon, options, value, onChange, placeholder, isLoading
 // ─── Highlight Text Component ────────────────────────────────────────────────
 function HighlightText({ text, highlight }) {
     if (!highlight.trim()) {
-        return <span>{text}</span>;
+        return <>{text}</>;
     }
-    const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+
+    const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
     const parts = text.split(regex);
 
     return (
-        <span>
+        <>
             {parts.map((part, i) =>
-                regex.test(part) ? (
+                part.toLowerCase() === highlight.toLowerCase() ? (
                     <mark key={i} className="highlight">
                         {part}
                     </mark>
                 ) : (
-                    <span key={i}>{part}</span>
+                    part
                 )
             )}
-        </span>
+        </>
     );
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -224,8 +227,8 @@ export default function RestaurantList() {
     // City Dropdown options
     const cityOptions = [
         { value: "All", label: "All Cities" },
-        { 
-            value: "__locate__", 
+        {
+            value: "__locate__",
             label: (
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <LocateFixed size={16} color="#667eea" />
@@ -234,8 +237,8 @@ export default function RestaurantList() {
             )
         },
         ...(city !== "All" && city !== "__locate__" && !uniqueCities.includes(city)
-            ? [{ 
-                value: city, 
+            ? [{
+                value: city,
                 label: (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <MapPin size={16} color="#667eea" />
@@ -274,18 +277,13 @@ export default function RestaurantList() {
     };
 
     // Badge styling logic
-    const getBadgeInfo = (badge) => {
-        switch (badge) {
-            case "Fine Dining":
-                return { class: "badge-luxury", icon: "🍽️" };
-            case "Casual Dining":
-                return { class: "badge-budget", icon: "🥘" };
-            case "Fast Food":
-                return { class: "badge-dorm", icon: "🍔" };
-            case "Cafe":
-                return { class: "badge-default", icon: "☕" };
-            default:
-                return { class: "badge-default", icon: "🏪" };
+    const getBadgeClass = (type) => {
+        switch (type) {
+            case "Fine Dining": return "badge badge-fine-dining";
+            case "Casual Dining": return "badge badge-casual-dining";
+            case "Fast Food": return "badge badge-fast-food";
+            case "Cafe": return "badge badge-cafe";
+            default: return "badge badge-cafe";
         }
     };
 
@@ -481,13 +479,13 @@ export default function RestaurantList() {
                 ) : (
                     <div className="d-flex flex-column gap-5">
                         {filteredRestaurants.map((restaurant) => {
-                            const badgeInfo = getBadgeInfo(restaurant.badge);
+                            const badgeClass = getBadgeClass(restaurant.badge);
                             return (
                                 <div
                                     key={restaurant.id}
-                                    className="hotel-card"
+                                    className="restaurant-card"
                                 >
-                                    <div className="row g-0">
+                                    <div className="row g-0 flex-grow-1">
                                         {/* IMAGE */}
                                         <div className="col-lg-4 col-md-5 hotel-image-wrapper">
                                             <img
@@ -496,25 +494,24 @@ export default function RestaurantList() {
                                                     "https://via.placeholder.com/600x450?text=Premium+Restaurant"
                                                 }
                                                 alt={restaurant.name}
-                                                className="w-100 object-fit-cover hotel-image"
+                                                className="w-100 h-100 object-fit-cover hotel-image"
                                             />
-                                            <div className={`hotel-type-badge ${badgeInfo.class}`}>
-                                                {badgeInfo.icon} {restaurant.badge}
+                                            <div className={badgeClass}>
+                                                {restaurant.badge}
                                             </div>
-                                            <div style={{
-                                                position: "absolute",
-                                                bottom: "8px",
-                                                left: "8px",
-                                                backgroundColor: restaurant.is_open ? "#10b981" : "#ef4444",
-                                                color: "white",
-                                                fontSize: "0.65rem",
-                                                fontWeight: 800,
-                                                padding: "2px 8px",
-                                                borderRadius: "4px",
-                                                textTransform: "uppercase",
-                                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                                            }}>
-                                                {restaurant.is_open ? "Open Now" : "Currently Closed"}
+                                            <div className={`status-pill ${restaurant.is_open ? 'status-open' : 'status-closed'}`}>
+                                                {restaurant.is_open && (
+                                                    <span style={{
+                                                        width: "6px",
+                                                        height: "6px",
+                                                        borderRadius: "50%",
+                                                        backgroundColor: "#4ade80",
+                                                        display: "inline-block",
+                                                        marginRight: "6px",
+                                                        boxShadow: "0 0 8px #4ade80"
+                                                    }} />
+                                                )}
+                                                {restaurant.is_open ? "Open Now" : "Closed"}
                                             </div>
                                         </div>
 
@@ -522,31 +519,38 @@ export default function RestaurantList() {
                                         <div className="col-lg-8 col-md-7">
                                             <div className="card-body p-4 d-flex flex-column h-100">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
-                                                    <h3 className="hotel-title">
+                                                    <h3
+                                                        className="restaurant-title mb-0"
+                                                        style={{
+                                                            fontWeight: 700,
+                                                            fontSize: "22px",
+                                                            color: "#1a202c"
+                                                        }}
+                                                    >
                                                         <HighlightText text={restaurant.name} highlight={search} />
                                                     </h3>
                                                     {restaurant.rating && (
-                                                        <div className="rating-pill">
+                                                        <div className="rating-pill-modern">
                                                             <span>★</span> {restaurant.rating}
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                <div className="hotel-location mb-3">
-                                                    <MapPin size={18} />
-                                                    <HighlightText text={`${restaurant.area}, ${restaurant.city}`} highlight={search} />
+                                                <div className="restaurant-location d-flex align-items-start gap-2">
+                                                    <MapPin size={18} style={{ marginTop: "3px" }} />
+                                                    <HighlightText text={`${restaurant.area}, ${restaurant.city}`} highlight={search} />...
                                                 </div>
 
-                                                <div className="mb-3">
-                                                    <span className="badge bg-light text-dark border">
-                                                        <UtensilsCrossed size={14} className="me-1" />
+                                                <div className="mb-3 d-flex flex-wrap gap-2">
+                                                    <span className="badge badge-cuisine">
+                                                        <UtensilsCrossed size={12} />
                                                         {restaurant.cuisine_type}
                                                     </span>
                                                 </div>
 
                                                 {/* DESCRIPTION */}
                                                 <p
-                                                    className="hotel-description flex-grow-1"
+                                                    className="restaurant-description"
                                                     style={{
                                                         display: "-webkit-box",
                                                         WebkitLineClamp: 3,
@@ -555,42 +559,40 @@ export default function RestaurantList() {
                                                         overflow: "hidden",
                                                     }}
                                                 >
-                                                    <HighlightText text={restaurant.description.slice(0, 235)} highlight={search} />...
+                                                    <HighlightText text={restaurant.description.slice(0, 235)} highlight={search} />....
                                                 </p>
 
                                                 {/* PRICE + BUTTON */}
-                                                <div className="d-flex justify-content-between align-items-end mt-4 pt-3 border-top">
-                                                    <div className="price-container">
-                                                        <span className="price-label">Average cost for two</span>
-                                                        <div className="d-flex align-items-baseline gap-2">
-                                                            <span className="price-value">
-                                                                ₹{Number(restaurant.average_cost_for_two).toLocaleString()}
-                                                            </span>
-                                                        </div>
+                                                <div className="d-flex justify-content-between align-items-end mt-auto pt-3 border-top">
+                                                    <div className="price-section">
+                                                        <span className="price-desc">Avg Cost for Two</span>
+                                                        <span className="price-text">
+                                                            ₹{Number(restaurant.average_cost_for_two).toLocaleString()}
+                                                        </span>
                                                     </div>
 
-                                                    <div className="d-flex flex-column align-items-end gap-2">
-                                                        {restaurant.is_open ? (
-                                                            <Link
-                                                                to={`/restaurant/${restaurant.id}`}
-                                                                className="explore-btns"
-                                                            >
-                                                                <span className="d-flex align-items-center gap-1">See Details <ChevronsRight size={18} /></span>
-                                                            </Link>
-                                                        ) : (
-                                                            <button 
-                                                                className="explore-btns" 
-                                                                disabled 
-                                                                style={{ 
-                                                                    opacity: 0.6, 
-                                                                    cursor: 'not-allowed',
-                                                                    background: '#9ca3af'
-                                                                }}
-                                                            >
-                                                                <span className="d-flex align-items-center gap-1">Closed <ChevronsRight size={18} /></span>
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                                    {restaurant.is_open ? (
+                                                        <Link
+                                                            to={`/restaurant/${restaurant.id}`}
+                                                            className="explore-btns"
+                                                        >
+                                                            <span>See Details <ChevronsRight size={18} /></span>
+                                                        </Link>
+                                                    ) : (
+                                                        <button
+                                                            className="explore-btns"
+                                                            disabled
+                                                            style={{
+                                                                opacity: 0.6,
+                                                                cursor: 'not-allowed',
+                                                                background: '#f1f5f9',
+                                                                color: '#94a3b8',
+                                                                boxShadow: 'none'
+                                                            }}
+                                                        >
+                                                            <span>Closed <ChevronsRight size={18} /></span>
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
