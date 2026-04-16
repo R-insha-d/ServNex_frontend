@@ -379,6 +379,18 @@ export default function MyBookings() {
                                                     {hotel.area ? hotel.area + ", " + hotel.city : "Location unavailable"}
                                                 </div>
                                                 {booking.room_type && <div className="mb-2"><Chip label={booking.room_type + " Room"} color="primary" variant="outlined" size="small" /></div>}
+                                                
+                                                {booking.payment_status !== "paid" && (
+                                                    <Box sx={{ bgcolor: "#fff1f2", p: 1.5, borderRadius: "10px", border: "1px dashed #fecaca", mb: 2 }}>
+                                                        <Typography variant="caption" color="#e11d48" fontWeight="600" sx={{ display: "block", mb: 0.5 }}>
+                                                            ⚠️ Payment was not completed.
+                                                        </Typography>
+                                                        <Link to={`/hotel/${booking.hotel}`} style={{ fontSize: "0.75rem", color: "#e11d48", fontWeight: 700, textDecoration: "underline" }}>
+                                                            Retry Booking
+                                                        </Link>
+                                                    </Box>
+                                                )}
+
                                                 <Box display="flex" flexDirection="column" gap={1} bgcolor="#f8f9fa" p={2} borderRadius={2}>
                                                     <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-in: {booking.check_in}</div>
                                                     <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-out: {booking.check_out}</div>
@@ -647,6 +659,16 @@ export default function MyBookings() {
                                         <Typography variant="caption" color="text.secondary">Rooms</Typography>
                                         <Typography variant="body2" fontWeight="600">{detailsModal.rooms_booked || 1}</Typography>
                                     </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Status</Typography>
+                                        <Typography 
+                                            variant="body2" 
+                                            fontWeight="600" 
+                                            color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
+                                        >
+                                            {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status?.toUpperCase()}
+                                        </Typography>
+                                    </div>
                                 </>
                             ) : (
                                 <>
@@ -664,7 +686,13 @@ export default function MyBookings() {
                                     </div>
                                     <div>
                                         <Typography variant="caption" color="text.secondary">Status</Typography>
-                                        <Typography variant="body2" fontWeight="600" color="success.main">{detailsModal?.status}</Typography>
+                                        <Typography 
+                                            variant="body2" 
+                                            fontWeight="600" 
+                                            color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
+                                        >
+                                            {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status}
+                                        </Typography>
                                     </div>
                                 </>
                             )}
@@ -674,15 +702,17 @@ export default function MyBookings() {
                     <Button
                         fullWidth
                         variant="contained"
+                        disabled={detailsModal?.payment_status !== 'paid'}
                         startIcon={<Download size={18} />}
                         onClick={() => handleDownloadReceipt(detailsModal)}
                         sx={{
                             py: 1.5, borderRadius: "12px", textTransform: "none", fontWeight: 700,
                             bgcolor: detailsModal?.hotel ? "#667eea" : "#3a86ff",
-                            "&:hover": { bgcolor: detailsModal?.hotel ? "#5a6fd6" : "#2d75e0" }
+                            "&:hover": { bgcolor: detailsModal?.hotel ? "#5a6fd6" : "#2d75e0" },
+                            "&.Mui-disabled": { bgcolor: "#e2e8f0", color: "#94a3b8" }
                         }}
                     >
-                        Download PDF Receipt
+                        {detailsModal?.payment_status !== 'paid' ? "Payment Required" : "Download PDF Receipt"}
                     </Button>
                 </Box>
             </Modal>
