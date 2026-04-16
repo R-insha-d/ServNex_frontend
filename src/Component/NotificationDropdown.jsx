@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBell, FaCheckCircle, FaCalendarCheck, FaInfoCircle, FaTrash } from 'react-icons/fa';
+import { FaBell, FaCheckCircle, FaCalendarCheck, FaInfoCircle, FaTrash, FaTimesCircle } from 'react-icons/fa';
 import AxiosInstance from './AxiosInstance';
 import './NotificationDropdown.css';
 
@@ -75,6 +75,7 @@ const NotificationDropdown = () => {
         switch (type) {
             case 'booking': return <FaCalendarCheck className="notif-icon booking" />;
             case 'reservation': return <FaCheckCircle className="notif-icon reservation" />;
+            case 'failure': return <FaTimesCircle className="notif-icon failure" />;
             default: return <FaInfoCircle className="notif-icon info" />;
         }
     };

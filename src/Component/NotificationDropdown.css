@@ -167,6 +167,7 @@
 
 .notif-icon.booking { color: #8b5cf6; }
 .notif-icon.reservation { color: #10b981; }
+.notif-icon.failure { color: #ef4444; }
 .notif-icon.info { color: #3b82f6; }
 
 .notif-text {

@@ -573,7 +573,7 @@ export default function HotelBooking() {
             if (room) payload.room = room.id;
             const bookingRes = await AxiosInstance.post("api/bookings/", payload);
             const bookingId = bookingRes.data.id;
-            const orderRes = await AxiosInstance.post("api/razorpay/order/", { amount: Math.round(Number(priceDetails.final_price) * 1.12), booking_type: 'hotel', booking_id: bookingId });
+            const orderRes = await AxiosInstance.post("api/razorpay/order/", { amount: Math.round(Number(priceDetails.final_price) * 1.02), booking_type: 'hotel', booking_id: bookingId });
             const order = orderRes.data;
             const options = {
                 key: import.meta.env.VITE_RAZR_KEY_ID || "",
@@ -593,8 +593,8 @@ export default function HotelBooking() {
                 },
                 theme: { color: "#6366f1" }
             };
-            const rzp = new window.Razorpay({ ...options, modal: { ondismiss: async function () { try { await AxiosInstance.post(`api/bookings/${bookingId}/fail_payment/`); } catch (err) {} } } });
-            rzp.on('payment.failed', async function (response) { toast.error(`Payment failed: ${response.error.description}`); try { await AxiosInstance.post(`api/bookings/${bookingId}/fail_payment/`); } catch (err) {} });
+            const rzp = new window.Razorpay({ ...options, modal: { ondismiss: async function () { try { await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: "Payment was cancelled by the user." }); } catch (err) {} } } });
+            rzp.on('payment.failed', async function (response) { toast.error(`Payment failed: ${response.error.description}`); try { await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: response.error.description }); } catch (err) {} });
             rzp.open();
         } catch (err) {
             let msg = "Booking failed. Please try again.";
@@ -623,7 +623,7 @@ export default function HotelBooking() {
     const handleDownloadReceipt = () => {
         if (!bookingDetails) return;
         const printWindow = window.open('', '_blank');
-        const content = `<html><head><title>Booking Receipt - ${hotel.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Hotels</h1><p>Booking Confirmation Receipt</p></div><div class="details"><div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div><div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div><div class="item"><div class="label">Check In</div><div class="val">${startDate.split("T")[0]}</div></div><div class="item"><div class="label">Check Out</div><div class="val">${endDate.split("T")[0]}</div></div><div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div><div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div></div><div class="total"><div class="label">Total Amount Paid</div><div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.12).toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p></body></html>`;
+        const content = `<html><head><title>Booking Receipt - ${hotel.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Hotels</h1><p>Booking Confirmation Receipt</p></div><div class="details"><div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div><div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div><div class="item"><div class="label">Check In</div><div class="val">${startDate.split("T")[0]}</div></div><div class="item"><div class="label">Check Out</div><div class="val">${endDate.split("T")[0]}</div></div><div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div><div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div></div><div class="total"><div class="label">Total Amount Paid</div><div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.02).toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p></body></html>`;
         printWindow.document.write(content);
         printWindow.document.close();
         printWindow.print();

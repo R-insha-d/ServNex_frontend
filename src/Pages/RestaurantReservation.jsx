@@ -698,11 +698,23 @@ export default function RestaurantReservation() {
                         setShowSuccessModal(true);
                     } catch (err) { toast.error("Payment verification failed. Please contact support."); }
                 },
-                theme: { color: "#6366f1" }
+                theme: { color: "#6366f1" },
+                modal: {
+                    ondismiss: async function () {
+                        try {
+                            await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: "Payment was cancelled by the user." });
+                        } catch (err) { console.error("Failed to report cancellation:", err); }
+                    }
+                }
             };
 
             const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response) { toast.error(`Payment failed: ${response.error.description}`); });
+            rzp.on('payment.failed', async function (response) { 
+                toast.error(`Payment failed: ${response.error.description}`); 
+                try {
+                    await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: response.error.description });
+                } catch (err) { console.error("Failed to report failure:", err); }
+            });
             rzp.open();
 
         } catch (err) {

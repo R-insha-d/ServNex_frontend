@@ -224,10 +224,11 @@ export default function MyBookings() {
     };
 
     const getStatusChipColor = (status) => {
-        if (status === "Your Table Is Ready" || status === "confirmed" || status === "paid") return "success";
-        if (status === "completed" || status === "visited") return "info";
-        if (status === "Table Pending") return "warning";
-        if (status === "cancelled" || status === "failed" || status === "pending") return "error";
+        const s = status?.toLowerCase() || "";
+        if (s === "your table is ready" || s === "confirmed" || s === "paid" || s === "success") return "success";
+        if (s === "completed" || s === "visited") return "info";
+        if (s === "table pending" || s === "pending") return "warning";
+        if (s === "cancelled" || s === "failed" || s === "payment failed") return "error";
         return "primary";
     };
 
@@ -363,7 +364,11 @@ export default function MyBookings() {
                                             <div className="position-relative">
                                                 <img src={hotel.image || "https://via.placeholder.com/300?text=Hotel"} alt={hotel.name} className="w-100" style={{ height: 160, objectFit: "cover" }} />
                                                 <div className="position-absolute top-0 end-0 m-2">
-                                                    <Chip label={booking.status === 'pending' ? 'PAYMENT FAILED' : booking.status.toUpperCase()} color={getStatusChipColor(booking.status)} size="small" />
+                                                    <Chip 
+                                                        label={booking.payment_status !== 'paid' ? 'PAYMENT FAILED' : booking.status === 'pending' ? 'CONFIRMED' : booking.status.toUpperCase()} 
+                                                        color={getStatusChipColor(booking.payment_status !== 'paid' ? 'payment failed' : booking.status)} 
+                                                        size="small" 
+                                                    />
 
                                                 </div>
                                             </div>
@@ -484,13 +489,13 @@ export default function MyBookings() {
                                                     {reservation.number_of_guests} {reservation.number_of_guests === 1 ? "Guest" : "Guests"}
                                                 </span>
                                                 <Chip
-                                                    label={reservation.status === "pending" ? "Payment Failed" : reservation.status === "completed" ? "Completed" : reservation.status}
-                                                    color={getStatusChipColor(reservation.status)}
+                                                    label={reservation.payment_status !== 'paid' ? "Payment Failed" : reservation.status === "completed" ? "Completed" : reservation.status}
+                                                    color={getStatusChipColor(reservation.payment_status !== 'paid' ? "payment failed" : reservation.status)}
                                                     size="small"
                                                 />
                                             </div>
 
-                                            {reservation.status === "pending" && (
+                                            {reservation.payment_status !== "paid" && (
                                                 <Box sx={{ bgcolor: "#fff1f2", p: 1.5, borderRadius: "10px", border: "1px dashed #fecaca", mb: 2 }}>
                                                     <Typography variant="caption" color="#e11d48" fontWeight="600" sx={{ display: "block", mb: 0.5 }}>
                                                         ⚠️ Payment was not completed.
