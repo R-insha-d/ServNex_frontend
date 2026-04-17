@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import "./Auth.css";
 import { GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
-
-
+import { FcGoogle } from "react-icons/fc";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Auth = ({ onSuccess }) => {
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
@@ -94,11 +94,9 @@ const Auth = ({ onSuccess }) => {
 
             if (onSuccess) onSuccess();
 
-            // 1. Check for Admin first
             if (isStaff) {
                 navigate("/custom-admin", { replace: true });
             }
-            // 2. Then check for Business
             else if (accountType === "business") {
                 if (role === "Hotel") {
                     navigate("/admin-dashboard", { replace: true });
@@ -108,7 +106,6 @@ const Auth = ({ onSuccess }) => {
                     navigate("/login-business", { replace: true });
                 }
             } 
-            // 3. Default to home
             else {
                 navigate("/", { replace: true });
             }
@@ -151,6 +148,63 @@ const Auth = ({ onSuccess }) => {
                 setLoading(false);
             });
     };
+
+    // GOOGLE LOGIN HANDLER
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setLoading(true);
+            try {
+                // We receive an access_token here. We'll send it to our backend to verify and get/create user.
+                const response = await AxiosInstance.post("google-login/", {
+                    access_token: tokenResponse.access_token,
+                });
+
+                localStorage.setItem("access", response.data.access);
+                localStorage.setItem("refresh", response.data.refresh);
+                localStorage.setItem("user", JSON.stringify(response.data.user));
+                localStorage.setItem("role", response.data.user.role || "User");
+                localStorage.setItem("username", response.data.user.first_name);
+                localStorage.setItem("email", response.data.user.email);
+                localStorage.setItem("phone", response.data.user.phone || "");
+
+                if (response.data.user.profile_image) {
+                    localStorage.setItem("profile_image", response.data.user.profile_image);
+                }
+
+                const role = response.data.user.role;
+                const isStaff = response.data.user.is_staff || response.data.user.is_superuser;
+                const accountType = ["Hotel", "Restaurant", "Saloon", "Business"].includes(role)
+                    ? "business"
+                    : "user";
+                localStorage.setItem("account_type", accountType);
+                toast.success("Login Successful with Google");
+
+                if (onSuccess) onSuccess();
+
+                if (isStaff) {
+                    navigate("/custom-admin", { replace: true });
+                } else if (accountType === "business") {
+                    if (role === "Hotel") {
+                        navigate("/admin-dashboard", { replace: true });
+                    } else if (["Restaurant", "Saloon"].includes(role)) {
+                        navigate("/restaurant-dashboard", { replace: true });
+                    } else {
+                        navigate("/login-business", { replace: true });
+                    }
+                } else {
+                    navigate("/", { replace: true });
+                }
+            } catch (error) {
+                console.error("Google authentication failed:", error);
+                toast.error(error.response?.data?.error || "Google Authentication Failed");
+            } finally {
+                setLoading(false);
+            }
+        },
+        onError: () => {
+            toast.error("Google Login Initialization Failed");
+        }
+    });
 
     return (
         <div className="auth-wrapper">
@@ -270,6 +324,10 @@ const Auth = ({ onSuccess }) => {
                         <button type="submit" disabled={loading} style={{ borderRadius: "20px", border: "2px solid #667eea", marginTop: "30px" }}>
                             {loading ? "Signing Up..." : "Sign Up"}
                         </button>
+
+                        <button type="button" className="google-btn" style={{ marginTop: "15px" }} onClick={() => handleGoogleLogin()}>
+                             <FcGoogle size={24} />
+                        </button>
                     </form>
                 </div>
 
@@ -329,10 +387,14 @@ const Auth = ({ onSuccess }) => {
                         <button disabled={loading} style={{ borderRadius: "20px", border: "2px solid #667eea", marginTop: "30px" }} type="submit">
                             {loading ? "Signing In..." : "Sign In"}
                         </button>
+
+                        <button type="button" className="google-btn" style={{ marginTop: "15px" }} onClick={() => handleGoogleLogin()}>
+                             <FcGoogle size={24} />
+                        </button>
                     </form>
                 </div>
 
-                {/* Overlay section unchanged */}
+                {/* Overlay section */}
                 <div className="overlay-containers">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">
