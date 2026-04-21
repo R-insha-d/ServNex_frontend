@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import NotificationDropdown from "../Component/NotificationDropdown";
+import Header from "../Component/Header";
 import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import {
@@ -754,13 +755,7 @@ export default function RestaurantDetail() {
             `}</style>
 
             {/* ── Header ── */}
-            <header style={S.header}>
-                <Link to="/" style={S.logoWrap}>
-                    <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
-                    <span style={S.logoText}>ServNex</span>
-                </Link>
-                <NotificationDropdown />
-            </header>
+            <Header />
 
             {/* ── Hero Carousel ── */}
             <div

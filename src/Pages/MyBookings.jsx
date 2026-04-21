@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import AxiosInstance from "../Component/AxiosInstance";
 import NotificationDropdown from "../Component/NotificationDropdown";
+import Header from "../Component/Header";
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs, Tab, Modal, IconButton } from "@mui/material";
 import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed } from "lucide-react";
+import { toast } from 'react-toastify';
 
 export default function MyBookings() {
     const [bookings, setBookings] = useState([]);
@@ -195,10 +197,10 @@ export default function MyBookings() {
                 await AxiosInstance.patch(`api/reservations/${id}/`, { status: "cancelled" });
                 setReservations(prev => prev.map(r => r.id === id ? { ...r, status: 'cancelled' } : r));
             }
-            alert("Cancellation successful. You will receive a confirmation email shortly.");
+            toast.success("Cancellation successful. You will receive a confirmation email shortly.");
         } catch (error) {
             console.error("Cancellation error:", error);
-            alert("Failed to cancel. Please contact support.");
+            toast.error("Failed to cancel. Please contact support.");
         }
     };
 
@@ -310,34 +312,62 @@ export default function MyBookings() {
                 </>
             )}
 
-            {/* CUSTOM HEADER (Image design) */}
-            <header className="hotel-custom-header">
+            <Header />
 
-                <Link to="/" className="header-logo"
-                    style={{
-                        textDecoration: "none",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                    }}>
-                    <img
-                        src="/logo.jpeg"
-                        alt="ServNex Logo"
-                        style={{
-                            height: "40px",
-                            width: "40px",
-                            borderRadius: "10px",
-                            objectFit: "cover",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                        }} />
-                    ServNex
-                </Link>
-                <NotificationDropdown />
-            </header>
+            <style>{`
+                .lux-booking-card {
+                    border-radius: 20px !important;
+                    border: 1px solid rgba(0,0,0,0.05) !important;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    overflow: hidden;
+                    background: #ffffff;
+                }
+                .lux-booking-card:hover {
+                    box-shadow: 0 20px 40px rgba(99,102,241,0.1) !important;
+                    transform: translateY(-4px);
+                    border-color: rgba(99,102,241,0.2) !important;
+                }
+                .lux-warning-box {
+                    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+                    border: 1px solid rgba(244, 63, 94, 0.2);
+                    border-radius: 12px;
+                    padding: 14px 16px;
+                    margin-bottom: 16px;
+                }
+                .lux-details-box {
+                    background: rgba(248, 250, 252, 0.8);
+                    border: 1px solid rgba(226, 232, 240, 0.8);
+                    border-radius: 14px;
+                    padding: 16px;
+                    margin-bottom: 20px;
+                }
+                .lux-card-btn {
+                    border-radius: 12px !important;
+                    padding: 10px 0 !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.5px !important;
+                    text-transform: none !important;
+                    transition: all 0.2s ease !important;
+                    border-width: 1.5px !important;
+                }
+                .lux-card-btn:hover {
+                    transform: scale(1.02);
+                }
+                .lux-link {
+                    color: #6366f1;
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    transition: all 0.2s;
+                }
+                .lux-link:hover {
+                    color: #4f46e5;
+                    text-decoration: underline !important;
+                }
+            `}</style>
 
-
-            <div className="container py-5">
-                <h2 className="mb-4 fw-bold">My Bookings</h2>
+            <div className="container py-5 my-bookings-page">
+                <h2 className="mb-4 fw-bold" style={{ color: "#1e293b" }}>My Bookings</h2>
 
                 <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 4 }}>
                     <Tabs value={activeTab} onChange={handleTabChange}>
@@ -356,113 +386,115 @@ export default function MyBookings() {
                     ) : (
                         <div className="row g-4">
                             {
-                            bookings.map(booking => {
-                                const hotel = booking.hotel_details || {};
-                                return (
-                                    <div key={booking.id} className="col-md-6 col-lg-4">
-                                        <Card className="shadow-sm rounded-4 border-0">
-                                            <div className="position-relative">
-                                                <img src={hotel.image || "https://via.placeholder.com/300?text=Hotel"} alt={hotel.name} className="w-100" style={{ height: 160, objectFit: "cover" }} />
-                                                <div className="position-absolute top-0 end-0 m-2">
-                                                    <Chip 
-                                                        label={booking.payment_status !== 'paid' ? 'PAYMENT FAILED' : booking.status === 'pending' ? 'CONFIRMED' : booking.status.toUpperCase()} 
-                                                        color={getStatusChipColor(booking.payment_status !== 'paid' ? 'payment failed' : booking.status)} 
-                                                        size="small" 
-                                                    />
+                                bookings.map(booking => {
+                                    const hotel = booking.hotel_details || {};
+                                    return (
+                                        <div key={booking.id} className="col-md-6 col-lg-4">
+                                            <Card className="lux-booking-card">
+                                                <div className="position-relative">
+                                                    <img src={hotel.image || "https://via.placeholder.com/300?text=Hotel"} alt={hotel.name} className="w-100" style={{ height: 160, objectFit: "cover" }} />
+                                                    <div className="position-absolute top-0 end-0 m-2">
+                                                        <Chip
+                                                            label={booking.payment_status !== 'paid' ? 'PAYMENT FAILED' : booking.status === 'pending' ? 'CONFIRMED' : booking.status.toUpperCase()}
+                                                            color={getStatusChipColor(booking.payment_status !== 'paid' ? 'payment failed' : booking.status)}
+                                                            size="small"
+                                                        />
 
-                                                </div>
-                                            </div>
-                                            <CardContent>
-                                                <Typography variant="h6" fontWeight="bold">{hotel.name || "Hotel #" + booking.hotel}</Typography>
-                                                <div className="text-muted small mb-3">
-                                                    <MapPin size={16} className="me-1" />
-                                                    {hotel.area ? hotel.area + ", " + hotel.city : "Location unavailable"}
-                                                </div>
-                                                {booking.room_type && <div className="mb-2"><Chip label={booking.room_type + " Room"} color="primary" variant="outlined" size="small" /></div>}
-                                                
-                                                {booking.payment_status !== "paid" && (
-                                                    <Box sx={{ bgcolor: "#fff1f2", p: 1.5, borderRadius: "10px", border: "1px dashed #fecaca", mb: 2 }}>
-                                                        <Typography variant="caption" color="#e11d48" fontWeight="600" sx={{ display: "block", mb: 0.5 }}>
-                                                            ⚠️ Payment was not completed.
-                                                        </Typography>
-                                                        <Link to={`/hotel/${booking.hotel}`} style={{ fontSize: "0.75rem", color: "#e11d48", fontWeight: 700, textDecoration: "underline" }}>
-                                                            Retry Booking
-                                                        </Link>
-                                                    </Box>
-                                                )}
-
-                                                <Box display="flex" flexDirection="column" gap={1} bgcolor="#f8f9fa" p={2} borderRadius={2}>
-                                                    <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-in: {booking.check_in}</div>
-                                                    <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Check-out: {booking.check_out}</div>
-                                                    <div className="d-flex align-items-center gap-2"><DoorClosed size={18} className="text-primary" /> Rooms: {booking.rooms_booked}</div>
-                                                    <div className="d-flex align-items-center gap-2"><Calendar size={18} className="text-primary" /> Time: {new Date(booking.created_at).toLocaleString()}</div>
-                                                </Box>
-
-                                                {/* Show existing review if any */}
-                                                {booking.review_data && (
-                                                    <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "10px", padding: "8px 12px", marginTop: "12px" }}>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-                                                            {Array.from({ length: 5 }, (_, i) => (
-                                                                <span key={i} style={{ color: i < booking.review_data.rating ? "#f59e0b" : "#d1d5db", fontSize: "0.9rem" }}>&#9733;</span>
-                                                            ))}
-                                                            <small className="text-muted ms-1">Your review</small>
-                                                        </div>
-                                                        {booking.review_data.comment && (
-                                                            <p style={{ fontSize: "0.8rem", color: "#0369a1", margin: 0 }}>"{booking.review_data.comment}"</p>
-                                                        )}
                                                     </div>
-                                                )}
+                                                </div>
+                                                <CardContent>
+                                                    <Typography variant="h6" fontWeight="bold">{hotel.name || "Hotel #" + booking.hotel}</Typography>
+                                                    <div className="text-muted small mb-3">
+                                                        <MapPin size={16} className="me-1" />
+                                                        {hotel.area ? hotel.area + ", " + hotel.city : "Location unavailable"}
+                                                    </div>
+                                                    {booking.room_type && <div className="mb-2"><Chip label={booking.room_type + " Room"} color="primary" variant="outlined" size="small" /></div>}
 
-                                                {/* Review Button - only for completed bookings */}
-                                                {booking.status === "completed" && (
-                                                    <button
-                                                        onClick={() => openReviewPopup(booking)}
-                                                        style={{
-                                                            width: "100%",
-                                                            marginTop: "16px",
-                                                            padding: "8px",
-                                                            borderRadius: "10px",
-                                                            border: "none",
-                                                            background: booking.has_review ? "#f0fdf4" : "#2563eb",
-                                                            color: booking.has_review ? "#16a34a" : "white",
-                                                            fontWeight: 600,
-                                                            fontSize: "0.85rem",
-                                                            cursor: "pointer",
-                                                        }}
-                                                    >
-                                                        {booking.has_review ? "⭐ Edit Your Review" : "⭐ Write a Review"}
-                                                    </button>
-                                                )}
+                                                    {booking.payment_status !== "paid" && (
+                                                        <div className="lux-warning-box">
+                                                            <Typography variant="caption" color="#e11d48" fontWeight="700" sx={{ display: "block", mb: 0.5, fontSize: "0.85rem" }}>
+                                                                ⚠️ Payment was not completed.
+                                                            </Typography>
+                                                            <Link to={`/hotel/${booking.hotel}`} style={{ fontSize: "0.85rem", color: "#e11d48", fontWeight: 800, textDecoration: "underline" }}>
+                                                                Retry Booking
+                                                            </Link>
+                                                        </div>
+                                                    )}
 
-                                                <Button
-                                                    variant="outlined"
-                                                    fullWidth
-                                                    onClick={() => setDetailsModal(booking)}
-                                                    sx={{ mt: 2, borderRadius: 3, textTransform: "none", borderColor: "#667eea", color: "#667eea" }}
-                                                >
-                                                    Booking Details
-                                                </Button>
+                                                    <Box display="flex" flexDirection="column" gap={1.5} className="lux-details-box">
+                                                        <div className="d-flex align-items-center gap-3 fw-medium text-dark"><Calendar size={18} className="text-primary opacity-75" /> Check-in: {booking.check_in}</div>
+                                                        <div className="d-flex align-items-center gap-3 fw-medium text-dark"><Calendar size={18} className="text-primary opacity-75" /> Check-out: {booking.check_out}</div>
+                                                        <div className="d-flex align-items-center gap-3 fw-medium text-dark"><DoorClosed size={18} className="text-primary opacity-75" /> Rooms: {booking.rooms_booked}</div>
+                                                        <div className="d-flex align-items-center gap-3 fw-medium text-dark"><Calendar size={18} className="text-primary opacity-75" /> Time: {new Date(booking.created_at).toLocaleString()}</div>
+                                                    </Box>
 
-                                                {(booking.status === "confirmed" || booking.status === "paid") && (
+                                                    {/* Show existing review if any */}
+                                                    {booking.review_data && (
+                                                        <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "10px", padding: "8px 12px", marginTop: "12px" }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                                                                {Array.from({ length: 5 }, (_, i) => (
+                                                                    <span key={i} style={{ color: i < booking.review_data.rating ? "#f59e0b" : "#d1d5db", fontSize: "0.9rem" }}>&#9733;</span>
+                                                                ))}
+                                                                <small className="text-muted ms-1">Your review</small>
+                                                            </div>
+                                                            {booking.review_data.comment && (
+                                                                <p style={{ fontSize: "0.8rem", color: "#0369a1", margin: 0 }}>"{booking.review_data.comment}"</p>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Review Button - only for completed bookings */}
+                                                    {booking.status === "completed" && (
+                                                        <button
+                                                            onClick={() => openReviewPopup(booking)}
+                                                            style={{
+                                                                width: "100%",
+                                                                marginTop: "16px",
+                                                                padding: "8px",
+                                                                borderRadius: "10px",
+                                                                border: "none",
+                                                                background: booking.has_review ? "#f0fdf4" : "#2563eb",
+                                                                color: booking.has_review ? "#16a34a" : "white",
+                                                                fontWeight: 600,
+                                                                fontSize: "0.85rem",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            {booking.has_review ? "⭐ Edit Your Review" : "⭐ Write a Review"}
+                                                        </button>
+                                                    )}
+
                                                     <Button
                                                         variant="outlined"
-                                                        color="error"
                                                         fullWidth
-                                                        onClick={() => handleCancelBooking(booking.id, true)}
-                                                        sx={{ mt: 1, borderRadius: 3, textTransform: "none" }}
+                                                        className="lux-card-btn"
+                                                        onClick={() => setDetailsModal(booking)}
+                                                        sx={{ mt: 2, borderColor: "#6366f1", color: "#6366f1" }}
                                                     >
-                                                        Cancel Booking
+                                                        Booking Details
                                                     </Button>
-                                                )}
 
-                                                <Link to={"/hotel/" + booking.hotel} className="text-decoration-none d-block text-center mt-2">
-                                                    <small style={{ color: "#667eea", fontSize: "0.75rem", fontWeight: 600 }}>View Property Again</small>
-                                                </Link>
-                                            </CardContent>
-                                        </Card>
-                                    </div>
-                                );
-                            })}
+                                                    {(booking.status === "confirmed" || booking.status === "paid") && (
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            fullWidth
+                                                            className="lux-card-btn"
+                                                            onClick={() => handleCancelBooking(booking.id, true)}
+                                                            sx={{ mt: 1.5 }}
+                                                        >
+                                                            Cancel Booking
+                                                        </Button>
+                                                    )}
+
+                                                    <Link to={"/hotel/" + booking.hotel} className="text-decoration-none d-block text-center mt-3">
+                                                        <span className="lux-link">View Property Again</span>
+                                                    </Link>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     )
                 )}
@@ -478,7 +510,7 @@ export default function MyBookings() {
                         <div className="row g-4">
                             {reservations.map(reservation => (
                                 <div key={reservation.id} className="col-md-6 col-lg-4">
-                                    <Card className="h-100 shadow-sm rounded-4 border-0">
+                                    <Card className="h-100 lux-booking-card">
                                         <div className="position-relative">
                                             <img
                                                 src={getImageUrl(reservation.restaurant_image) || "https://via.placeholder.com/300?text=Restaurant"}
@@ -508,25 +540,25 @@ export default function MyBookings() {
                                             </div>
 
                                             {reservation.payment_status !== "paid" && (
-                                                <Box sx={{ bgcolor: "#fff1f2", p: 1.5, borderRadius: "10px", border: "1px dashed #fecaca", mb: 2 }}>
-                                                    <Typography variant="caption" color="#e11d48" fontWeight="600" sx={{ display: "block", mb: 0.5 }}>
+                                                <div className="lux-warning-box">
+                                                    <Typography variant="caption" color="#e11d48" fontWeight="700" sx={{ display: "block", mb: 0.5, fontSize: "0.85rem" }}>
                                                         ⚠️ Payment was not completed.
                                                     </Typography>
-                                                    <Link to={`/restaurant/${reservation.restaurant}`} style={{ fontSize: "0.75rem", color: "#e11d48", fontWeight: 700, textDecoration: "underline" }}>
+                                                    <Link to={`/restaurant/${reservation.restaurant}`} style={{ fontSize: "0.85rem", color: "#e11d48", fontWeight: 800, textDecoration: "underline" }}>
                                                         Retry Reservation
                                                     </Link>
-                                                </Box>
+                                                </div>
                                             )}
 
-                                            <Box display="flex" flexDirection="column" gap={1} bgcolor="#f8f9fa" p={2} borderRadius={2} mb={1.5}>
-                                                <div className="d-flex align-items-center gap-2 text-dark fw-medium">
-                                                    <Calendar size={16} className="text-primary" /> {reservation.reservation_date}
+                                            <Box display="flex" flexDirection="column" gap={1.5} className="lux-details-box">
+                                                <div className="d-flex align-items-center gap-3 fw-medium text-dark">
+                                                    <Calendar size={18} className="text-primary opacity-75" /> Date: {reservation.reservation_date}
                                                 </div>
-                                                <div className="d-flex align-items-center gap-2 text-dark fw-medium">
-                                                    <Calendar size={16} className="text-primary" /> {reservation.reservation_time}
+                                                <div className="d-flex align-items-center gap-3 fw-medium text-dark">
+                                                    <Calendar size={18} className="text-primary opacity-75" /> Time: {reservation.reservation_time}
                                                 </div>
-                                                <div className="d-flex align-items-center gap-2 text-dark fw-medium">
-                                                    <Calendar size={16} className="text-primary" /> Time: {new Date(reservation.created_at).toLocaleString()}
+                                                <div className="d-flex align-items-center gap-3 fw-medium text-dark">
+                                                    <Calendar size={18} className="text-primary opacity-75" /> Booked On: {new Date(reservation.created_at).toLocaleString()}
                                                 </div>
                                             </Box>
 
@@ -579,8 +611,9 @@ export default function MyBookings() {
                                             <Button
                                                 variant="outlined"
                                                 fullWidth
+                                                className="lux-card-btn"
                                                 onClick={() => setDetailsModal(reservation)}
-                                                sx={{ mt: 2, borderRadius: 3, textTransform: "none", borderColor: "#3a86ff", color: "#3a86ff", fontSize: "0.85rem" }}
+                                                sx={{ mt: 2, borderColor: "#6366f1", color: "#6366f1" }}
                                             >
                                                 Reservation Details
                                             </Button>
@@ -590,15 +623,16 @@ export default function MyBookings() {
                                                     variant="outlined"
                                                     color="error"
                                                     fullWidth
+                                                    className="lux-card-btn"
                                                     onClick={() => handleCancelBooking(reservation.id, false)}
-                                                    sx={{ mt: 1, borderRadius: 3, textTransform: "none", fontSize: "0.85rem" }}
+                                                    sx={{ mt: 1.5 }}
                                                 >
                                                     Cancel Reservation
                                                 </Button>
                                             )}
 
-                                            <Link to={"/restaurant/" + reservation.restaurant} className="text-decoration-none d-block text-center mt-2">
-                                                <small style={{ color: "#3a86ff", fontSize: "0.75rem", fontWeight: 600 }}>View Restaurant Again</small>
+                                            <Link to={"/restaurant/" + reservation.restaurant} className="text-decoration-none d-block text-center mt-3">
+                                                <span className="lux-link">View Restaurant Again</span>
                                             </Link>
                                         </CardContent>
                                     </Card>
@@ -661,9 +695,9 @@ export default function MyBookings() {
                                     </div>
                                     <div>
                                         <Typography variant="caption" color="text.secondary">Status</Typography>
-                                        <Typography 
-                                            variant="body2" 
-                                            fontWeight="600" 
+                                        <Typography
+                                            variant="body2"
+                                            fontWeight="600"
                                             color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
                                         >
                                             {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status?.toUpperCase()}
@@ -686,9 +720,9 @@ export default function MyBookings() {
                                     </div>
                                     <div>
                                         <Typography variant="caption" color="text.secondary">Status</Typography>
-                                        <Typography 
-                                            variant="body2" 
-                                            fontWeight="600" 
+                                        <Typography
+                                            variant="body2"
+                                            fontWeight="600"
                                             color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
                                         >
                                             {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status}

@@ -1,0 +1,119 @@
+/* SaloonList.css */
+
+.saloon-list-page {
+    background-color: var(--background);
+}
+
+.saloon-filters-wrapper {
+    position: sticky;
+    top: 80px; 
+    z-index: 100;
+}
+
+/* Custom Dropdown Styles reused */
+.custom-dd-root {
+    position: relative;
+    width: 100%;
+}
+
+.custom-dd-trigger {
+    height: 48px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.custom-dd-trigger--open {
+    border-color: #6366f1;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.custom-dd-trigger--loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.custom-dd-icon {
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.custom-dd-selected {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.custom-dd-chevron {
+    color: #94a3b8;
+    transition: transform 0.2s;
+}
+
+.custom-dd-chevron--open {
+    transform: rotate(180deg);
+}
+
+.custom-dd-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.custom-dd-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 2px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.custom-dd-option:hover {
+    background: #f1f5f9;
+}
+
+.custom-dd-option--selected {
+    background: #eef2ff !important;
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+.custom-dd-option-label {
+    font-size: 0.9rem;
+}
+
+.custom-dd-check {
+    color: #4f46e5;
+}
+
+/* Card Hover */
+.saloon-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.saloon-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+}

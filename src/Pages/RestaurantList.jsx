@@ -4,6 +4,7 @@ import { TbCurrentLocation } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import AxiosInstance from "../Component/AxiosInstance";
 import NotificationDropdown from "../Component/NotificationDropdown";
+import Header from "../Component/Header";
 import "./HotelList.css";
 import "./RestaurantList.css";
 
@@ -298,28 +299,7 @@ export default function RestaurantList() {
     return (
         <div className="hotel-list-page">
             {/* CUSTOM HEADER (Image design) */}
-            <header className="hotel-custom-header">
-                <Link to="/" className="header-logo"
-                    style={{
-                        textDecoration: "none",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                    }}>
-                    <img
-                        src="/logo.jpeg"
-                        alt="ServNex Logo"
-                        style={{
-                            height: "40px",
-                            width: "40px",
-                            borderRadius: "10px",
-                            objectFit: "cover",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                        }} />
-                    ServNex
-                </Link>
-                <NotificationDropdown />
-            </header>
+            <Header />
 
             {/* FILTERS SECTION */}
             <div className="filters-container">

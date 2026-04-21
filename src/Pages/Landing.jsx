@@ -140,16 +140,10 @@ function Landing() {
 
                         <div className="col-lg-4 col-md-6">
                             <div className="service-card text-center p-4 position-relative overflow-hidden">
-                                <div className="coming-soon-badge">
-                                    <div className="badge-track">
-                                        <span>Coming Soon</span>
-                                        <span>Coming Soon</span>
-                                    </div>
-                                </div>
                                 <img src={Saloon} className="service-icon mb-3" alt="" />
                                 <h4>Salons</h4>
                                 <p>Schedule appointments with top-rated stylists.</p>
-                                <Link to="" className="explore-btns">
+                                <Link to="/saloon" className="explore-btns">
                                     <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>

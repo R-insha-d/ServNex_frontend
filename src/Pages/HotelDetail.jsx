@@ -4,6 +4,7 @@ import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
 import { Bell } from "lucide-react";
 import NotificationDropdown from "../Component/NotificationDropdown";
+import Header from "../Component/Header";
 
 import {
     Card,
@@ -1117,14 +1118,7 @@ export default function HotelDetails() {
                 `}
             </style>
             {/* ── Header ── */}
-            <header style={S.header}>
-                <Link to="/" style={S.logoWrap}>
-                    <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
-                    <span style={S.logoText}>ServNex</span>
-                </Link>
-                <NotificationDropdown />
-
-            </header>
+            <Header />
 
             {/* ── Hero Carousel ── */}
             <div

@@ -709,8 +709,8 @@ export default function RestaurantReservation() {
             };
 
             const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', async function (response) { 
-                toast.error(`Payment failed: ${response.error.description}`); 
+            rzp.on('payment.failed', async function (response) {
+                toast.error(`Payment failed: ${response.error.description}`);
                 try {
                     await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: response.error.description });
                 } catch (err) { console.error("Failed to report failure:", err); }

@@ -1,0 +1,144 @@
+/* SaloonDetail.css */
+
+.saloon-hero {
+    height: 400px;
+    position: relative;
+    overflow: hidden;
+}
+
+.saloon-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.saloon-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.4) 100%);
+}
+
+.saloon-hero-content {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+}
+
+.z-index-100 {
+    z-index: 100;
+}
+
+.mt-n5 {
+    margin-top: -60px !important;
+}
+
+/* Services Grid */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.service-item-card {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.service-item-card:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
+}
+
+.service-item-card.selected {
+    border-color: #6366f1;
+    background: #eef2ff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* Queue Pulse */
+.queue-pulse {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes pulse-ring {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(99, 102, 241, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+}
+
+.queue-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    transition: transform 0.2s;
+}
+
+.queue-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+}
+
+.queue-btn:disabled {
+    background: #cbd5e1;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+/* Modal styling */
+.queue-modal-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 450px;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    padding: 32px;
+    outline: none;
+}
+
+.success-checkmark {
+    animation: success-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes success-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .saloon-hero {
+        height: 300px;
+    }
+    
+    .mt-n5 {
+        margin-top: -30px !important;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+}

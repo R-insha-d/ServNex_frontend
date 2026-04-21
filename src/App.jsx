@@ -13,6 +13,9 @@ import RestaurantReservation from './Pages/RestaurantReservation'
 import Dashboard from './admin/components/Dashboard'
 import EditProfile from './Component/EditProfile'
 import RestaurantDashboard from './admin/components/RestaurantDashboard'
+import SaloonDashboard from './admin/components/SaloonDashboard'
+import SaloonList from './Pages/SaloonList'
+import SaloonDetail from './Pages/SaloonDetail'
 import Auth from './Credentials/Auth'
 import OTPVerification from './Pages/OTPVerification'
 import { ToastContainer } from 'react-toastify'
@@ -88,6 +91,17 @@ function App() {
         <Route path='/restaurant/:id' element={<RestaurantDetail />} />
         <Route path='/reservation/:id' element={<RestaurantReservation />} />
 
+        {/* Saloon routes */}
+        <Route
+          path='/saloon'
+          element={
+            <ProtectedRoute>
+              <SaloonList />
+            </ProtectedRoute>
+          }
+        />
+        <Route path='/saloon/:id' element={<SaloonDetail />} />
+
         {/* admin */}
         <Route
           path="/admin-dashboard"
@@ -103,6 +117,15 @@ function App() {
           element={
             <ProtectedRoute>
               <RestaurantDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/saloon-dashboard"
+          element={
+            <ProtectedRoute>
+              <SaloonDashboard />
             </ProtectedRoute>
           }
         />
