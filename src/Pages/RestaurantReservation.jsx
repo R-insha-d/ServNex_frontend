@@ -37,7 +37,8 @@ import {
     ChevronsRight,
     Users,
     Calendar,
-    Tag
+    Tag,
+    Utensils
 } from "lucide-react";
 import StarIcon from "@mui/icons-material/Star";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -404,7 +405,7 @@ function CustomDatePicker({ value, onChange, minDate }) {
 }
 
 // ─── Custom Time Picker ────────────────────────────────────────────────────────
-function CustomTimePicker({ value, onChange }) {
+function CustomTimePicker({ value, onChange, date }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
@@ -499,25 +500,33 @@ function CustomTimePicker({ value, onChange }) {
                         <div style={{ flex: 1 }}>
                             <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#94a3b8", textAlign: "center", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hour</div>
                             <div style={{ maxHeight: "180px", overflowY: "auto", borderRadius: "12px", border: "1px solid #f1f5f9", scrollbarWidth: "thin" }}>
-                                {hours.map(h => (
-                                    <div
-                                        key={h}
-                                        onClick={() => handleHour(h)}
-                                        style={{
-                                            padding: "8px 12px", textAlign: "center", cursor: "pointer",
-                                            fontSize: "0.9rem", fontWeight: h === hour ? 700 : 500,
-                                            background: h === hour ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
-                                            color: h === hour ? "#fff" : "#374151",
-                                            borderRadius: h === hour ? "8px" : "0",
-                                            margin: h === hour ? "2px 4px" : "0",
-                                            transition: "all 0.15s",
-                                        }}
-                                        onMouseEnter={e => { if (h !== hour) e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
-                                        onMouseLeave={e => { if (h !== hour) e.currentTarget.style.background = "transparent"; }}
-                                    >
-                                        {String(h).padStart(2, "0")}
-                                    </div>
-                                ))}
+                                {hours.map(h => {
+                                    const isToday = date === new Date().toLocaleDateString('en-CA');
+                                    const h24 = period === "PM" ? (h === 12 ? 12 : h + 12) : (h === 12 ? 0 : h);
+                                    const now = new Date();
+                                    const isPastHour = isToday && h24 < now.getHours();
+
+                                    return (
+                                        <div
+                                            key={h}
+                                            onClick={() => !isPastHour && handleHour(h)}
+                                            style={{
+                                                padding: "8px 12px", textAlign: "center", cursor: isPastHour ? "not-allowed" : "pointer",
+                                                fontSize: "0.9rem", fontWeight: h === hour ? 700 : 500,
+                                                background: h === hour ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
+                                                color: isPastHour ? "#cbd5e1" : (h === hour ? "#fff" : "#374151"),
+                                                borderRadius: h === hour ? "8px" : "0",
+                                                margin: h === hour ? "2px 4px" : "0",
+                                                transition: "all 0.15s",
+                                                opacity: isPastHour ? 0.6 : 1
+                                            }}
+                                            onMouseEnter={e => { if (h !== hour && !isPastHour) e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
+                                            onMouseLeave={e => { if (h !== hour && !isPastHour) e.currentTarget.style.background = "transparent"; }}
+                                        >
+                                            {String(h).padStart(2, "0")}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -528,47 +537,62 @@ function CustomTimePicker({ value, onChange }) {
                         <div style={{ flex: 1 }}>
                             <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#94a3b8", textAlign: "center", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Min</div>
                             <div style={{ maxHeight: "180px", overflowY: "auto", borderRadius: "12px", border: "1px solid #f1f5f9", scrollbarWidth: "thin" }}>
-                                {minutes.map(m => (
-                                    <div
-                                        key={m}
-                                        onClick={() => handleMinute(m)}
-                                        style={{
-                                            padding: "8px 12px", textAlign: "center", cursor: "pointer",
-                                            fontSize: "0.9rem", fontWeight: m === minute ? 700 : 500,
-                                            background: m === minute ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
-                                            color: m === minute ? "#fff" : "#374151",
-                                            borderRadius: m === minute ? "8px" : "0",
-                                            margin: m === minute ? "2px 4px" : "0",
-                                            transition: "all 0.15s",
-                                        }}
-                                        onMouseEnter={e => { if (m !== minute) e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
-                                        onMouseLeave={e => { if (m !== minute) e.currentTarget.style.background = "transparent"; }}
-                                    >
-                                        {String(m).padStart(2, "0")}
-                                    </div>
-                                ))}
+                                {minutes.map(m => {
+                                    const isToday = date === new Date().toLocaleDateString('en-CA');
+                                    const h24 = period === "PM" ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour);
+                                    const now = new Date();
+                                    const isPastMin = isToday && h24 === now.getHours() && m < now.getMinutes();
+
+                                    return (
+                                        <div
+                                            key={m}
+                                            onClick={() => !isPastMin && handleMinute(m)}
+                                            style={{
+                                                padding: "8px 12px", textAlign: "center", cursor: isPastMin ? "not-allowed" : "pointer",
+                                                fontSize: "0.9rem", fontWeight: m === minute ? 700 : 500,
+                                                background: m === minute ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
+                                                color: isPastMin ? "#cbd5e1" : (m === minute ? "#fff" : "#374151"),
+                                                borderRadius: m === minute ? "8px" : "0",
+                                                margin: m === minute ? "2px 4px" : "0",
+                                                transition: "all 0.15s",
+                                                opacity: isPastMin ? 0.6 : 1
+                                            }}
+                                            onMouseEnter={e => { if (m !== minute && !isPastMin) e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
+                                            onMouseLeave={e => { if (m !== minute && !isPastMin) e.currentTarget.style.background = "transparent"; }}
+                                        >
+                                            {String(m).padStart(2, "0")}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
                         {/* AM / PM */}
                         <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "30px" }}>
-                            {["AM", "PM"].map(p => (
-                                <div
-                                    key={p}
-                                    onClick={() => handlePeriod(p)}
-                                    style={{
-                                        padding: "10px 14px", borderRadius: "12px", cursor: "pointer",
-                                        fontWeight: 700, fontSize: "0.85rem",
-                                        background: period === p ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
-                                        color: period === p ? "#fff" : "#64748b",
-                                        border: period === p ? "none" : "1px solid #e2e8f0",
-                                        transition: "all 0.2s",
-                                        userSelect: "none",
-                                    }}
-                                >
-                                    {p}
-                                </div>
-                            ))}
+                            {["AM", "PM"].map(p => {
+                                const isToday = date === new Date().toLocaleDateString('en-CA');
+                                const now = new Date();
+                                const isPastPeriod = isToday && p === "AM" && now.getHours() >= 12;
+
+                                return (
+                                    <div
+                                        key={p}
+                                        onClick={() => !isPastPeriod && handlePeriod(p)}
+                                        style={{
+                                            padding: "10px 14px", borderRadius: "12px", cursor: isPastPeriod ? "not-allowed" : "pointer",
+                                            fontWeight: 700, fontSize: "0.85rem",
+                                            background: period === p ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
+                                            color: isPastPeriod ? "#cbd5e1" : (period === p ? "#fff" : "#64748b"),
+                                            border: period === p ? "none" : "1px solid #e2e8f0",
+                                            transition: "all 0.2s",
+                                            userSelect: "none",
+                                            opacity: isPastPeriod ? 0.6 : 1
+                                        }}
+                                    >
+                                        {p}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -616,14 +640,14 @@ export default function RestaurantReservation() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { reservationDate, reservationTime, numberOfGuests, restaurant: passedRestaurant } = location.state || {};
+    const { reservationDate, reservationTime, tableCapacity: passedTableCapacity, restaurant: passedRestaurant } = location.state || {};
 
     const [restaurant, setRestaurant] = useState(passedRestaurant || null);
     const [loading, setLoading] = useState(!passedRestaurant);
 
     const [date, setDate] = useState(reservationDate || "");
     const [time, setTime] = useState(reservationTime || "");
-    const [guests, setGuests] = useState(numberOfGuests || 2);
+    const [selectedTable, setSelectedTable] = useState(passedTableCapacity || 4);
     const [specialRequests, setSpecialRequests] = useState("");
     const [error, setError] = useState(null);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -635,9 +659,13 @@ export default function RestaurantReservation() {
 
     const isMobile = useMediaQuery("(max-width:768px)");
 
-    const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * Math.ceil(guests / 2) : 0;
+    const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * (selectedTable / 2) : 0;
     const convenienceFee = subtotal * 0.05;
     const totalCost = subtotal + convenienceFee;
+
+    useEffect(() => {
+        // [REMOVED] Guests cap by table capacity as guest count is removed
+    }, [selectedTable]);
 
     useEffect(() => {
         if (!restaurant) {
@@ -670,14 +698,34 @@ export default function RestaurantReservation() {
 
     const handleReservation = async () => {
         if (!date || !time) { setError("Please select reservation date and time."); setShowErrorModal(true); return; }
-        const today = new Date().toISOString().split("T")[0];
-        if (date < today) { setError("Reservation date cannot be in the past."); setShowErrorModal(true); return; }
+        
+        const selected = new Date(`${date}T${time}`);
+        // Allow a 1-minute buffer in the frontend too
+        if (selected < new Date(new Date().getTime() - 1 * 60 * 1000)) {
+            setError("❌ Booking is only available for future dates and times.");
+            setShowErrorModal(true);
+            return;
+        }
+
+        if (availability[selectedTable] === 0) {
+            setError("⚠️ This table size is currently fully booked for the selected date.");
+            setShowErrorModal(true);
+            return;
+        }
 
         setIsReserving(true);
         setError(null);
 
         try {
-            const resResponse = await AxiosInstance.post("api/reservations/", { restaurant: restaurant.id, reservation_date: date, reservation_time: time, number_of_guests: guests, special_requests: specialRequests });
+            const resResponse = await AxiosInstance.post("api/reservations/", { 
+                restaurant: restaurant.id, 
+                reservation_date: date, 
+                reservation_time: time, 
+                number_of_guests: selectedTable,
+                tables_reserved: 1, 
+                table_capacity: selectedTable,
+                special_requests: specialRequests 
+            });
             const reservationId = resResponse.data.id;
             const orderRes = await AxiosInstance.post("api/razorpay/order/", { amount: totalCost, booking_type: 'restaurant', booking_id: reservationId });
             const order = orderRes.data;
@@ -723,6 +771,11 @@ export default function RestaurantReservation() {
                 const data = err.response.data;
                 if (data.non_field_errors) msg = data.non_field_errors[0];
                 else if (data.detail) msg = data.detail;
+                else if (typeof data === 'object') {
+                    // Collect first error message found in any field
+                    const fieldVal = Object.values(data)[0];
+                    msg = Array.isArray(fieldVal) ? fieldVal[0] : JSON.stringify(data);
+                }
             }
             setError(msg);
             setShowErrorModal(true);
@@ -732,7 +785,7 @@ export default function RestaurantReservation() {
     const handleDownloadReceipt = () => {
         if (!resvDetails) return;
         const printWindow = window.open('', '_blank');
-        const content = `<html><head><title>Reservation Receipt - ${restaurant.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Restaurants</h1><p>Table Reservation Confirmation</p></div><div class="details"><div class="item"><div class="label">Restaurant</div><div class="val">${restaurant.name}</div></div><div class="item"><div class="label">Reservation ID</div><div class="val">#SNX-RES-${resvDetails.id}</div></div><div class="item"><div class="label">Date</div><div class="val">${date}</div></div><div class="item"><div class="label">Time</div><div class="val">${time}</div></div><div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div><div class="item"><div class="label">Location</div><div class="val">${restaurant.area}, ${restaurant.city}</div></div></div><div class="total"><div class="label">Amount Paid</div><div class="price">₹${totalCost.toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for booking with ServNex. Please present this receipt at the restaurant.</p></body></html>`;
+        const content = `<html><head><title>Reservation Receipt - ${restaurant.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Restaurants</h1><p>Table Reservation Confirmation</p></div><div class="details"><div class="item"><div class="label">Restaurant</div><div class="val">${restaurant.name}</div></div><div class="item"><div class="label">Reservation ID</div><div class="val">#SNX-RES-${resvDetails.id}</div></div><div class="item"><div class="label">Date</div><div class="val">${date}</div></div><div class="item"><div class="label">Time</div><div class="val">${time}</div></div><div class="item"><div class="label">Capacity</div><div class="val">${selectedTable} Seater</div></div><div class="item"><div class="label">Location</div><div class="val">${restaurant.area}, ${restaurant.city}</div></div></div><div class="total"><div class="label">Amount Paid</div><div class="price">₹${totalCost.toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for booking with ServNex. Please present this receipt at the restaurant.</p></body></html>`;
         printWindow.document.write(content);
         printWindow.document.close();
         printWindow.print();
@@ -752,6 +805,10 @@ export default function RestaurantReservation() {
                 .premium-btn:hover span { color: white; }
                 @keyframes scaleUp { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
                 .animate-scale { animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+                .table-type-card { transition: all 0.2s ease; }
+                .table-type-card:hover:not(.disabled) { transform: translateY(-4px); border-color: #6366f1 !important; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.1); }
+                .table-type-card.active { border-color: #6366f1 !important; background: #f5f3ff !important; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12) !important; }
+                .table-type-card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
             `}</style>
 
             <header style={S.header}>
@@ -800,20 +857,55 @@ export default function RestaurantReservation() {
                                     <CustomTimePicker
                                         value={time}
                                         onChange={setTime}
+                                        date={date}
                                     />
                                 </div>
                             </div>
                         </div>
 
                         <div style={S.sectionCard}>
-                            <div style={S.sectionTitle}><Users size={20} color="#6366f1" /> Guests</div>
-                            <div style={{ textAlign: "center", padding: "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
-                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginTop: "12px" }}>
-                                    <button className="counter-btn" style={{ width: 44, height: 44, borderRadius: "12px", border: "1.5px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }} disabled={guests <= 1} onClick={() => setGuests(guests - 1)}><RemoveIcon sx={{ fontSize: 20 }} /></button>
-                                    <span style={{ fontSize: "1.5rem", fontWeight: 600, minWidth: "80px", textAlign: "center" }}>{guests} {guests > 1 ? 'Guests' : 'Guest'}</span>
-                                    <button className="counter-btn" style={{ width: 44, height: 44, borderRadius: "12px", border: "1.5px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }} onClick={() => setGuests(guests + 1)}><AddIcon sx={{ fontSize: 20 }} /></button>
-                                </div>
+                            <div style={S.sectionTitle}><Utensils size={20} color="#6366f1" /> Select Table Type</div>
+                            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: "16px" }}>
+                                {[4, 6, 8, 10].map(cap => {
+                                    const isAvailable = availability[cap] > 0;
+                                    const isActive = selectedTable === cap;
+                                    return (
+                                        <div
+                                            key={cap}
+                                            onClick={() => isAvailable && setSelectedTable(cap)}
+                                            className={`table-type-card ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                                            style={{
+                                                padding: "20px 10px",
+                                                borderRadius: "20px",
+                                                border: isActive ? "2px solid #6366f1" : "1.5px solid #e2e8f0",
+                                                background: isActive ? "#f5f3ff" : "#fff",
+                                                textAlign: "center",
+                                                cursor: isAvailable ? "pointer" : "not-allowed",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                                gap: "8px"
+                                            }}
+                                        >
+                                            <div style={{ 
+                                                width: "48px", height: "48px", borderRadius: "14px", 
+                                                background: isActive ? "#6366f1" : "#f1f5f9",
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                                color: isActive ? "#fff" : "#6366f1",
+                                                marginBottom: "4px"
+                                            }}>
+                                                <Utensils size={24} />
+                                            </div>
+                                            <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>{cap}-Seater</div>
+                                            <div style={{ fontSize: "0.75rem", fontWeight: 600, color: isAvailable ? "#10b981" : "#ef4444" }}>
+                                                {isAvailable ? `${availability[cap]} Available` : "Full House"}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
+
+                            {/* [REMOVED] Number of Tables counter as only single table is supported */}
                         </div>
 
                         <div style={S.sectionCard}>
@@ -856,7 +948,11 @@ export default function RestaurantReservation() {
 
                             <div style={{ borderTop: "1px dashed #e2e8f0", paddingTop: "24px" }}>
                                 <div style={S.priceRow}>
-                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Subtotal ({guests} Guests)</span>
+                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Table Type ({selectedTable}-Seater)</span>
+                                    <span style={{ fontWeight: 600 }}>Confirmed</span>
+                                </div>
+                                <div style={S.priceRow}>
+                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Reservation Fee ({selectedTable}-Seater)</span>
                                     <span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString()}</span>
                                 </div>
                                 <div style={S.priceRow}>

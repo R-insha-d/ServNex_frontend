@@ -228,19 +228,21 @@ function CustomDropdown({ value, onChange, options, icon, placeholder, compact =
                 >
                     {options.map((opt) => {
                         const isSelected = String(opt.value) === String(value);
+                        const isDisabled = opt.disabled === true;
                         return (
                             <button
                                 key={opt.value}
                                 type="button"
-                                onClick={() => { onChange(opt.value); setOpen(false); }}
+                                disabled={isDisabled}
+                                onClick={() => { if (!isDisabled) { onChange(opt.value); setOpen(false); } }}
                                 style={{
                                     width: "100%",
                                     padding: compact ? "9px 12px" : "10px 14px",
                                     borderRadius: "10px",
                                     background: isSelected ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "transparent",
-                                    color: isSelected ? "#fff" : "#334155",
+                                    color: isDisabled ? "#cbd5e1" : (isSelected ? "#fff" : "#334155"),
                                     border: "none",
-                                    cursor: "pointer",
+                                    cursor: isDisabled ? "not-allowed" : "pointer",
                                     fontFamily: "'Poppins', sans-serif",
                                     fontSize: compact ? "0.95rem" : "0.88rem",
                                     fontWeight: isSelected ? 600 : 400,
@@ -251,12 +253,14 @@ function CustomDropdown({ value, onChange, options, icon, placeholder, compact =
                                     gap: "8px",
                                     transition: "background 0.15s",
                                     whiteSpace: "nowrap",
+                                    opacity: isDisabled ? 0.7 : 1,
                                 }}
-                                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "#f5f3ff"; }}
-                                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                                onMouseEnter={e => { if (!isSelected && !isDisabled) e.currentTarget.style.background = "#f5f3ff"; }}
+                                onMouseLeave={e => { if (!isSelected && !isDisabled) e.currentTarget.style.background = "transparent"; }}
                             >
                                 <span>{opt.label}</span>
                                 {isSelected && <Check size={13} />}
+                                {isDisabled && <X size={13} color="#ef4444" />}
                             </button>
                         );
                     })}
@@ -507,7 +511,7 @@ export default function RestaurantDetail() {
     /* ── Reservation modal state (unchanged) ── */
     const [open, setOpen] = useState(false);
     const [reservationDate, setReservationDate] = useState(() => new Date().toISOString().split("T")[0]);
-    const [numberOfGuests, setNumberOfGuests] = useState(4);
+    const [tableCapacity, setTableCapacity] = useState(4);
     const [timeHour, setTimeHour] = useState(() => String(getInitTime().initHour).padStart(2, "0"));
     const [timeMinute, setTimeMinute] = useState(() => String(new Date().getMinutes()).padStart(2, "0"));
     const [timePeriod, setTimePeriod] = useState(() => getInitTime().initPeriod);
@@ -633,11 +637,17 @@ export default function RestaurantDetail() {
         }
         if (!restaurant.is_open) { toast.error("This restaurant is currently closed and not accepting reservations."); return; }
         const selected = new Date(`${reservationDate}T${formattedTime}`);
-        if (selected < new Date(new Date().setSeconds(0, 0))) {
+        if (selected < new Date(new Date().getTime() - 1 * 60 * 1000)) {
             toast.error("❌ Booking is only available for future dates and times.");
             return;
         }
-        navigate(`/reservation/${id}`, { state: { restaurant, reservationDate, reservationTime: formattedTime, numberOfGuests } });
+
+        if (availability[tableCapacity] === 0) {
+            toast.error("⚠️ This table size is currently fully booked for the selected date.");
+            return;
+        }
+
+        navigate(`/reservation/${id}`, { state: { restaurant, reservationDate, reservationTime: formattedTime, tableCapacity } });
     };
 
     /* ── Loading / Error ── */
@@ -656,24 +666,51 @@ export default function RestaurantDetail() {
 
     const heroHeight = isMobile ? 300 : 560;
 
-    /* Build dropdown option arrays */
+    /* Build dropdown option arrays with past-time blocking */
+    const isToday = reservationDate === new Date().toLocaleDateString('en-CA');
+    const nowLocal = new Date();
+    const currentH24 = nowLocal.getHours();
+
     const hourOptions = Array.from({ length: 12 }, (_, i) => {
-        const h = String(i + 1).padStart(2, "0");
-        return { value: h, label: h };
+        const h = i + 1;
+        const hStr = String(h).padStart(2, "0");
+        let disabled = false;
+        if (isToday) {
+            const h24 = timePeriod === "PM" ? (h === 12 ? 12 : h + 12) : (h === 12 ? 0 : h);
+            if (h24 < currentH24) disabled = true;
+        }
+        return { value: hStr, label: hStr, disabled };
     });
-    const minuteOptions = Array.from({ length: 60 }, (_, i) => {
-        const m = String(i).padStart(2, "0");
-        return { value: m, label: m };
+
+    const minuteOptions = Array.from({ length: 12 }, (_, i) => {
+        const m = i * 5;
+        const mStr = String(m).padStart(2, "0");
+        let disabled = false;
+        if (isToday) {
+            const h = parseInt(timeHour);
+            const h24 = timePeriod === "PM" ? (h === 12 ? 12 : h + 12) : (h === 12 ? 0 : h);
+            if (h24 === currentH24 && m < nowLocal.getMinutes()) disabled = true;
+            if (h24 < currentH24) disabled = true;
+        }
+        return { value: mStr, label: mStr, disabled };
     });
+
     const periodOptions = [
         { value: "AM", label: "AM" },
         { value: "PM", label: "PM" },
-    ];
-    const guestOptions = [4, 6, 8, 10].map(n => ({
+    ].map(p => {
+        let disabled = false;
+        if (isToday) {
+            if (p.value === "AM" && currentH24 >= 12) disabled = true;
+        }
+        return { ...p, disabled };
+    });
+    const tableOptions = [4, 6, 8, 10].map(n => ({
         value: n,
-        label: `${n} Guests${availability[n] !== undefined
+        label: `${n}-Seater Table${availability[n] !== undefined
             ? ` (${availability[n] === 0 ? "Full" : `${availability[n]} available`})`
             : ""}`,
+        disabled: availability[n] === 0,
     }));
 
     return (
@@ -1199,22 +1236,22 @@ export default function RestaurantDetail() {
                             )}
                         </div>
 
-                        {/* ── Guests ── */}
+                        {/* ── Table Type ── */}
                         <div style={{ marginBottom: "28px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
-                                <Users size={12} color="#6366f1" />
-                                <span style={{ ...S.fieldLabel, marginBottom: 0 }}>Guest Count / Table Capacity</span>
+                                <Utensils size={12} color="#6366f1" />
+                                <span style={{ ...S.fieldLabel, marginBottom: 0 }}>Select Table Type</span>
                             </div>
 
                             <CustomDropdown
-                                value={numberOfGuests}
-                                onChange={(v) => setNumberOfGuests(parseInt(v))}
-                                options={guestOptions}
-                                icon={<Users size={15} />}
+                                value={tableCapacity}
+                                onChange={(v) => setTableCapacity(parseInt(v))}
+                                options={tableOptions}
+                                icon={<Utensils size={15} />}
                             />
 
                             {/* Full warning */}
-                            {availability[numberOfGuests] === 0 && (
+                            {availability[tableCapacity] === 0 && (
                                 <div style={{
                                     display: "flex", alignItems: "center", gap: "7px",
                                     marginTop: "10px", padding: "8px 12px",

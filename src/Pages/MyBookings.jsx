@@ -191,9 +191,15 @@ export default function MyBookings() {
             if (isHotel) {
                 await AxiosInstance.post(`api/bookings/${id}/cancel_booking/`);
                 setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+                if (detailsModal && detailsModal.id === id && isHotel) {
+                    setDetailsModal(prev => ({ ...prev, status: 'cancelled' }));
+                }
             } else {
                 await AxiosInstance.patch(`api/reservations/${id}/`, { status: "cancelled" });
                 setReservations(prev => prev.map(r => r.id === id ? { ...r, status: 'cancelled' } : r));
+                if (detailsModal && detailsModal.id === id && !isHotel) {
+                    setDetailsModal(prev => ({ ...prev, status: 'cancelled' }));
+                }
             }
             alert("Cancellation successful. You will receive a confirmation email shortly.");
         } catch (error) {
