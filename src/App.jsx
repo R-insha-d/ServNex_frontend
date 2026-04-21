@@ -41,7 +41,7 @@ function App() {
   useEffect(() => {
     setTimeout(() => {
       setPreload(false)
-    }, 6000)
+    }, 4500)
   }, [])
 
   return (
@@ -73,7 +73,14 @@ function App() {
         />
 
         <Route path='/hotel/:id' element={<HotelDetail />} />
-        <Route path='/booking/:id' element={<HotelBooking />} />
+        <Route 
+          path='/booking/:id' 
+          element={
+            <ProtectedRoute>
+              <HotelBooking />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Restaurant routes */}
         <Route
@@ -86,7 +93,14 @@ function App() {
         />
 
         <Route path='/restaurant/:id' element={<RestaurantDetail />} />
-        <Route path='/reservation/:id' element={<RestaurantReservation />} />
+        <Route 
+          path='/reservation/:id' 
+          element={
+            <ProtectedRoute>
+              <RestaurantReservation />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* admin */}
         <Route
