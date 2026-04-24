@@ -4,12 +4,13 @@ import NotificationDropdown from "../Component/NotificationDropdown";
 import Header from "../Component/Header";
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs, Tab, Modal, IconButton } from "@mui/material";
-import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed } from "lucide-react";
+import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed, Scissors, Clock } from "lucide-react";
 import { toast } from 'react-toastify';
 
 export default function MyBookings() {
     const [bookings, setBookings] = useState([]);
     const [reservations, setReservations] = useState([]);
+    const [salonQueues, setSalonQueues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(0);
     const [menuImage, setMenuImage] = useState(null);
@@ -28,25 +29,28 @@ export default function MyBookings() {
         setLoading(true);
         Promise.all([
             AxiosInstance.get("api/bookings/"),
-            AxiosInstance.get("api/my-reservations/")
-        ]).then(([bookingsRes, reservationsRes]) => {
+            AxiosInstance.get("api/my-reservations/"),
+            AxiosInstance.get("api/queue/")
+        ]).then(([bookingsRes, reservationsRes, salonRes]) => {
             const bData = bookingsRes.data;
             const rData = reservationsRes.data;
+            const sData = salonRes.data;
             setBookings(Array.isArray(bData) ? bData : (bData.results || []));
             setReservations(Array.isArray(rData) ? rData : (rData.results || []));
+            setSalonQueues(Array.isArray(sData) ? sData : (sData.results || []));
             setLoading(false);
         }).catch(err => {
-            console.error("Error fetching bookings:", err);
+            console.error("Error fetching data:", err);
             setLoading(false);
         });
     }, []);
 
     const handleTabChange = (event, newValue) => setActiveTab(newValue);
 
-    const openReviewPopup = (reservation) => {
-        setReviewPopup(reservation);
-        setReviewRating(reservation.review_data ? reservation.review_data.rating : 5);
-        setReviewComment(reservation.review_data ? reservation.review_data.comment || "" : "");
+    const openReviewPopup = (item) => {
+        setReviewPopup(item);
+        setReviewRating(item.review_data ? item.review_data.rating : 5);
+        setReviewComment(item.review_data ? item.review_data.comment || "" : "");
         setReviewError("");
     };
 
@@ -61,6 +65,8 @@ export default function MyBookings() {
                 // UPDATE existing review
                 const apiUrl = reviewPopup.hotel
                     ? `api/hotel-reviews/${reviewPopup.review_data.id}/`
+                    : reviewPopup.salon
+                    ? `api/salon-reviews/${reviewPopup.review_data.id}/`
                     : `api/reviews/${reviewPopup.review_data.id}/`;
 
                 await AxiosInstance.patch(apiUrl, {
@@ -72,6 +78,13 @@ export default function MyBookings() {
                 if (reviewPopup.hotel) {
                     await AxiosInstance.post("api/hotel-reviews/", {
                         booking: reviewPopup.id,
+                        rating: reviewRating,
+                        comment: reviewComment,
+                    });
+                } else if (reviewPopup.salon) {
+                    await AxiosInstance.post("api/salon-reviews/", {
+                        salon: reviewPopup.salon,
+                        queue_entry: reviewPopup.id,
                         rating: reviewRating,
                         comment: reviewComment,
                     });
@@ -87,33 +100,15 @@ export default function MyBookings() {
             // Update local state
             if (reviewPopup.hotel) {
                 setBookings(prev => prev.map(b =>
-                    b.id === reviewPopup.id
-                        ? {
-                            ...b,
-                            has_review: true,
-                            review_data: {
-                                ...b.review_data,
-                                rating: reviewRating,
-                                comment: reviewComment,
-                                created_at: b.review_data?.created_at || new Date().toISOString()
-                            }
-                        }
-                        : b
+                    b.id === reviewPopup.id ? { ...b, has_review: true, review_data: { ...b.review_data, rating: reviewRating, comment: reviewComment, created_at: b.review_data?.created_at || new Date().toISOString() } } : b
+                ));
+            } else if (reviewPopup.salon) {
+                setSalonQueues(prev => prev.map(s =>
+                    s.id === reviewPopup.id ? { ...s, has_review: true, review_data: { ...s.review_data, rating: reviewRating, comment: reviewComment, created_at: s.review_data?.created_at || new Date().toISOString() } } : s
                 ));
             } else {
                 setReservations(prev => prev.map(r =>
-                    r.id === reviewPopup.id
-                        ? {
-                            ...r,
-                            has_review: true,
-                            review_data: {
-                                ...r.review_data,
-                                rating: reviewRating,
-                                comment: reviewComment,
-                                created_at: r.review_data?.created_at || new Date().toISOString()
-                            }
-                        }
-                        : r
+                    r.id === reviewPopup.id ? { ...r, has_review: true, review_data: { ...r.review_data, rating: reviewRating, comment: reviewComment, created_at: r.review_data?.created_at || new Date().toISOString() } } : r
                 ));
             }
             setReviewPopup(null);
@@ -140,6 +135,14 @@ export default function MyBookings() {
                 <div class="item"><div class="label">Check Out</div><div class="val">${item.check_out}</div></div>
                 <div class="item"><div class="label">Room Type</div><div class="val">${item.room_type || "Standard"}</div></div>
                 <div class="item"><div class="label">Total Rooms</div><div class="val">${item.rooms_booked || 1}</div></div>
+            `;
+        } else if (item.salon_name) {
+            detailsHtml = `
+                <div class="item"><div class="label">Salon</div><div class="val">${item.salon_name}</div></div>
+                <div class="item"><div class="label">Ticket ID</div><div class="val">#SNX-SLN-${item.id}</div></div>
+                <div class="item"><div class="label">Joined At</div><div class="val">${new Date(item.joined_at).toLocaleString()}</div></div>
+                <div class="item"><div class="label">Service</div><div class="val">${item.service_name}</div></div>
+                <div class="item"><div class="label">Location</div><div class="val">${item.salon_area || ""}, ${item.salon_city || ""}</div></div>
             `;
         } else {
             detailsHtml = `
@@ -379,6 +382,7 @@ export default function MyBookings() {
                     <Tabs value={activeTab} onChange={handleTabChange}>
                         <Tab icon={<Hotel size={18} />} iconPosition="start" label="Hotels" sx={{ textTransform: "none", fontWeight: 600 }} />
                         <Tab icon={<Utensils size={18} />} iconPosition="start" label="Restaurants" sx={{ textTransform: "none", fontWeight: 600 }} />
+                        <Tab icon={<Scissors size={18} />} iconPosition="start" label="Salons" sx={{ textTransform: "none", fontWeight: 600 }} />
                     </Tabs>
                 </Box>
 
@@ -647,6 +651,92 @@ export default function MyBookings() {
                         </div>
                     )
                 )}
+
+                {/* ── SALON QUEUES ── */}
+                {activeTab === 2 && (
+                    salonQueues.length === 0 ? (
+                        <div className="text-center py-5">
+                            <h4 className="text-muted">No salon visits yet!</h4>
+                            <Link to="/salon" className="btn btn-primary mt-3">Explore Salons</Link>
+                        </div>
+                    ) : (
+                        <div className="row g-4">
+                            {salonQueues.map(q => (
+                                <div key={q.id} className="col-md-6 col-lg-4">
+                                    <Card className="h-100 lux-booking-card">
+                                        <div className="position-relative">
+                                            <img
+                                                src={getImageUrl(q.salon_image) || "https://via.placeholder.com/300?text=Salon"}
+                                                alt={q.salon_name}
+                                                className="w-100"
+                                                style={{ height: 160, objectFit: "cover" }}
+                                            />
+                                            <div className="position-absolute top-0 end-0 m-2">
+                                                <Chip
+                                                    label={q.status === 'in_progress' ? 'SERVING' : q.status === 'pending' ? 'WAITING' : q.status.toUpperCase()}
+                                                    color={q.status === 'completed' ? 'info' : q.status === 'in_progress' ? 'success' : 'warning'}
+                                                    size="small"
+                                                />
+                                            </div>
+                                        </div>
+                                        <CardContent>
+                                            <Typography variant="h6" fontWeight="bold">{q.salon_name}</Typography>
+                                            <div className="text-muted small mb-3">
+                                                <MapPin size={16} className="me-1" />
+                                                {q.salon_area}, {q.salon_city}
+                                            </div>
+                                            <div className="mb-3">
+                                                <Chip icon={<Scissors size={14} />} label={q.service_name} variant="outlined" size="small" />
+                                            </div>
+
+                                            <Box display="flex" flexDirection="column" gap={1.5} className="lux-details-box">
+                                                <div className="d-flex align-items-center gap-3 fw-medium text-dark">
+                                                    <Clock size={18} className="text-primary opacity-75" /> Joined: {new Date(q.joined_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                </div>
+                                                {q.status === 'pending' && (
+                                                    <div className="d-flex align-items-center gap-3 fw-medium text-warning">
+                                                        <Clock size={18} /> Est. Wait: {q.estimated_wait_time} mins
+                                                    </div>
+                                                )}
+                                            </Box>
+
+                                            {/* Review UI */}
+                                            {q.review_data && (
+                                                <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "10px", padding: "8px 12px", marginBottom: "12px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                                        {Array.from({ length: 5 }, (_, i) => (
+                                                            <span key={i} style={{ color: i < q.review_data.rating ? "#f59e0b" : "#d1d5db", fontSize: "0.9rem" }}>&#9733;</span>
+                                                        ))}
+                                                    </div>
+                                                    {q.review_data.comment && <p style={{ fontSize: "0.8rem", color: "#0369a1", margin: "4px 0 0 0" }}>"{q.review_data.comment}"</p>}
+                                                </div>
+                                            )}
+
+                                            {q.status === "completed" && (
+                                                <button
+                                                    onClick={() => openReviewPopup(q)}
+                                                    style={{ width: "100%", padding: "10px", borderRadius: "12px", border: "none", background: q.has_review ? "#f0fdf4" : "#6366f1", color: q.has_review ? "#16a34a" : "white", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", marginBottom: "12px" }}
+                                                >
+                                                    {q.has_review ? "⭐ Edit Review" : "⭐ Rate Visit"}
+                                                </button>
+                                            )}
+
+                                            <Button
+                                                variant="outlined"
+                                                fullWidth
+                                                className="lux-card-btn"
+                                                onClick={() => setDetailsModal(q)}
+                                                sx={{ borderColor: "#6366f1", color: "#6366f1" }}
+                                            >
+                                                Queue Ticket
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            ))}
+                        </div>
+                    )
+                )}
             </div>
 
             {/* ── DETAILS MODAL ── */}
@@ -658,11 +748,11 @@ export default function MyBookings() {
                 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
                         <div>
-                            <Typography variant="h5" fontWeight="700" sx={{ color: detailsModal?.hotel ? "#667eea" : "#3a86ff" }}>
-                                {detailsModal?.hotel ? "Booking Summary" : "Reservation Summary"}
+                            <Typography variant="h5" fontWeight="700" sx={{ color: detailsModal?.hotel ? "#667eea" : detailsModal?.salon_name ? "#6366f1" : "#3a86ff" }}>
+                                {detailsModal?.hotel ? "Booking Summary" : detailsModal?.salon_name ? "Queue Ticket" : "Reservation Summary"}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                                #{detailsModal?.hotel ? "SNX-HTL" : "SNX-RES"}-{detailsModal?.id}
+                                #{detailsModal?.hotel ? "SNX-HTL" : detailsModal?.salon_name ? "SNX-SLN" : "SNX-RES"}-{detailsModal?.id}
                             </Typography>
                         </div>
                         <IconButton onClick={() => setDetailsModal(null)} size="small" sx={{ bgcolor: "#F5F5F5" }}>
@@ -674,10 +764,10 @@ export default function MyBookings() {
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                             <div style={{ gridColumn: "span 2" }}>
                                 <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>
-                                    {detailsModal?.hotel ? "Hotel Name" : "Restaurant Name"}
+                                    {detailsModal?.hotel ? "Hotel Name" : detailsModal?.salon_name ? "Salon Name" : "Restaurant Name"}
                                 </Typography>
                                 <Typography variant="body1" fontWeight="600">
-                                    {detailsModal?.hotel_details?.name || detailsModal?.restaurant_name}
+                                    {detailsModal?.hotel_details?.name || detailsModal?.salon_name || detailsModal?.restaurant_name}
                                 </Typography>
                             </div>
 
@@ -706,8 +796,27 @@ export default function MyBookings() {
                                             fontWeight="600"
                                             color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
                                         >
-                                            {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status?.toUpperCase()}
+                                            {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status}
                                         </Typography>
+                                    </div>
+                                </>
+                            ) : detailsModal?.salon_name ? (
+                                <>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Joined At</Typography>
+                                        <Typography variant="body2" fontWeight="600">{new Date(detailsModal.joined_at).toLocaleString()}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Service</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.service_name}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Status</Typography>
+                                        <Typography variant="body2" fontWeight="600" color="primary.main">{detailsModal.status.toUpperCase()}</Typography>
+                                    </div>
+                                    <div>
+                                        <Typography variant="caption" color="text.secondary">Wait Time</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.estimated_wait_time} mins</Typography>
                                     </div>
                                 </>
                             ) : (

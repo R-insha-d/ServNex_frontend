@@ -23,28 +23,12 @@ export default function SaloonDetail() {
 
     useEffect(() => {
         setLoading(true);
-        // Fetch saloon details
-        AxiosInstance.get(`api/saloons/${id}/`)
+        // Fetch salon details
+        AxiosInstance.get(`api/salons/${id}/`)
             .then(res => setSaloon(res.data))
             .catch(err => {
-                // Mock data if backend isn't ready
-                console.warn("Backend for saloon might not be ready, defaulting to mock.", err);
-                setSaloon({
-                    id: id,
-                    name: "Premium Glow Saloon & Spa",
-                    area: "Downtown",
-                    city: "New Delhi",
-                    phone: "+91 9876543210",
-                    image: "https://images.unsplash.com/photo-1521590832167-7bfc1748facd?auto=format&fit=crop&q=80&w=1000",
-                    rating: "4.8",
-                    description: "Experience premium grooming and wellness in a luxurious atmosphere.",
-                    services: [
-                        { name: "Haircut & Styling", price: "₹500", duration: "30 mins" },
-                        { name: "Facial & Cleanup", price: "₹1200", duration: "45 mins" },
-                        { name: "Beard Trim", price: "₹250", duration: "15 mins" },
-                        { name: "Full Body Spa", price: "₹2500", duration: "60 mins" }
-                    ]
-                });
+                console.error("Error fetching salon:", err);
+                setError("Saloon not found or server error.");
             })
             .finally(() => setLoading(false));
 
@@ -57,13 +41,13 @@ export default function SaloonDetail() {
     }, [id]);
 
     const fetchQueueStatus = () => {
-        AxiosInstance.get(`api/saloons/${id}/queue-status/`)
+        AxiosInstance.get(`api/salons/${id}/queue-status/`)
             .then(res => setQueueStatus(res.data))
             .catch(() => {
-                // Mock queue status
+                // Mock queue status if fetch fails
                 setQueueStatus({
-                    current_queue_length: Math.floor(Math.random() * 8),
-                    estimated_wait_time: Math.floor(Math.random() * 30 + 10)
+                    current_queue_length: 0,
+                    estimated_wait_time: 0
                 });
             });
     };
@@ -81,18 +65,15 @@ export default function SaloonDetail() {
         }
 
         setIsJoining(true);
-        AxiosInstance.post(`api/saloons/${id}/queue/join/`, { service: selectedService })
+        AxiosInstance.post(`api/salons/${id}/join-queue/`, { service: selectedService })
             .then(res => {
                 setJoinSuccess(true);
+                toast.success("Successfully joined the queue!");
                 fetchQueueStatus();
             })
             .catch(err => {
-                // Mock success if api fails since this feature is newly added
-                console.warn("Mocking successful queue join");
-                setTimeout(() => {
-                    setJoinSuccess(true);
-                    fetchQueueStatus();
-                }, 800);
+                const msg = err.response?.data?.error || "Failed to join queue. Please try again.";
+                toast.error(msg);
             })
             .finally(() => setIsJoining(false));
     };
@@ -108,6 +89,7 @@ export default function SaloonDetail() {
             <CircularProgress style={{ color: "#6366f1" }} />
         </div>
     );
+    if (error) return <div className="text-center py-5"><h4>{error}</h4><Link to="/salon" className="btn btn-primary mt-3">Go Back</Link></div>;
     if (!saloon) return <div className="text-center py-5"><h4>Saloon not found</h4></div>;
 
     const services = saloon.services || [];
@@ -117,15 +99,27 @@ export default function SaloonDetail() {
             <Header />
 
             <div className="saloon-hero">
-                <img src={saloon.image} alt={saloon.name} className="saloon-hero-img" />
+                <img src={saloon.image || "https://images.unsplash.com/photo-1521590832167-7bfc1748facd?auto=format&fit=crop&q=80&w=1000"} alt={saloon.name} className="saloon-hero-img" />
                 <div className="saloon-hero-overlay"></div>
                 <div className="container position-relative h-100">
                     <div className="saloon-hero-content">
-                        <div className="badge bg-primary text-uppercase mb-2 shadow-sm">Premium Saloon</div>
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                            <div className="badge bg-primary text-uppercase shadow-sm">{saloon.badge || "Premium Saloon"}</div>
+                            <div className={`badge ${saloon.is_open ? 'bg-success' : 'bg-danger'} text-uppercase shadow-sm`}>
+                                {saloon.is_open ? 'Open Now' : 'Closed'}
+                            </div>
+                        </div>
                         <h1 className="display-4 fw-bold text-white mb-2">{saloon.name}</h1>
-                        <p className="lead text-white-50 mb-0 d-flex align-items-center gap-2">
-                            <MapPin size={20} /> {saloon.area}, {saloon.city}
-                        </p>
+                        <div className="d-flex flex-wrap align-items-center gap-4">
+                            <p className="lead text-white-50 mb-0 d-flex align-items-center gap-2">
+                                <MapPin size={20} /> {saloon.area}, {saloon.city}
+                            </p>
+                            {saloon.opening_time && (
+                                <p className="lead text-white-50 mb-0 d-flex align-items-center gap-2">
+                                    <Clock size={20} /> {saloon.opening_time.slice(0, 5)} - {saloon.closing_time.slice(0, 5)}
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

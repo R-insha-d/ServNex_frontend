@@ -39,7 +39,11 @@ function Landing() {
                     </p>
                     <button
                         className="btn btn-primary btn-lg rounded-3 px-5"
-                        onClick={() => navigate(role === "Hotel" ? "/admin-dashboard" : "/restaurant-dashboard")}
+                        onClick={() => {
+                            if (role === "Hotel") navigate("/admin-dashboard");
+                            else if (role === "Saloon") navigate("/salon-dashboard");
+                            else navigate("/restaurant-dashboard");
+                        }}
                     >
                         Go to My Dashboard →
                     </button>
@@ -143,7 +147,7 @@ function Landing() {
                                 <img src={Saloon} className="service-icon mb-3" alt="" />
                                 <h4>Salons</h4>
                                 <p>Schedule appointments with top-rated stylists.</p>
-                                <Link to="/saloon" className="explore-btns">
+                                <Link to="/salon" className="explore-btns">
                                     <span className="fs-6 d-flex align-items-center gap-1">Explore <ChevronsRight size={18} /></span>
                                 </Link>
                             </div>

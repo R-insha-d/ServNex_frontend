@@ -320,6 +320,8 @@ export default function BusinessLogin() {
                         toast.success("Business Profile Submitted Successfully");
                         if (category === "Restaurants") {
                           navigate("/restaurant-dashboard");
+                        } else if (category === "Saloons") {
+                          navigate("/salon-dashboard");
                         } else {
                           navigate("/admin-dashboard");
                         }

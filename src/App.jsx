@@ -105,16 +105,16 @@ function App() {
           } 
         />
 
-        {/* Saloon routes */}
+        {/* Salon routes */}
         <Route
-          path='/saloon'
+          path='/salon'
           element={
             <ProtectedRoute>
               <SaloonList />
             </ProtectedRoute>
           }
         />
-        <Route path='/saloon/:id' element={<SaloonDetail />} />
+        <Route path='/salon/:id' element={<SaloonDetail />} />
 
         {/* admin */}
         <Route
@@ -136,7 +136,7 @@ function App() {
         />
 
         <Route
-          path="/saloon-dashboard"
+          path="/salon-dashboard"
           element={
             <ProtectedRoute>
               <SaloonDashboard />

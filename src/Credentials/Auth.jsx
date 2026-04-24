@@ -45,8 +45,10 @@ const Auth = ({ onSuccess }) => {
                 if (isBusiness) {
                     if (role === "Hotel") {
                         navigate("/admin-dashboard", { replace: true });
-                    } else if (["Restaurant", "Saloon"].includes(role)) {
+                    } else if (role === "Restaurant") {
                         navigate("/restaurant-dashboard", { replace: true });
+                    } else if (role === "Saloon") {
+                        navigate("/salon-dashboard", { replace: true });
                     } else {
                         navigate("/login-business", { replace: true });
                     }
@@ -100,8 +102,10 @@ const Auth = ({ onSuccess }) => {
             else if (accountType === "business") {
                 if (role === "Hotel") {
                     navigate("/admin-dashboard", { replace: true });
-                } else if (["Restaurant", "Saloon"].includes(role)) {
+                } else if (role === "Restaurant") {
                     navigate("/restaurant-dashboard", { replace: true });
+                } else if (role === "Saloon") {
+                    navigate("/salon-dashboard", { replace: true });
                 } else {
                     navigate("/login-business", { replace: true });
                 }
@@ -186,8 +190,10 @@ const Auth = ({ onSuccess }) => {
                 } else if (accountType === "business") {
                     if (role === "Hotel") {
                         navigate("/admin-dashboard", { replace: true });
-                    } else if (["Restaurant", "Saloon"].includes(role)) {
+                    } else if (role === "Restaurant") {
                         navigate("/restaurant-dashboard", { replace: true });
+                    } else if (role === "Saloon") {
+                        navigate("/salon-dashboard", { replace: true });
                     } else {
                         navigate("/login-business", { replace: true });
                     }

@@ -349,7 +349,7 @@ function Header() {
                 <div className="profile-overlay">Update</div>
               </div>
 
-              <h5 style={{ fontWeight: 700, marginBottom: '4px', color: '#6366f1', marginBottom: '20px' }}>{username}</h5>
+              <h5 style={{ fontWeight: 700, color: '#6366f1', marginBottom: '20px' }}>{username}</h5>
               {/* <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '20px' }}>Standard Membership</p> */}
 
               <input
