@@ -18,6 +18,7 @@ export default function MyBookings() {
     const [reviewPopup, setReviewPopup] = useState(null); // holds reservation object
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
+    const [reviewImages, setReviewImages] = useState([]);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState("");
 
@@ -47,6 +48,7 @@ export default function MyBookings() {
         setReviewPopup(reservation);
         setReviewRating(reservation.review_data ? reservation.review_data.rating : 5);
         setReviewComment(reservation.review_data ? reservation.review_data.comment || "" : "");
+        setReviewImages([]);
         setReviewError("");
     };
 
@@ -57,29 +59,34 @@ export default function MyBookings() {
         try {
             const isEditing = reviewPopup.has_review && reviewPopup.review_data?.id;
 
+            const formData = new FormData();
+            formData.append("rating", reviewRating);
+            formData.append("comment", reviewComment);
+
+            if (reviewImages && reviewImages.length > 0) {
+                formData.append("images", reviewImages[0]);
+            }
+
             if (isEditing) {
                 // UPDATE existing review
                 const apiUrl = reviewPopup.hotel
                     ? `api/hotel-reviews/${reviewPopup.review_data.id}/`
                     : `api/reviews/${reviewPopup.review_data.id}/`;
 
-                await AxiosInstance.patch(apiUrl, {
-                    rating: reviewRating,
-                    comment: reviewComment,
+                await AxiosInstance.patch(apiUrl, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
                 });
             } else {
                 // CREATE new review
                 if (reviewPopup.hotel) {
-                    await AxiosInstance.post("api/hotel-reviews/", {
-                        booking: reviewPopup.id,
-                        rating: reviewRating,
-                        comment: reviewComment,
+                    formData.append("booking", reviewPopup.id);
+                    await AxiosInstance.post("api/hotel-reviews/", formData, {
+                        headers: { "Content-Type": "multipart/form-data" }
                     });
                 } else {
-                    await AxiosInstance.post("api/reviews/", {
-                        reservation: reviewPopup.id,
-                        rating: reviewRating,
-                        comment: reviewComment,
+                    formData.append("reservation", reviewPopup.id);
+                    await AxiosInstance.post("api/reviews/", formData, {
+                        headers: { "Content-Type": "multipart/form-data" }
                     });
                 }
             }
@@ -293,9 +300,39 @@ export default function MyBookings() {
                             rows="3"
                             placeholder="Share your experience... (optional)"
                             value={reviewComment}
-                            onChange={(e) => setReviewComment(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val.length <= 1000 && /^[a-zA-Z0-9\s,\.]*$/.test(val)) {
+                                    setReviewComment(val);
+                                }
+                            }}
                             style={{ borderRadius: "10px", fontSize: "0.9rem" }}
                         />
+
+                        {/* Image Upload box */}
+                        <div style={{ marginBottom: "20px", textAlign: "left" }}>
+                            <label style={{ fontSize: "0.8rem", fontWeight: 500, color: "#6366f1", display: "block", marginBottom: "8px" }}>
+                                Add Photo (Optional)
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    setReviewImages(file ? [file] : []);
+                                }}
+                                style={{ fontSize: "0.75rem", width: "100%", color: "#64748b" }}
+                            />
+                            {reviewImages && reviewImages.length > 0 && (
+                                <div style={{ display: "flex", gap: "5px", marginTop: "10px", flexWrap: "wrap" }}>
+                                    {reviewImages.map((img, i) => (
+                                        <div key={i} style={{ fontSize: "0.7rem", padding: "2px 8px", background: "#f8fafc", borderRadius: "20px", color: "#64748b" }}>
+                                            {img.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                         {reviewError && <div className="alert alert-danger py-2 small mb-3">{reviewError}</div>}
 

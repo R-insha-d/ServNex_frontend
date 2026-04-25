@@ -182,7 +182,7 @@ export default function Dashboard() {
     if (!form.adults) newErrors.adults = "Adults required";
     if (!form.total_rooms || Number(form.total_rooms) <= 0)
       newErrors.total_rooms = "Enter valid room count";
-    
+
     // Amenities are optional in backend, so making it optional in frontend too
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -381,7 +381,7 @@ export default function Dashboard() {
   const handleSubmitCoupon = async () => {
     if (!myHotel) return toast.error("Hotel profile missing!");
     if (!couponForm.code.trim()) return toast.error("Coupon code is required");
-    
+
     const today = new Date().toISOString().split('T')[0];
     if (!editingCouponId && couponForm.valid_from && couponForm.valid_from < today) {
       return toast.error("Coupon start date cannot be in the past.");
@@ -764,36 +764,21 @@ export default function Dashboard() {
             {activeTab === "bookings" && (
               <div className="card shadow border-0 p-4 rounded-4">
 
-                {/* Header + hotel filter dropdown */}
                 <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                   <h5
                     className="mb-0 fw-semibold d-flex align-items-center gap-2"
                     style={{ color: theme.primary }}
                   >
                     Recent Bookings
-                    {filteredBookings.length > 0 && (
+                    {filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").length > 0 && (
                       <span
                         className="badge rounded-pill"
                         style={{ background: theme.secondary, fontSize: "0.75rem" }}
                       >
-                        {filteredBookings.length}
+                        {filteredBookings.filter(b => b.status === "confirmed" || b.status === "paid").length}
                       </span>
                     )}
                   </h5>
-
-                  {hotels.length > 0 && (
-                    <select
-                      className="form-select form-select-sm w-auto"
-                      value={selectedHotel}
-                      onChange={(e) => setSelectedHotel(e.target.value)}
-                      style={{ minWidth: 190, borderColor: theme.secondary }}
-                    >
-                      <option value="all">All Hotels</option>
-                      {hotels.map((name) => (
-                        <option key={name} value={name}>{name}</option>
-                      ))}
-                    </select>
-                  )}
                 </div>
 
                 {/* Loading */}
@@ -813,13 +798,25 @@ export default function Dashboard() {
                         <div className="d-flex justify-content-between align-items-start mb-3">
                           <div>
                             <div className="d-flex align-items-center gap-2 mb-1">
-                              <h5 className="mb-0 fw-bold">{b.customer_name}</h5>
+                              <h5 className="mb-0 fw-bold">{b.guest_name || b.customer_name}</h5>
                               <span className={`badge ${statusBadgeClass(b.status)}`} style={{ fontSize: '0.7rem' }}>
                                 {b.status.toUpperCase()}
                               </span>
                             </div>
                             <div className="d-flex flex-column gap-1">
-                              <span className="text-muted small">{b.customer_email}</span>
+                              {b.guest_name && (
+                                <span className="small" style={{ color: '#d97706', fontWeight: 500 }}>
+                                  📞 {b.guest_phone}
+                                </span>
+                              )}
+                              {b.guest_name && (
+                                <span className="small" style={{ color: '#6366f1', fontStyle: 'italic' }}>
+                                  (Booked by: {b.customer_name} • {b.customer_phone || b.customer_email})
+                                </span>
+                              )}
+                              {!b.guest_name && (
+                                <span className="text-muted small">{b.customer_email}</span>
+                              )}
                               <span className="text-muted small">🏨 {b.hotel_name}</span>
                               {b.room_type && <span className="text-muted small">🛏 Type: {b.room_type}</span>}
                               <span className="text-muted small">
@@ -827,7 +824,7 @@ export default function Dashboard() {
                                 {"  →  "}
                                 Check-out: <span className="fw-medium text-dark">{b.check_out}</span>
                               </span>
-                              {b.customer_phone && (
+                              {!b.guest_name && b.customer_phone && (
                                 <span className="text-muted small">📞 {b.customer_phone}</span>
                               )}
                               <div className="mt-1">
@@ -891,20 +888,29 @@ export default function Dashboard() {
                         filteredBookings.filter(b => !(b.status === "confirmed" || b.status === "paid")).map((b) => (
                           <tr key={b.booking_id}>
                             <td className="px-3">
-                              <div className="fw-bold">{b.customer_name}</div>
-                              <div className="small text-muted">{b.customer_email}</div>
-                              {b.customer_phone && <div className="small text-muted">📞 {b.customer_phone}</div>}
+                              <div className="fw-bold">{b.guest_name || b.customer_name}</div>
+                              {b.guest_name ? (
+                                <>
+                                  <div className="small" style={{ color: '#d97706', fontWeight: 500 }}>📞 {b.guest_phone}</div>
+                                  <div className="small" style={{ color: '#6366f1', fontStyle: 'italic' }}>(Booked by: {b.customer_name} • {b.customer_phone || b.customer_email})</div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="small text-muted">{b.customer_email}</div>
+                                  {b.customer_phone && <div className="small text-muted">📞 {b.customer_phone}</div>}
+                                </>
+                              )}
                             </td>
                             <td>
                               <div className="fw-medium">{b.hotel_name}</div>
                               <div className="small text-muted mb-1">🛏 {b.room_type || "N/A"}</div>
                               <div className="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0" style={{ fontSize: '0.7rem' }}>
-                                {b.rooms_booked || 1} { (b.rooms_booked || 1) === 1 ? 'Room' : 'Rooms' }
+                                {b.rooms_booked || 1} {(b.rooms_booked || 1) === 1 ? 'Room' : 'Rooms'}
                               </div>
                             </td>
                             <td>
                               <div className="small">
-                                <strong>In:</strong> {b.check_in}<br/>
+                                <strong>In:</strong> {b.check_in}<br />
                                 <strong>Out:</strong> {b.check_out}
                               </div>
                             </td>
@@ -1143,56 +1149,56 @@ export default function Dashboard() {
             {/* REVIEWS TAB */}
             {activeTab === "reviews" && (
               <div className="card shadow border-0 p-4 rounded-4">
-                  <h5 className="mb-4 fw-semibold" style={{ color: theme.primary }}>Guest Reviews</h5>
-                  {reviews.length > 0 ? (
-                    <div className="row g-4">
-                      {reviews.map((rev) => (
-                        <div key={rev.id} className="col-12">
-                          <div className="border rounded-4 p-3 shadow-sm bg-white">
-                            <div className="d-flex justify-content-between align-items-start mb-2">
-                              <div className="d-flex align-items-center gap-2">
-                                <div 
-                                  className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                                  style={{ width: "40px", height: "40px", backgroundColor: theme.primary, fontSize: "1.1rem" }}
-                                >
-                                  {(rev.user_name || "G")[0].toUpperCase()}
-                                </div>
-                                <div>
-                                  <h6 className="mb-0 fw-bold">{rev.user_name}</h6>
-                                  <small className="text-muted">{new Date(rev.created_at).toLocaleDateString()}</small>
-                                </div>
+                <h5 className="mb-4 fw-semibold" style={{ color: theme.primary }}>Guest Reviews</h5>
+                {reviews.length > 0 ? (
+                  <div className="row g-4">
+                    {reviews.map((rev) => (
+                      <div key={rev.id} className="col-12">
+                        <div className="border rounded-4 p-3 shadow-sm bg-white">
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <div
+                                className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                style={{ width: "40px", height: "40px", backgroundColor: theme.primary, fontSize: "1.1rem" }}
+                              >
+                                {(rev.user_name || "G")[0].toUpperCase()}
                               </div>
-                              <div className="bg-warning-subtle text-warning px-2 py-1 rounded small fw-bold">
-                                {rev.rating} ⭐
+                              <div>
+                                <h6 className="mb-0 fw-bold">{rev.user_name}</h6>
+                                <small className="text-muted">{new Date(rev.created_at).toLocaleDateString()}</small>
                               </div>
                             </div>
-                            <p className="mb-3 text-secondary" style={{ fontStyle: "italic" }}>"{rev.comment}"</p>
-                            
-                            {/* Attached Images */}
-                            {rev.images && rev.images.length > 0 && (
-                              <div className="d-flex gap-2 flex-wrap">
-                                {rev.images.map((img, i) => (
-                                  <img 
-                                    key={i} 
-                                    src={img.image} 
-                                    alt="review" 
-                                    className="rounded-3 border shadow-sm"
-                                    style={{ width: "100px", height: "100px", objectFit: "cover", cursor: "pointer" }}
-                                    onClick={() => window.open(img.image, '_blank')}
-                                  />
-                                ))}
-                              </div>
-                            )}
+                            <div className="bg-warning-subtle text-warning px-2 py-1 rounded small fw-bold">
+                              {rev.rating} ⭐
+                            </div>
                           </div>
+                          <p className="mb-3 text-secondary" style={{ fontStyle: "italic" }}>"{rev.comment}"</p>
+
+                          {/* Attached Images */}
+                          {rev.images && rev.images.length > 0 && (
+                            <div className="d-flex gap-2 flex-wrap">
+                              {rev.images.map((img, i) => (
+                                <img
+                                  key={i}
+                                  src={img.image}
+                                  alt="review"
+                                  className="rounded-3 border shadow-sm"
+                                  style={{ width: "100px", height: "100px", objectFit: "cover", cursor: "pointer" }}
+                                  onClick={() => window.open(img.image, '_blank')}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-5 text-muted">
-                       <div style={{ fontSize: "2.5rem" }}>⭐</div>
-                       <p className="mt-2 mb-0">No reviews found.</p>
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-5 text-muted">
+                    <div style={{ fontSize: "2.5rem" }}>⭐</div>
+                    <p className="mt-2 mb-0">No reviews found.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

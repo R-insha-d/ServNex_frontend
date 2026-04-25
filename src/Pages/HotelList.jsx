@@ -383,9 +383,6 @@ export default function HotelList() {
                                                         setShowSuggestions(false);
                                                     }}
                                                 >
-                                                    <span className="suggestion-type">
-                                                        {s.type === 'city' ? '📍' : s.type === 'hotel' ? '🏨' : s.type === 'keyword' ? '✨' : '🍽️'}
-                                                    </span>
                                                     <span className="suggestion-label">{s.label}</span>
                                                 </div>
                                             ))}
@@ -522,6 +519,39 @@ export default function HotelList() {
                                                     <HighlightText text={`${hotel.area}, ${hotel.city}`} highlight={search} />
                                                 </div>
 
+                                                {/* AMENITIES */}
+                                                {(hotel.amenities && hotel.amenities.length > 0) && (
+                                                    <div className="hotel-amenities d-flex flex-wrap gap-2 mb-3">
+                                                        {(() => {
+                                                            let displayAmenities = hotel.amenities;
+                                                            if (search) {
+                                                                const query = search.toLowerCase();
+                                                                displayAmenities = [...hotel.amenities].sort((a, b) => {
+                                                                    const aMatch = a.toLowerCase().includes(query);
+                                                                    const bMatch = b.toLowerCase().includes(query);
+                                                                    if (aMatch && !bMatch) return -1;
+                                                                    if (!aMatch && bMatch) return 1;
+                                                                    return 0;
+                                                                });
+                                                            }
+                                                            return (
+                                                                <>
+                                                                    {displayAmenities.slice(0, 3).map((amenity, idx) => (
+                                                                        <span key={idx} className="badge bg-light text-dark border fw-normal" style={{ fontSize: "12px", padding: "6px 10px", borderRadius: "6px" }}>
+                                                                            <HighlightText text={amenity} highlight={search} />
+                                                                        </span>
+                                                                    ))}
+                                                                    {displayAmenities.length > 3 && (
+                                                                        <span className="badge bg-light text-dark border fw-normal" style={{ fontSize: "12px", padding: "6px 10px", borderRadius: "6px" }}>
+                                                                            +{displayAmenities.length - 3} more
+                                                                        </span>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                )}
+
                                                 {/* DESCRIPTION */}
                                                 <p
                                                     className="hotel-description flex-grow-1"
@@ -533,7 +563,7 @@ export default function HotelList() {
                                                         overflow: "hidden",
                                                     }}
                                                 >
-                                                    <HighlightText text={hotel.description.slice(0, 235)} highlight={search} />...
+                                                    {hotel.description.slice(0, 235)}...
                                                 </p>
 
                                                 {/* PRICE + BUTTON */}
