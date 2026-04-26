@@ -7,23 +7,31 @@ import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs
 import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed } from "lucide-react";
 import { toast } from 'react-toastify';
 
+const formatTime = (time) => {
+    if (!time) return "";
+    return new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+    });
+};
+
 export default function MyBookings() {
     const [bookings, setBookings] = useState([]);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(0);
-    const [menuImage, setMenuImage] = useState(null);
 
     // Review popup state
     const [reviewPopup, setReviewPopup] = useState(null); // holds reservation object
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
-    const [reviewImages, setReviewImages] = useState([]);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState("");
 
     // Details Modal state
     const [detailsModal, setDetailsModal] = useState(null); // holds booking/reservation object
+    console.log(detailsModal);
 
     useEffect(() => {
         setLoading(true);
@@ -48,7 +56,6 @@ export default function MyBookings() {
         setReviewPopup(reservation);
         setReviewRating(reservation.review_data ? reservation.review_data.rating : 5);
         setReviewComment(reservation.review_data ? reservation.review_data.comment || "" : "");
-        setReviewImages([]);
         setReviewError("");
     };
 
@@ -59,34 +66,29 @@ export default function MyBookings() {
         try {
             const isEditing = reviewPopup.has_review && reviewPopup.review_data?.id;
 
-            const formData = new FormData();
-            formData.append("rating", reviewRating);
-            formData.append("comment", reviewComment);
-
-            if (reviewImages && reviewImages.length > 0) {
-                formData.append("images", reviewImages[0]);
-            }
-
             if (isEditing) {
                 // UPDATE existing review
                 const apiUrl = reviewPopup.hotel
                     ? `api/hotel-reviews/${reviewPopup.review_data.id}/`
                     : `api/reviews/${reviewPopup.review_data.id}/`;
 
-                await AxiosInstance.patch(apiUrl, formData, {
-                    headers: { "Content-Type": "multipart/form-data" }
+                await AxiosInstance.patch(apiUrl, {
+                    rating: reviewRating,
+                    comment: reviewComment,
                 });
             } else {
                 // CREATE new review
                 if (reviewPopup.hotel) {
-                    formData.append("booking", reviewPopup.id);
-                    await AxiosInstance.post("api/hotel-reviews/", formData, {
-                        headers: { "Content-Type": "multipart/form-data" }
+                    await AxiosInstance.post("api/hotel-reviews/", {
+                        booking: reviewPopup.id,
+                        rating: reviewRating,
+                        comment: reviewComment,
                     });
                 } else {
-                    formData.append("reservation", reviewPopup.id);
-                    await AxiosInstance.post("api/reviews/", formData, {
-                        headers: { "Content-Type": "multipart/form-data" }
+                    await AxiosInstance.post("api/reviews/", {
+                        reservation: reviewPopup.id,
+                        rating: reviewRating,
+                        comment: reviewComment,
                     });
                 }
             }
@@ -250,24 +252,16 @@ export default function MyBookings() {
 
     if (loading) return <div className="text-center mt-5">Loading your trips...</div>;
 
+    const getGoogleMapsLink = () => {
+    const area = detailsModal?.restaurant_area || "";
+    const city = detailsModal?.restaurant_city || "";
+
+    const query = encodeURIComponent(`${area}, ${city}`);
+    return `https://www.google.com/maps/search/?api=1&query=${query}`;
+};
+
     return (
         <div className="min-vh-100 bg-light">
-
-            {/* ── MENU IMAGE POPUP ── */}
-            {menuImage && (
-                <>
-                    <div onClick={() => setMenuImage(null)} style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.7)", zIndex: 9998, backdropFilter: "blur(4px)" }} />
-                    <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 9999, background: "white", borderRadius: "20px", padding: "20px", maxWidth: "800px", width: "95%", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h6 className="fw-bold mb-0">📋 Restaurant Menu</h6>
-                            <button onClick={() => setMenuImage(null)} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontWeight: 700, fontSize: "1rem", color: "#374151" }}>✕</button>
-                        </div>
-                        <div style={{ overflow: "auto", maxHeight: "80vh" }}>
-                            <img src={menuImage} alt="Menu" style={{ width: "100%", borderRadius: "12px", objectFit: "contain" }} />
-                        </div>
-                    </div>
-                </>
-            )}
 
             {/* ── REVIEW POPUP ── */}
             {reviewPopup && (
@@ -300,39 +294,9 @@ export default function MyBookings() {
                             rows="3"
                             placeholder="Share your experience... (optional)"
                             value={reviewComment}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val.length <= 1000 && /^[a-zA-Z0-9\s,\.]*$/.test(val)) {
-                                    setReviewComment(val);
-                                }
-                            }}
+                            onChange={(e) => setReviewComment(e.target.value)}
                             style={{ borderRadius: "10px", fontSize: "0.9rem" }}
                         />
-
-                        {/* Image Upload box */}
-                        <div style={{ marginBottom: "20px", textAlign: "left" }}>
-                            <label style={{ fontSize: "0.8rem", fontWeight: 500, color: "#6366f1", display: "block", marginBottom: "8px" }}>
-                                Add Photo (Optional)
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    setReviewImages(file ? [file] : []);
-                                }}
-                                style={{ fontSize: "0.75rem", width: "100%", color: "#64748b" }}
-                            />
-                            {reviewImages && reviewImages.length > 0 && (
-                                <div style={{ display: "flex", gap: "5px", marginTop: "10px", flexWrap: "wrap" }}>
-                                    {reviewImages.map((img, i) => (
-                                        <div key={i} style={{ fontSize: "0.7rem", padding: "2px 8px", background: "#f8fafc", borderRadius: "20px", color: "#64748b" }}>
-                                            {img.name}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
 
                         {reviewError && <div className="alert alert-danger py-2 small mb-3">{reviewError}</div>}
 
@@ -598,7 +562,7 @@ export default function MyBookings() {
                                                     <Calendar size={18} className="text-primary opacity-75" /> Date: {reservation.reservation_date}
                                                 </div>
                                                 <div className="d-flex align-items-center gap-3 fw-medium text-dark">
-                                                    <Calendar size={18} className="text-primary opacity-75" /> Time: {reservation.reservation_time}
+                                                    <Calendar size={18} className="text-primary opacity-75" /> Time: Time: {formatTime(reservation.reservation_time)}
                                                 </div>
                                                 <div className="d-flex align-items-center gap-3 fw-medium text-dark">
                                                     <Calendar size={18} className="text-primary opacity-75" /> Booked On: {new Date(reservation.created_at).toLocaleString()}
@@ -620,15 +584,7 @@ export default function MyBookings() {
                                                 </div>
                                             )}
 
-                                            {/* View Menu button */}
-                                            {reservation.menu_image && (
-                                                <button
-                                                    onClick={() => setMenuImage(getImageUrl(reservation.menu_image))}
-                                                    style={{ width: "100%", marginBottom: "8px", padding: "7px", borderRadius: "10px", border: "1px solid #ea580c", background: "#fff7ed", color: "#ea580c", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}
-                                                >
-                                                    📋 View Menu
-                                                </button>
-                                            )}
+
 
                                             {/* Write Review button — only for completed reservations */}
                                             {reservation.status === "completed" && (
@@ -749,29 +705,118 @@ export default function MyBookings() {
                                 </>
                             ) : (
                                 <>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Date</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal?.reservation_date}</Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Time</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal?.reservation_time}</Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Guests</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal?.number_of_guests} Persons</Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Status</Typography>
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight="600"
-                                            color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
-                                        >
-                                            {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status}
-                                        </Typography>
-                                    </div>
-                                </>
+    <div>
+        
+        <Typography variant="caption" color="text.secondary">Date</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {detailsModal?.reservation_date}
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Time</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {new Date(`1970-01-01T${detailsModal?.reservation_time}`).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+})}
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Guests</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {detailsModal?.number_of_guests} Persons
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Status</Typography>
+        <Typography
+            variant="body2"
+            fontWeight="600"
+            color={
+                detailsModal?.status === "cancelled"
+                    ? "error.main"
+                    : "success.main"
+            }
+        >
+            {detailsModal?.status}
+        </Typography>
+    </div>
+
+
+    <div style={{ gridColumn: "span 2" }}>
+    <Typography variant="caption" color="text.secondary">
+        Location
+    </Typography>
+
+    <Box
+        onClick={() => window.open(getGoogleMapsLink(), "_blank")}
+        sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mt: 1,
+            p: 1.5,
+            borderRadius: "12px",
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            "&:hover": {
+                background: "#eef2ff",
+                borderColor: "#6366f1",
+                transform: "scale(1.02)"
+            }
+        }}
+    >
+        <Box display="flex" alignItems="center" gap={1}>
+            <MapPin size={18} style={{ color: "#6366f1" }} />
+            <Typography variant="body2" fontWeight="600">
+                View on Map
+            </Typography>
+        </Box>
+
+        
+
+        <Typography variant="caption" color="text.secondary">
+            Open
+        </Typography>
+    </Box>
+</div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Booked On</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {new Date(detailsModal?.created_at).toLocaleString()}
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Payment</Typography>
+        <Typography
+            variant="body2"
+            fontWeight="600"
+            color={detailsModal?.payment_status !== 'paid' ? "error.main" : "success.main"}
+        >
+            {detailsModal?.payment_status?.toUpperCase()}
+        </Typography>
+    </div>
+
+    {/* OPTIONAL: Special Request */}
+    {detailsModal?.special_request && (
+        <div style={{ gridColumn: "span 2" }}>
+            <Typography variant="caption" color="text.secondary">
+                Special Request
+            </Typography>
+            <Typography variant="body2" fontWeight="600">
+                {detailsModal.special_request}
+            </Typography>
+        </div>
+    )}
+</>
                             )}
                         </div>
                     </Box>

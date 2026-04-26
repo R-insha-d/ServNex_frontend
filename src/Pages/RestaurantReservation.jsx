@@ -404,6 +404,7 @@ function CustomDatePicker({ value, onChange, minDate }) {
     );
 }
 
+
 // ─── Custom Time Picker ────────────────────────────────────────────────────────
 function CustomTimePicker({ value, onChange, date }) {
     const [open, setOpen] = useState(false);
@@ -479,6 +480,7 @@ function CustomTimePicker({ value, onChange, date }) {
                     <path d="M4 6l4 4 4-4" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </div>
+
 
             {/* Dropdown Time Picker */}
             {open && (
@@ -615,6 +617,9 @@ function CustomTimePicker({ value, onChange, date }) {
     );
 }
 
+
+
+
 // ─── Animated Icons ────────────────────────────────────────────────────────────
 const AnimatedCheck = () => (
     <div className="animate-scale" style={{ marginBottom: "20px" }}>
@@ -647,7 +652,45 @@ export default function RestaurantReservation() {
 
     const [date, setDate] = useState(reservationDate || "");
     const [time, setTime] = useState(reservationTime || "");
-    const [selectedTable, setSelectedTable] = useState(passedTableCapacity || 4);
+    // const [selectedTable, setSelectedTable] = useState(passedTableCapacity || 4);
+    const [tableSelection, setTableSelection] = useState({
+  2: 0,
+  4: 0,
+  6: 0,
+  8: 0,
+  10: 0
+});
+
+const totalSeats = Object.entries(tableSelection)
+  .reduce((sum, [cap, count]) => sum + cap * count, 0);
+
+  const handleIncrement = (cap) => {
+    const currentTotal = totalSeats;
+
+    if (currentTotal + cap > 30) {
+        toast.warning("⚠️ You can only select up to 30 seats");
+        return;
+    }
+
+    // if (availability[cap] && tableSelection[cap] < availability[cap]) {
+    if (availability[String(cap)] && tableSelection[cap] < availability[String(cap)]){
+        setTableSelection(prev => ({
+            ...prev,
+            [cap]: prev[cap] + 1
+        }));
+    }
+};
+
+const handleDecrement = (cap) => {
+    if (tableSelection[cap] > 0) {
+        setTableSelection(prev => ({
+            ...prev,
+            [cap]: prev[cap] - 1
+        }));
+    }
+};
+
+
     const [specialRequests, setSpecialRequests] = useState("");
     const [error, setError] = useState(null);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -658,14 +701,21 @@ export default function RestaurantReservation() {
     const [availability, setAvailability] = useState({});
 
     const isMobile = useMediaQuery("(max-width:768px)");
+    const [hasBaby, setHasBaby] = useState(false);
 
-    const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * (selectedTable / 2) : 0;
+    // const subtotal = restaurant ? (Number(restaurant.average_cost_for_two) || 0) * (selectedTable / 2) : 0;
+    const subtotal = restaurant
+  ? Object.entries(tableSelection).reduce((sum, [cap, count]) => {
+        return sum + (Number(restaurant.average_cost_for_two) || 0) * (cap / 2) * count;
+    }, 0)
+  : 0;
+
     const convenienceFee = subtotal * 0.05;
     const totalCost = subtotal + convenienceFee;
 
     useEffect(() => {
         // [REMOVED] Guests cap by table capacity as guest count is removed
-    }, [selectedTable]);
+    }, [totalSeats]);
 
     useEffect(() => {
         if (!restaurant) {
@@ -675,13 +725,25 @@ export default function RestaurantReservation() {
         }
     }, [id, restaurant]);
 
+    // useEffect(() => {
+    //     if (date && restaurant) {
+    //         AxiosInstance.get(`api/restaurants/${id}/availability/?date=${date}`)
+    //             .then(res => setAvailability(res.data))
+                
+    //             .catch(() => { });
+    //     }
+    // }, [date, restaurant, id]);
+
     useEffect(() => {
-        if (date && restaurant) {
-            AxiosInstance.get(`api/restaurants/${id}/availability/?date=${date}`)
-                .then(res => setAvailability(res.data))
-                .catch(() => { });
-        }
-    }, [date, restaurant, id]);
+    if (date && restaurant) {
+        AxiosInstance.get(`api/restaurants/${id}/availability/?date=${date}`)
+            .then(res => {
+                console.log("AVAILABILITY DATA 👉", res.data); // 👈 ADD THIS
+                setAvailability(res.data);
+            })
+            .catch(() => { });
+    }
+}, [date, restaurant, id]);
 
     if (loading) return (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", gap: "16px" }}>
@@ -697,95 +759,129 @@ export default function RestaurantReservation() {
     );
 
     const handleReservation = async () => {
-        if (!date || !time) { setError("Please select reservation date and time."); setShowErrorModal(true); return; }
+    if (!date || !time) { 
+        setError("Please select reservation date and time."); 
+        setShowErrorModal(true); 
+        return; 
+    }
+    
+    const selected = new Date(`${date}T${time}`);
+    if (selected < new Date(new Date().getTime() - 1 * 60 * 1000)) {
+        setError("❌ Booking is only available for future dates and times.");
+        setShowErrorModal(true);
+        return;
+    }
+
+    if (totalSeats === 0) {
+        setError("⚠️ Please select at least one table.");
+        setShowErrorModal(true);
+        return;
+    }
+
+    // ✅ NEW: Validate cost calculation
+    if (totalCost === 0 || isNaN(totalCost)) {
+        setError("⚠️ Unable to calculate booking cost. Please refresh and try again.");
+        setShowErrorModal(true);
+        return;
+    }
+
+    setIsReserving(true);
+    setError(null);
+
+    try {
+        // ✅ FIXED: Send table_selection as expected by backend
+        const resResponse = await AxiosInstance.post("api/reservations/", { 
+            restaurant: restaurant.id, 
+            reservation_date: date, 
+            reservation_time: time, 
+            special_requests: specialRequests,
+            has_baby: hasBaby,
+            table_selection: tableSelection,  // ✅ This is the key fix
+            total_seats: totalSeats,
+            number_of_guests: totalSeats,
+        });
         
-        const selected = new Date(`${date}T${time}`);
-        // Allow a 1-minute buffer in the frontend too
-        if (selected < new Date(new Date().getTime() - 1 * 60 * 1000)) {
-            setError("❌ Booking is only available for future dates and times.");
-            setShowErrorModal(true);
-            return;
-        }
+        const reservationId = resResponse.data.id;
+        const orderRes = await AxiosInstance.post("api/razorpay/order/", { 
+            amount: totalCost, 
+            booking_type: 'restaurant', 
+            booking_id: reservationId 
+        });
+        const order = orderRes.data;
 
-        if (availability[selectedTable] === 0) {
-            setError("⚠️ This table size is currently fully booked for the selected date.");
-            setShowErrorModal(true);
-            return;
-        }
-
-        setIsReserving(true);
-        setError(null);
-
-        try {
-            const resResponse = await AxiosInstance.post("api/reservations/", { 
-                restaurant: restaurant.id, 
-                reservation_date: date, 
-                reservation_time: time, 
-                number_of_guests: selectedTable,
-                tables_reserved: 1, 
-                table_capacity: selectedTable,
-                special_requests: specialRequests 
-            });
-            const reservationId = resResponse.data.id;
-            const orderRes = await AxiosInstance.post("api/razorpay/order/", { amount: totalCost, booking_type: 'restaurant', booking_id: reservationId });
-            const order = orderRes.data;
-
-            const options = {
-                key: import.meta.env.VITE_RAZR_KEY_ID || "",
-                amount: order.amount,
-                currency: order.currency,
-                name: "ServNex Restaurants",
-                description: `Table Reservation for ${restaurant.name}`,
-                order_id: order.id,
-                handler: async function (response) {
+        const options = {
+            key: import.meta.env.VITE_RAZR_KEY_ID || "",
+            amount: order.amount,
+            currency: order.currency,
+            name: "ServNex Restaurants",
+            description: `Table Reservation for ${restaurant.name}`,
+            order_id: order.id,
+            handler: async function (response) {
+                try {
+                    await AxiosInstance.post("api/razorpay/verify/", { 
+                        razorpay_order_id: response.razorpay_order_id, 
+                        razorpay_payment_id: response.razorpay_payment_id, 
+                        razorpay_signature: response.razorpay_signature 
+                    });
+                    setNewResvId(reservationId);
+                    setResvDetails(resResponse.data);
+                    toast.success("Payment Successful! Reservation Confirmed.");
+                    setShowSuccessModal(true);
+                } catch (err) { 
+                    toast.error("Payment verification failed. Please contact support."); 
+                }
+            },
+            theme: { color: "#6366f1" },
+            modal: {
+                ondismiss: async function () {
                     try {
-                        await AxiosInstance.post("api/razorpay/verify/", { razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature });
-                        setNewResvId(reservationId);
-                        setResvDetails(resResponse.data);
-                        toast.success("Payment Successful! Reservation Confirmed.");
-                        setShowSuccessModal(true);
-                    } catch (err) { toast.error("Payment verification failed. Please contact support."); }
-                },
-                theme: { color: "#6366f1" },
-                modal: {
-                    ondismiss: async function () {
-                        try {
-                            await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: "Payment was cancelled by the user." });
-                        } catch (err) { console.error("Failed to report cancellation:", err); }
+                        await AxiosInstance.post("api/razorpay/failure/", { 
+                            razorpay_order_id: order.id, 
+                            error_description: "Payment was cancelled by the user." 
+                        });
+                    } catch (err) { 
+                        console.error("Failed to report cancellation:", err); 
                     }
                 }
-            };
-
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', async function (response) {
-                toast.error(`Payment failed: ${response.error.description}`);
-                try {
-                    await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: response.error.description });
-                } catch (err) { console.error("Failed to report failure:", err); }
-            });
-            rzp.open();
-
-        } catch (err) {
-            let msg = "Reservation failed. Please try again.";
-            if (err.response && err.response.data) {
-                const data = err.response.data;
-                if (data.non_field_errors) msg = data.non_field_errors[0];
-                else if (data.detail) msg = data.detail;
-                else if (typeof data === 'object') {
-                    // Collect first error message found in any field
-                    const fieldVal = Object.values(data)[0];
-                    msg = Array.isArray(fieldVal) ? fieldVal[0] : JSON.stringify(data);
-                }
             }
-            setError(msg);
-            setShowErrorModal(true);
-        } finally { setIsReserving(false); }
-    };
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', async function (response) {
+            toast.error(`Payment failed: ${response.error.description}`);
+            try {
+                await AxiosInstance.post("api/razorpay/failure/", { 
+                    razorpay_order_id: order.id, 
+                    error_description: response.error.description 
+                });
+            } catch (err) { 
+                console.error("Failed to report failure:", err); 
+            }
+        });
+        rzp.open();
+
+    } catch (err) {
+        let msg = "Reservation failed. Please try again.";
+        if (err.response && err.response.data) {
+            const data = err.response.data;
+            if (data.non_field_errors) msg = data.non_field_errors[0];
+            else if (data.detail) msg = data.detail;
+            else if (typeof data === 'object') {
+                const fieldVal = Object.values(data)[0];
+                msg = Array.isArray(fieldVal) ? fieldVal[0] : JSON.stringify(data);
+            }
+        }
+        setError(msg);
+        setShowErrorModal(true);
+    } finally { 
+        setIsReserving(false); 
+    }
+};
 
     const handleDownloadReceipt = () => {
         if (!resvDetails) return;
         const printWindow = window.open('', '_blank');
-        const content = `<html><head><title>Reservation Receipt - ${restaurant.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Restaurants</h1><p>Table Reservation Confirmation</p></div><div class="details"><div class="item"><div class="label">Restaurant</div><div class="val">${restaurant.name}</div></div><div class="item"><div class="label">Reservation ID</div><div class="val">#SNX-RES-${resvDetails.id}</div></div><div class="item"><div class="label">Date</div><div class="val">${date}</div></div><div class="item"><div class="label">Time</div><div class="val">${time}</div></div><div class="item"><div class="label">Capacity</div><div class="val">${selectedTable} Seater</div></div><div class="item"><div class="label">Location</div><div class="val">${restaurant.area}, ${restaurant.city}</div></div></div><div class="total"><div class="label">Amount Paid</div><div class="price">₹${totalCost.toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for booking with ServNex. Please present this receipt at the restaurant.</p></body></html>`;
+        const content = `<html><head><title>Reservation Receipt - ${restaurant.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Restaurants</h1><p>Table Reservation Confirmation</p></div><div class="details"><div class="item"><div class="label">Restaurant</div><div class="val">${restaurant.name}</div></div><div class="item"><div class="label">Reservation ID</div><div class="val">#SNX-RES-${resvDetails.id}</div></div><div class="item"><div class="label">Date</div><div class="val">${date}</div></div><div class="item"><div class="label">Time</div><div class="val">${time}</div></div><div class="item"><div class="label">Capacity</div><div class="val">${totalSeats} Seater</div></div><div class="item"><div class="label">Location</div><div class="val">${restaurant.area}, ${restaurant.city}</div></div></div><div class="total"><div class="label">Amount Paid</div><div class="price">₹${totalCost.toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for booking with ServNex. Please present this receipt at the restaurant.</p></body></html>`;
         printWindow.document.write(content);
         printWindow.document.close();
         printWindow.print();
@@ -865,45 +961,91 @@ export default function RestaurantReservation() {
 
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Utensils size={20} color="#6366f1" /> Select Table Type</div>
-                            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: "16px" }}>
-                                {[4, 6, 8, 10].map(cap => {
-                                    const isAvailable = availability[cap] > 0;
-                                    const isActive = selectedTable === cap;
-                                    return (
-                                        <div
-                                            key={cap}
-                                            onClick={() => isAvailable && setSelectedTable(cap)}
-                                            className={`table-type-card ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
-                                            style={{
-                                                padding: "20px 10px",
-                                                borderRadius: "20px",
-                                                border: isActive ? "2px solid #6366f1" : "1.5px solid #e2e8f0",
-                                                background: isActive ? "#f5f3ff" : "#fff",
-                                                textAlign: "center",
-                                                cursor: isAvailable ? "pointer" : "not-allowed",
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                alignItems: "center",
-                                                gap: "8px"
-                                            }}
-                                        >
-                                            <div style={{ 
-                                                width: "48px", height: "48px", borderRadius: "14px", 
-                                                background: isActive ? "#6366f1" : "#f1f5f9",
-                                                display: "flex", alignItems: "center", justifyContent: "center",
-                                                color: isActive ? "#fff" : "#6366f1",
-                                                marginBottom: "4px"
-                                            }}>
-                                                <Utensils size={24} />
-                                            </div>
-                                            <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>{cap}-Seater</div>
-                                            <div style={{ fontSize: "0.75rem", fontWeight: 600, color: isAvailable ? "#10b981" : "#ef4444" }}>
-                                                {isAvailable ? `${availability[cap]} Available` : "Full House"}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: "16px" }}>
+    {[2, 4, 6, 8, 10].map(cap => {
+    const count = tableSelection[cap];
+    // const isAvailable = availability[cap] > 0;
+    const isAvailable = Number(availability[String(cap)]) > 0;
+
+    return (
+        <div
+            key={cap}
+            className={`table-type-card ${!isAvailable ? 'disabled' : ''}`}
+            style={{
+                padding: "20px 10px",
+                borderRadius: "20px",
+                border: "1.5px solid #e2e8f0",
+                background: "#fff",
+                textAlign: "center",
+                opacity: !isAvailable ? 0.5 : 1
+            }}
+        >
+            <div style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "14px",
+                background: "#f1f5f9",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#6366f1",
+                margin: "0 auto 8px"
+            }}>
+                <Utensils size={24} />
+            </div>
+
+            <div style={{ fontWeight: 700 }}>{cap}-Seater</div>
+
+            <div style={{
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                color: isAvailable ? "#10b981" : "#ef4444"
+            }}>
+                {/* {isAvailable ? `${availability[cap]} Available` : "Full"} */}
+                {isAvailable ? `${availability[String(cap)]} Available` : "Full"}
+            </div>
+
+            {/* Counter */}
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "10px",
+                marginTop: "10px"
+            }}>
+                <button
+                    onClick={() => handleDecrement(cap)}
+                    disabled={count === 0}
+                    className="counter-btn"
+                >
+                    <Minus size={14} />
+                </button>
+
+                <span style={{ fontWeight: 600 }}>{count}</span>
+
+                <button
+                    onClick={() => handleIncrement(cap)}
+                    disabled={!isAvailable}
+                    className="counter-btn"
+                >
+                    <Plus size={14} />
+                </button>
+            </div>
+
+            {count > 0 && (
+                <div style={{
+                    marginTop: "6px",
+                    fontSize: "0.8rem",
+                    color: "#6366f1",
+                    fontWeight: 600
+                }}>
+                    {cap}-Seater × {count}
+                </div>
+            )}
+        </div>
+    );
+})}
+</div>
 
                             {/* [REMOVED] Number of Tables counter as only single table is supported */}
                         </div>
@@ -917,6 +1059,23 @@ export default function RestaurantReservation() {
                                 value={specialRequests}
                                 onChange={e => setSpecialRequests(e.target.value)}
                             />
+
+
+                            <div style={{ marginTop: "16px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+            <input
+                type="checkbox"
+                checked={hasBaby}
+                onChange={(e) => setHasBaby(e.target.checked)}
+                style={{ width: "18px", height: "18px", cursor: "pointer" }}
+            />
+            <span style={{ fontWeight: 500 }}>Are you bringing a baby?</span>
+        </label>
+    </div>
+
+
+
+
                         </div>
                     </div>
 
@@ -947,12 +1106,22 @@ export default function RestaurantReservation() {
                             </div>
 
                             <div style={{ borderTop: "1px dashed #e2e8f0", paddingTop: "24px" }}>
-                                <div style={S.priceRow}>
+                                {/* <div style={S.priceRow}>
                                     <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Table Type ({selectedTable}-Seater)</span>
                                     <span style={{ fontWeight: 600 }}>Confirmed</span>
-                                </div>
+                                </div> */}
+
                                 <div style={S.priceRow}>
-                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Reservation Fee ({selectedTable}-Seater)</span>
+    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Tables</span>
+    <span style={{ fontWeight: 600 }}>
+        {Object.entries(tableSelection)
+            .filter(([_, count]) => count > 0)
+            .map(([cap, count]) => `${cap}×${count}`)
+            .join(", ") || "None"}
+    </span>
+</div>
+                                <div style={S.priceRow}>
+                                    <span style={{ color: "#64748b", fontSize: "0.95rem" }}>Reservation Fee ({totalSeats}-Seater)</span>
                                     <span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString()}</span>
                                 </div>
                                 <div style={S.priceRow}>
