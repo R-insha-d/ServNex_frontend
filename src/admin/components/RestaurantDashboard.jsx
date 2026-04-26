@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import AxiosInstance from "../../Component/AxiosInstance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import LocationPicker from "./LocationPicker";
 
 export default function RestaurantDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -23,6 +24,11 @@ export default function RestaurantDashboard() {
   const [menuImagePreview, setMenuImagePreview] = useState("");
   const [interiorImagePreview, setInteriorImagePreview] = useState("");
 
+  const [showMap, setShowMap] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState(null);
+
+  const [extraImagePreview, setExtraImagePreview] = useState("");
+
  const theme = {
   primary: "#667eea",     // main blue
   secondary: "#9333ea",   // purple
@@ -31,6 +37,9 @@ export default function RestaurantDashboard() {
 };
   const badgeChoices = ["Fine Dining", "Casual Dining", "Fast Food", "Cafe"];
   const priceRangeChoices = ["₹", "₹₹", "₹₹₹", "₹₹₹₹"];
+
+
+  
 
   const getImageUrl = (url) => {
     if (!url) return "";
@@ -181,6 +190,7 @@ export default function RestaurantDashboard() {
       name: myRestaurant.name || "", city: myRestaurant.city || "", area: myRestaurant.area || "",
       badge: myRestaurant.badge || "", cuisine_type: myRestaurant.cuisine_type || "",
       price_range: myRestaurant.price_range || "₹₹", average_cost_for_two: myRestaurant.average_cost_for_two || "",
+      tables_2_capacity: myRestaurant.tables_2_capacity || 0,
       tables_4_capacity: myRestaurant.tables_4_capacity || 0,
       tables_6_capacity: myRestaurant.tables_6_capacity || 0,
       tables_8_capacity: myRestaurant.tables_8_capacity || 0,
@@ -190,11 +200,14 @@ export default function RestaurantDashboard() {
       closing_time: myRestaurant.closing_time || "22:00",
       description: myRestaurant.description || "",
       keywords: myRestaurant.keywords || "",
-      image: null, menu_image: null, interior_image: null,
+      image: null, menu_image: null, interior_image: null, extra_image: null,
+      
     });
     setEditImagePreview(getImageUrl(myRestaurant.image));
     setMenuImagePreview(getImageUrl(myRestaurant.menu_image));
     setInteriorImagePreview(getImageUrl(myRestaurant.interior_image));
+
+    setExtraImagePreview(getImageUrl(myRestaurant.extra_image));
     setActiveTab("edit");
   };
 
@@ -206,41 +219,57 @@ export default function RestaurantDashboard() {
     }
   };
 
+
+// ------------------------------------
   const handleUpdateRestaurant = async () => {
-    if (!editForm.name || !editForm.city || !editForm.description) {
-      toast.warn("Name, city, and description are required.");
-      return;
-    }
-    const formData = new FormData();
-    Object.entries(editForm).forEach(([key, val]) => {
-      if (val instanceof File) formData.append(key, val);
-      else if (val !== null && val !== "") {
-        if (typeof val === "boolean") {
-          formData.append(key, val ? "true" : "false");
-        } else {
-          formData.append(key, val);
-        }
+  if (!editForm.name || !editForm.city || !editForm.description) {
+    toast.warn("Name, city, and description are required.");
+    return;
+  }
+
+  if (!selectedCoords) {
+    toast.warn("Please pick location from map.");
+    return;
+  }
+
+  console.log("Final coords:", selectedCoords);
+
+  const formData = new FormData();
+
+  Object.entries(editForm).forEach(([key, val]) => {
+    if (val instanceof File) {
+      formData.append(key, val);
+    } else if (val !== null && val !== "") {
+      if (typeof val === "boolean") {
+        formData.append(key, val ? "true" : "false");
+      } else {
+        formData.append(key, val);
       }
-    });
-    try {
-      const res = await AxiosInstance.patch(
-        "api/restaurants/me/",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      setMyRestaurant(res.data);
-      toast.success("Restaurant updated successfully!");
-      setActiveTab("dashboard");
-    } catch (error) {
-      console.error("Update error:", error.response?.data || error.message);
-      const serverError = error.response?.data;
-      let errorMsg = "Failed to update.";
-      if (typeof serverError === "object") {
-        errorMsg = Object.entries(serverError).map(([k, v]) => `${k}: ${v}`).join(", ");
-      }
-      toast.error(errorMsg);
     }
-  };
+  });
+
+  // ✅ ONLY USE MAP COORDS
+  formData.append("latitude", selectedCoords.latitude);
+  formData.append("longitude", selectedCoords.longitude);
+
+  try {
+    const res = await AxiosInstance.patch(
+      "api/restaurants/me/",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    setMyRestaurant(res.data);
+    toast.success("Restaurant updated successfully!");
+    setActiveTab("dashboard");
+  } catch (error) {
+    console.error("Update error:", error.response?.data || error.message);
+    toast.error("Failed to update.");
+  }
+};
+
+// ------------------------------------
+
 
   if (loading) return <div className="p-5 text-center"><div className="spinner-border me-2" />Loading Dashboard...</div>;
   if (!myRestaurant) return <div className="p-5 text-center">No Restaurant Profile Found.</div>;
@@ -437,6 +466,7 @@ export default function RestaurantDashboard() {
                         <div className="d-flex flex-column gap-2">
                           <div className="d-flex justify-content-between small mb-1"><span className="text-muted">Total Tables</span><strong>{myRestaurant.total_tables}</strong></div>
                           <div className="d-flex flex-column gap-1 bg-light p-2 rounded-3 mt-1" style={{ fontSize: "0.8rem" }}>
+                            <div className="d-flex justify-content-between"><span>2-Cap Tables:</span><span>{myRestaurant.tables_2_capacity}</span></div>
                             <div className="d-flex justify-content-between"><span>4-Cap Tables:</span><span>{myRestaurant.tables_4_capacity}</span></div>
                             <div className="d-flex justify-content-between"><span>6-Cap Tables:</span><span>{myRestaurant.tables_6_capacity}</span></div>
                             <div className="d-flex justify-content-between"><span>8-Cap Tables:</span><span>{myRestaurant.tables_8_capacity}</span></div>
@@ -728,6 +758,26 @@ export default function RestaurantDashboard() {
                       <label className="form-label small fw-semibold">Area</label>
                       <input type="text" className="form-control" value={editForm.area} onChange={(e) => setEditForm({ ...editForm, area: e.target.value })} />
                     </div>
+
+                    {/* --------- */}
+
+                     <div className="col-12">
+  <button
+    type="button"
+    className="btn btn-outline-primary"
+    onClick={() => setShowMap(!showMap)}
+  >
+    🗺️ Pick Location from Map
+  </button>
+</div>
+
+{showMap && (
+  <div className="col-12">
+    <LocationPicker onSelect={(coords) => setSelectedCoords(coords)} />
+  </div>
+)}
+
+                    {/* --------- */}
                     <div className="col-md-4">
                       <label className="form-label small fw-semibold">Badge / Type</label>
                       <select className="form-select" value={editForm.badge} onChange={(e) => setEditForm({ ...editForm, badge: e.target.value })}>
@@ -804,6 +854,21 @@ export default function RestaurantDashboard() {
                     <div className="col-12">
                       <label className="form-label small fw-semibold text-muted text-uppercase" style={{ letterSpacing: "0.05em", fontSize: "0.75rem" }}>Table Counts by Capacity</label>
                       <div className="row g-2">
+
+                        <div className="col-md-3">
+  <label className="form-label x-small">2-Guest Tables</label>
+  <input
+    type="number"
+    className="form-control form-control-sm"
+    min="0"
+    value={editForm.tables_2_capacity}
+    onChange={(e) =>
+      setEditForm({ ...editForm, tables_2_capacity: e.target.value })
+    }
+  />
+</div>
+
+                        
                         <div className="col-md-3">
                           <label className="form-label x-small">4-Guest Tables</label>
                           <input type="number" className="form-control form-control-sm" min="0" value={editForm.tables_4_capacity} onChange={(e) => setEditForm({ ...editForm, tables_4_capacity: e.target.value })} />
@@ -832,8 +897,10 @@ export default function RestaurantDashboard() {
                     </div>
                     {[
                       { label: "🖼️ Main Image", field: "image", preview: editImagePreview, setPreview: setEditImagePreview },
-                      { label: "📋 Menu Image", field: "menu_image", preview: menuImagePreview, setPreview: setMenuImagePreview },
+                      { label: "🧾 Extra Display Image", field: "extra_image", preview: extraImagePreview, setPreview: setExtraImagePreview },
                       { label: "🏛️ Interior Image", field: "interior_image", preview: interiorImagePreview, setPreview: setInteriorImagePreview },
+                      { label: "📋 Menu Image", field: "menu_image", preview: menuImagePreview, setPreview: setMenuImagePreview },
+
                     ].map(({ label, field, preview, setPreview }) => (
                       <div key={field} className="col-md-4">
                         <label className="form-label small fw-semibold">{label}</label>

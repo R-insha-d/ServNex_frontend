@@ -381,16 +381,18 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
     const scrollRef = React.useRef(null);
     const [activeIndex, setActiveIndex] = useState(items.indexOf(value) !== -1 ? items.indexOf(value) : 0);
     const scrollTimeout = React.useRef(null);
+    const isScrollingRef = React.useRef(false);
 
     useEffect(() => {
         const index = items.indexOf(value);
-        if (index !== -1 && scrollRef.current && activeIndex !== index) {
+        if (index !== -1 && scrollRef.current && activeIndex !== index && !isScrollingRef.current) {
             scrollRef.current.scrollTop = index * 40;
             setActiveIndex(index);
         }
     }, [value, items]);
 
     const handleScroll = (e) => {
+        isScrollingRef.current = true;
         const scrollTop = e.target.scrollTop;
         const index = Math.round(scrollTop / 40);
 
@@ -403,6 +405,7 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
 
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => {
+            isScrollingRef.current = false;
             const finalIndex = Math.round(scrollRef.current.scrollTop / 40);
             if (disabledItems.includes(items[finalIndex])) {
                 let validIndex = items.findIndex(item => !disabledItems.includes(item));
@@ -419,7 +422,18 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
         <div className="ios-wheel-column" ref={scrollRef} onScroll={handleScroll} style={{ flex }}>
             <div style={{ height: '80px', flexShrink: 0 }} />
             {items.map((item, idx) => (
-                <div key={idx} className={`ios-wheel-item ${idx === activeIndex ? 'active' : ''} ${disabledItems.includes(item) ? 'disabled' : ''}`}>
+                <div
+                    key={idx}
+                    className={`ios-wheel-item ${idx === activeIndex ? 'active' : ''} ${disabledItems.includes(item) ? 'disabled' : ''}`}
+                    onClick={() => {
+                        if (!disabledItems.includes(item)) {
+                            scrollRef.current.scrollTo({ top: idx * 40, behavior: 'smooth' });
+                            setActiveIndex(idx);
+                            onChange(item);
+                        }
+                    }}
+                    style={{ cursor: disabledItems.includes(item) ? 'not-allowed' : 'pointer' }}
+                >
                     {item}
                 </div>
             ))}
@@ -434,7 +448,7 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
     // Default value if not set
     const defaultDate = new Date();
     defaultDate.setMinutes(0); // Optional rounding
-    const dateObj = value && value.includes("T") ? new Date(value) : defaultDate;
+    const dateObj = value ? new Date(value.includes("T") ? value : value + "T00:00:00") : defaultDate;
 
     const dates = [];
     const dateValues = [];
@@ -465,31 +479,15 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
         }
     }
 
-    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-    const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
-    const periods = ["AM", "PM"];
-
     let currentDateVal = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
     if (!dateValues.includes(currentDateVal)) currentDateVal = dateValues[0]; // fallback
-
-    const currentHour24 = dateObj.getHours();
-    const currentHour12 = (currentHour24 % 12 || 12).toString();
-    const currentMinute = (Math.round(dateObj.getMinutes() / 5) * 5 % 60).toString().padStart(2, '0');
-    const currentPeriod = currentHour24 >= 12 ? "PM" : "AM";
 
     const updateValue = (newPart) => {
         const parts = {
             date: currentDateVal,
-            hour: currentHour12,
-            min: currentMinute,
-            period: currentPeriod,
             ...newPart
         };
-        let h = parseInt(parts.hour);
-        if (parts.period === "PM" && h < 12) h += 12;
-        if (parts.period === "AM" && h === 12) h = 0;
-        const newStr = `${parts.date}T${h.toString().padStart(2, '0')}:${parts.min}`;
-        onChange(newStr);
+        onChange(parts.date);
     };
 
     // Ensure state defaults on open if empty
@@ -499,9 +497,9 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
         }
     }, [isOpen]);
 
-    const displayStr = value ? new Date(value).toLocaleString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-    }) : 'Select Date & Time';
+    const displayStr = value ? new Date(value.includes("T") ? value : value + "T00:00:00").toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric'
+    }) : 'Select Date';
 
     return (
         <div style={{ position: "relative", marginBottom: "16px" }}>
@@ -521,7 +519,7 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
                     boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", overflow: "hidden"
                 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#64748b" }}>Select Date & Time</span>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#64748b" }}>Select Date</span>
                         <button onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} style={{ color: "#6366f1", fontWeight: 600, border: "none", background: "none", cursor: "pointer", fontSize: "1rem" }}>Done</button>
                     </div>
                     <div className="ios-datepicker-container" style={{ margin: 0, borderRadius: 0, gap: 0 }}>
@@ -530,9 +528,6 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
                             <div className="ios-wheel-gradient-top" />
                             <div className="ios-wheel-gradient-bottom" />
                             <WheelColumn flex={1.8} items={dates} value={dates[dateValues.indexOf(currentDateVal)] || dates[dates.findIndex(d => !disabledDates.includes(d))]} onChange={(val) => updateValue({ date: dateValues[dates.indexOf(val)] })} disabledItems={disabledDates} />
-                            <WheelColumn flex={0.7} items={hours} value={currentHour12} onChange={(val) => updateValue({ hour: val })} />
-                            <WheelColumn flex={0.7} items={minutes} value={currentMinute} onChange={(val) => updateValue({ min: val })} />
-                            <WheelColumn flex={0.7} items={periods} value={currentPeriod} onChange={(val) => updateValue({ period: val })} />
                         </div>
                     </div>
                 </div>
@@ -1482,9 +1477,9 @@ export default function HotelDetails() {
                                     onChange={(newIn) => {
                                         setCheckIn(newIn);
                                         // Handle check-out auto-update
-                                        const d = new Date(newIn);
+                                        const d = new Date(newIn.includes("T") ? newIn : newIn + "T00:00:00");
                                         d.setDate(d.getDate() + 1);
-                                        const nextDay = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}T12:00`;
+                                        const nextDay = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                                         if (!checkOut || checkOut <= newIn) {
                                             setCheckOut(nextDay);
                                         }
@@ -1557,7 +1552,12 @@ export default function HotelDetails() {
                     <textarea
                         placeholder="Write your review here..."
                         value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val.length <= 1000 && /^[a-zA-Z0-9\s,\.]*$/.test(val)) {
+                                setReviewComment(val);
+                            }
+                        }}
                         style={{
                             width: "100%", height: "100px", padding: "12px", borderRadius: "12px",
                             border: "1px solid #f1f5f9", fontFamily: "'Poppins', sans-serif", fontSize: "0.9rem",
@@ -1567,13 +1567,15 @@ export default function HotelDetails() {
 
                     <div style={{ marginBottom: "20px", textAlign: "left" }}>
                         <label style={{ fontSize: "0.8rem", fontWeight: 500, color: "#6366f1", display: "block", marginBottom: "8px" }}>
-                            Add Photos (Optional)
+                            Add Photo (Optional)
                         </label>
                         <input
                             type="file"
-                            multiple
                             accept="image/*"
-                            onChange={(e) => setReviewImages(Array.from(e.target.files))}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                setReviewImages(file ? [file] : []);
+                            }}
                             style={{ fontSize: "0.75rem", width: "100%", color: "#64748b" }}
                         />
                         {reviewImages.length > 0 && (
@@ -1659,11 +1661,12 @@ function RoomCard({ room, onBook }) {
                         : "Experience ultimate comfort in our beautifully appointed rooms with city views."}
                 </div>
 
-                {/* Price + Adults */}
+                {/* Price + Adults + Bed Type */}
                 <div style={{
                     display: "flex",
                     gap: isMobile ? "8px" : "10px",
                     marginBottom: "16px",
+                    flexWrap: "wrap",
                     flexDirection: isMobile ? "column" : "row"
                 }}>
                     <div style={{
@@ -1695,6 +1698,22 @@ function RoomCard({ room, onBook }) {
                     }}>
                         Capacity : {room.adults}
                     </div>
+                    {room.bed_type && (
+                        <div style={{
+                            flex: 1,
+                            textAlign: "center",
+                            padding: "6px 12px",
+                            borderRadius: "8px",
+                            border: "1px solid #f1f5f9",
+                            fontSize: "0.8rem",
+                            color: "#64748b",
+                            fontFamily: "'Poppins', sans-serif",
+                            background: "#f8fafc",
+                            fontWeight: 400
+                        }}>
+                            Bed : {room.bed_type}
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ marginTop: "auto" }}>

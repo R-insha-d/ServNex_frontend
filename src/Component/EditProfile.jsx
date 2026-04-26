@@ -152,9 +152,10 @@ const EditProfile = () => {
                     Email Address
                   </label>
                   <input
-                    {...register("email", { required: true })}
-                    className={errors.email ? "error" : ""}
-                    placeholder="you@example.com"
+                    {...register("email")}
+                    readOnly
+                    style={{ cursor: "not-allowed", opacity: 0.6 }}
+                    title="Email cannot be changed"
                   />
                 </div>
 

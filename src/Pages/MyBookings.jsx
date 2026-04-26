@@ -7,13 +7,21 @@ import { AppBar, Toolbar, Typography, Chip, Box, Card, CardContent, Button, Tabs
 import { Bell, Calendar, MapPin, Utensils, Hotel, Download, X, Star, DoorClosed, Scissors, Clock } from "lucide-react";
 import { toast } from 'react-toastify';
 
+const formatTime = (time) => {
+    if (!time) return "";
+    return new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+    });
+};
+
 export default function MyBookings() {
     const [bookings, setBookings] = useState([]);
     const [reservations, setReservations] = useState([]);
     const [salonQueues, setSalonQueues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(0);
-    const [menuImage, setMenuImage] = useState(null);
 
     // Review popup state
     const [reviewPopup, setReviewPopup] = useState(null); // holds reservation object
@@ -24,6 +32,7 @@ export default function MyBookings() {
 
     // Details Modal state
     const [detailsModal, setDetailsModal] = useState(null); // holds booking/reservation object
+    console.log(detailsModal);
 
     useEffect(() => {
         setLoading(true);
@@ -246,24 +255,16 @@ export default function MyBookings() {
 
     if (loading) return <div className="text-center mt-5">Loading your trips...</div>;
 
+    const getGoogleMapsLink = () => {
+    const area = detailsModal?.restaurant_area || "";
+    const city = detailsModal?.restaurant_city || "";
+
+    const query = encodeURIComponent(`${area}, ${city}`);
+    return `https://www.google.com/maps/search/?api=1&query=${query}`;
+};
+
     return (
         <div className="min-vh-100 bg-light">
-
-            {/* ── MENU IMAGE POPUP ── */}
-            {menuImage && (
-                <>
-                    <div onClick={() => setMenuImage(null)} style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.7)", zIndex: 9998, backdropFilter: "blur(4px)" }} />
-                    <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 9999, background: "white", borderRadius: "20px", padding: "20px", maxWidth: "800px", width: "95%", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h6 className="fw-bold mb-0">📋 Restaurant Menu</h6>
-                            <button onClick={() => setMenuImage(null)} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontWeight: 700, fontSize: "1rem", color: "#374151" }}>✕</button>
-                        </div>
-                        <div style={{ overflow: "auto", maxHeight: "80vh" }}>
-                            <img src={menuImage} alt="Menu" style={{ width: "100%", borderRadius: "12px", objectFit: "contain" }} />
-                        </div>
-                    </div>
-                </>
-            )}
 
             {/* ── REVIEW POPUP ── */}
             {reviewPopup && (
@@ -565,7 +566,7 @@ export default function MyBookings() {
                                                     <Calendar size={18} className="text-primary opacity-75" /> Date: {reservation.reservation_date}
                                                 </div>
                                                 <div className="d-flex align-items-center gap-3 fw-medium text-dark">
-                                                    <Calendar size={18} className="text-primary opacity-75" /> Time: {reservation.reservation_time}
+                                                    <Calendar size={18} className="text-primary opacity-75" /> Time: Time: {formatTime(reservation.reservation_time)}
                                                 </div>
                                                 <div className="d-flex align-items-center gap-3 fw-medium text-dark">
                                                     <Calendar size={18} className="text-primary opacity-75" /> Booked On: {new Date(reservation.created_at).toLocaleString()}
@@ -587,15 +588,7 @@ export default function MyBookings() {
                                                 </div>
                                             )}
 
-                                            {/* View Menu button */}
-                                            {reservation.menu_image && (
-                                                <button
-                                                    onClick={() => setMenuImage(getImageUrl(reservation.menu_image))}
-                                                    style={{ width: "100%", marginBottom: "8px", padding: "7px", borderRadius: "10px", border: "1px solid #ea580c", background: "#fff7ed", color: "#ea580c", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}
-                                                >
-                                                    📋 View Menu
-                                                </button>
-                                            )}
+
 
                                             {/* Write Review button — only for completed reservations */}
                                             {reservation.status === "completed" && (
@@ -821,29 +814,118 @@ export default function MyBookings() {
                                 </>
                             ) : (
                                 <>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Date</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal?.reservation_date}</Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Time</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal?.reservation_time}</Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Guests</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal?.number_of_guests} Persons</Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="caption" color="text.secondary">Status</Typography>
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight="600"
-                                            color={detailsModal?.payment_status !== 'paid' ? "error.main" : (detailsModal?.status === "cancelled" ? "error.main" : "success.main")}
-                                        >
-                                            {detailsModal?.payment_status !== 'paid' ? "Payment Failed" : detailsModal?.status}
-                                        </Typography>
-                                    </div>
-                                </>
+    <div>
+        
+        <Typography variant="caption" color="text.secondary">Date</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {detailsModal?.reservation_date}
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Time</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {new Date(`1970-01-01T${detailsModal?.reservation_time}`).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+})}
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Guests</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {detailsModal?.number_of_guests} Persons
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Status</Typography>
+        <Typography
+            variant="body2"
+            fontWeight="600"
+            color={
+                detailsModal?.status === "cancelled"
+                    ? "error.main"
+                    : "success.main"
+            }
+        >
+            {detailsModal?.status}
+        </Typography>
+    </div>
+
+
+    <div style={{ gridColumn: "span 2" }}>
+    <Typography variant="caption" color="text.secondary">
+        Location
+    </Typography>
+
+    <Box
+        onClick={() => window.open(getGoogleMapsLink(), "_blank")}
+        sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mt: 1,
+            p: 1.5,
+            borderRadius: "12px",
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            "&:hover": {
+                background: "#eef2ff",
+                borderColor: "#6366f1",
+                transform: "scale(1.02)"
+            }
+        }}
+    >
+        <Box display="flex" alignItems="center" gap={1}>
+            <MapPin size={18} style={{ color: "#6366f1" }} />
+            <Typography variant="body2" fontWeight="600">
+                View on Map
+            </Typography>
+        </Box>
+
+        
+
+        <Typography variant="caption" color="text.secondary">
+            Open
+        </Typography>
+    </Box>
+</div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Booked On</Typography>
+        <Typography variant="body2" fontWeight="600">
+            {new Date(detailsModal?.created_at).toLocaleString()}
+        </Typography>
+    </div>
+
+    <div>
+        <Typography variant="caption" color="text.secondary">Payment</Typography>
+        <Typography
+            variant="body2"
+            fontWeight="600"
+            color={detailsModal?.payment_status !== 'paid' ? "error.main" : "success.main"}
+        >
+            {detailsModal?.payment_status?.toUpperCase()}
+        </Typography>
+    </div>
+
+    {/* OPTIONAL: Special Request */}
+    {detailsModal?.special_request && (
+        <div style={{ gridColumn: "span 2" }}>
+            <Typography variant="caption" color="text.secondary">
+                Special Request
+            </Typography>
+            <Typography variant="body2" fontWeight="600">
+                {detailsModal.special_request}
+            </Typography>
+        </div>
+    )}
+</>
                             )}
                         </div>
                     </Box>

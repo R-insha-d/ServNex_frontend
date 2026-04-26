@@ -143,31 +143,66 @@ export default function RestaurantList() {
         const params = new URLSearchParams();
         if (search) params.append("q", search);
         if (city !== "All") params.append("city", city);
+
         if (coords.lat && coords.lng) {
-            params.append("lat", coords.lat);
-            params.append("lng", coords.lng);
-        }
+    params.append("lat", coords.lat);
+    params.append("lng", coords.lng);
+    params.append("radius", 5);
+} else {
+    if (city !== "All") params.append("city", city);
+}
         params.append("type", "restaurant");
 
-        AxiosInstance
-            .get(`api/search/?${params.toString()}`)
-            .then((res) => setRestaurantsData(res.data))
+
+        AxiosInstance.get(`api/restaurants/?${params.toString()}`)
+            .then((res) => {
+    const data = res.data;
+
+    // Handle both paginated and non-paginated responses
+    if (Array.isArray(data)) {
+        setRestaurantsData(data);
+    } else if (Array.isArray(data.results)) {
+        setRestaurantsData(data.results);
+    } else {
+        setRestaurantsData([]);
+    }
+})
             .catch((err) => console.error("Error fetching restaurants:", err))
             .finally(() => setLoading(false));
     }, [search, city, coords]);
 
     // Filtering logic (Main search is now backend-driven, local filtering only for badge and cuisine)
+    // const filteredRestaurants = useMemo(() => {
+    //     return restaurantsData.filter((restaurant) => {
+    //         const matchBadge =
+    //             badgeFilter === "All" || restaurant.badge === badgeFilter;
+
+    //         const matchCuisine =
+    //             cuisineFilter === "All" || restaurant.cuisine_type === cuisineFilter;
+
+    //         return matchBadge && matchCuisine;
+    //     });
+    // }, [restaurantsData, badgeFilter, cuisineFilter]);
+
     const filteredRestaurants = useMemo(() => {
-        return restaurantsData.filter((restaurant) => {
-            const matchBadge =
-                badgeFilter === "All" || restaurant.badge === badgeFilter;
+    return restaurantsData.filter((restaurant) => {
 
-            const matchCuisine =
-                cuisineFilter === "All" || restaurant.cuisine_type === cuisineFilter;
+        const matchSearch =
+            search === "" ||
+            restaurant.name?.toLowerCase().includes(search.toLowerCase()) ||
+            restaurant.city?.toLowerCase().includes(search.toLowerCase()) ||
+            restaurant.area?.toLowerCase().includes(search.toLowerCase()) ||
+            restaurant.cuisine_type?.toLowerCase().includes(search.toLowerCase());
 
-            return matchBadge && matchCuisine;
-        });
-    }, [restaurantsData, badgeFilter, cuisineFilter]);
+        const matchBadge =
+            badgeFilter === "All" || restaurant.badge === badgeFilter;
+
+        const matchCuisine =
+            cuisineFilter === "All" || restaurant.cuisine_type === cuisineFilter;
+
+        return matchSearch && matchBadge && matchCuisine;
+    });
+}, [restaurantsData, search, badgeFilter, cuisineFilter]);
 
     // Get user's current location
     const handleGetLocation = () => {

@@ -21,6 +21,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import CheckIcon from "@mui/icons-material/Check";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
+
 /* ─── Helpers (unchanged) ─── */
 const getInitTime = () => {
     const now = new Date();
@@ -497,6 +498,10 @@ function CustomDatePicker({ value, onChange, min }) {
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
 export default function RestaurantDetail() {
+    
+    /* ── Menu modal state (unchanged) ── */
+    const [menuOpen, setMenuOpen] = useState(false);
+
     const { id } = useParams();
     const navigate = useNavigate();
     const isMobile = useMediaQuery("(max-width:768px)");
@@ -526,6 +531,8 @@ export default function RestaurantDetail() {
     const [reviewImages, setReviewImages] = useState([]);
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+
+
     /* ── Fetch (unchanged) ── */
     useEffect(() => {
         setLoading(true);
@@ -547,7 +554,7 @@ export default function RestaurantDetail() {
 
     /* ── Carousel (unchanged) ── */
     const images = restaurant
-        ? [restaurant.image, restaurant.menu_image, restaurant.interior_image].filter(Boolean)
+        ? [restaurant.image, restaurant.extra_image, restaurant.interior_image].filter(Boolean)
         : [];
 
     useEffect(() => {
@@ -706,7 +713,7 @@ export default function RestaurantDetail() {
         }
         return { ...p, disabled };
     });
-    const tableOptions = [4, 6, 8, 10].map(n => ({
+    const tableOptions = [2,4, 6, 8, 10].map(n => ({
         value: n,
         label: `${n}-Seater Table${availability[n] !== undefined
             ? ` (${availability[n] === 0 ? "Full" : `${availability[n]} available`})`
@@ -1082,6 +1089,41 @@ export default function RestaurantDetail() {
                                     <Typography variant="body2" color="#475569">ServNex Verified Dining Property.</Typography>
                                 </div>
                             </Box>
+
+
+{/* ------------- */}
+
+                                <button
+    onClick={() => setMenuOpen(true)}
+    style={{
+        width: "100%",
+        marginTop: "6px",
+        marginBottom: "18px",
+        padding: "14px",
+        borderRadius: "14px",
+        border: "1.5px solid #6366f1",
+        background: "#fff",
+        color: "#6366f1",
+        fontFamily: "'Poppins', sans-serif",
+        fontSize: "0.95rem",
+        fontWeight: 600,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+    }}
+    onMouseEnter={e => {
+        e.currentTarget.style.background = "#6366f1";
+        e.currentTarget.style.color = "#fff";
+    }}
+    onMouseLeave={e => {
+        e.currentTarget.style.background = "#fff";
+        e.currentTarget.style.color = "#6366f1";
+    }}
+>
+    View Menu
+</button>
+
+{/* ------------- */}
+
                             <button
                                 className="reserve-main-btn"
                                 onClick={handleOpenModal}
@@ -1160,6 +1202,8 @@ export default function RestaurantDetail() {
                                 <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>
                                     Reserve a Table
                                 </div>
+
+
                                 <div style={{ fontSize: "0.82rem", color: "#94a3b8", fontWeight: 400, marginTop: "3px" }}>
                                     Select your preferred date, time & party size
                                 </div>
@@ -1350,6 +1394,82 @@ export default function RestaurantDetail() {
                     </Box>
                 </Box>
             </Modal>
+
+
+        <Modal open={menuOpen} onClose={() => setMenuOpen(false)}>
+    <Box
+        sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "95%", sm: "85%", md: "70%" },
+            maxHeight: "90vh",
+            bgcolor: "#fff",
+            borderRadius: "24px",
+            boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
+            overflow: "hidden",
+            outline: "none",
+            animation: "modalIn 0.25s ease",
+        }}
+    >
+        {/* Close Button */}
+        <IconButton
+            onClick={() => setMenuOpen(false)}
+            sx={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                bgcolor: "rgba(0,0,0,0.4)",
+                color: "#fff",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
+                zIndex: 2
+            }}
+        >
+            <IoClose size={22} />
+        </IconButton>
+
+        {/* Header */}
+        <Box
+            sx={{
+                p: 2,
+                textAlign: "center",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: 700,
+                fontSize: "1.1rem",
+                color: "#0f172a"
+            }}
+        >
+            Restaurant Menu
+        </Box>
+
+        {/* Image Container */}
+        <Box
+            sx={{
+                maxHeight: "75vh",
+                overflowY: "auto",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                background: "#f8fafc",
+                p: 2
+            }}
+        >
+            <img
+                src={restaurant.menu_image || "https://via.placeholder.com/800x1200?text=Menu+Not+Available"}
+                alt="Menu"
+                style={{
+                    width: "100%",
+                    maxWidth: "700px",
+                    borderRadius: "16px",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)"
+                }}
+            />
+        </Box>
+    </Box>
+</Modal>
+
+
         </div>
     );
 }

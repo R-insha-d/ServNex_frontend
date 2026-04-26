@@ -13,22 +13,22 @@ import {
     CircularProgress,
     Divider,
 } from "@mui/material";
-import { 
-    XCircle, 
-    AlertCircle, 
-    Bell, 
-    MapPin, 
-    ArrowRight, 
-    Search, 
-    Filter, 
-    Globe, 
-    Minus, 
-    Plus, 
-    Download, 
-    CheckCircle2, 
-    ShieldCheck, 
-    Zap, 
-    Clock, 
+import {
+    XCircle,
+    AlertCircle,
+    Bell,
+    MapPin,
+    ArrowRight,
+    Search,
+    Filter,
+    Globe,
+    Minus,
+    Plus,
+    Download,
+    CheckCircle2,
+    ShieldCheck,
+    Zap,
+    Clock,
     CreditCard,
     Info,
     ChevronRight,
@@ -205,11 +205,11 @@ const S = {
 const StepIndicator = ({ currentStep, isMobile }) => {
     const steps = ["Details", "Summary", "Payment"];
     return (
-        <div style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            gap: isMobile ? "8px" : "24px", 
+        <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: isMobile ? "8px" : "24px",
             marginBottom: isMobile ? "32px" : "48px",
             background: "#fff",
             padding: isMobile ? "12px 16px" : "20px 32px",
@@ -223,11 +223,11 @@ const StepIndicator = ({ currentStep, isMobile }) => {
                 <React.Fragment key={step}>
                     <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "6px" : "12px" }}>
                         <div style={{
-                            width: isMobile ? "28px" : "32px", 
-                            height: isMobile ? "28px" : "32px", 
+                            width: isMobile ? "28px" : "32px",
+                            height: isMobile ? "28px" : "32px",
                             borderRadius: "50%",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: isMobile ? "0.75rem" : "0.85rem", 
+                            fontSize: isMobile ? "0.75rem" : "0.85rem",
                             fontWeight: 700,
                             background: i <= currentStep ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" : "#f8fafc",
                             color: i <= currentStep ? "#fff" : "#94a3b8",
@@ -237,19 +237,19 @@ const StepIndicator = ({ currentStep, isMobile }) => {
                         }}>
                             {i < currentStep ? <CheckCircle2 size={isMobile ? 14 : 16} /> : i + 1}
                         </div>
-                        <span style={{ 
-                            fontSize: isMobile ? "0.8rem" : "0.9rem", 
-                            fontWeight: i <= currentStep ? 600 : 400, 
+                        <span style={{
+                            fontSize: isMobile ? "0.8rem" : "0.9rem",
+                            fontWeight: i <= currentStep ? 600 : 400,
                             color: i <= currentStep ? "#0f172a" : "#94a3b8",
                             letterSpacing: "0.02em",
                             display: isMobile && i !== currentStep ? "none" : "block"
                         }}>{step}</span>
                     </div>
                     {i < steps.length - 1 && (
-                        <div style={{ 
-                            width: isMobile ? "15px" : "40px", 
-                            height: "2px", 
-                            background: i < currentStep ? "#6366f1" : "#f1f5f9", 
+                        <div style={{
+                            width: isMobile ? "15px" : "40px",
+                            height: "2px",
+                            background: i < currentStep ? "#6366f1" : "#f1f5f9",
                             borderRadius: "2px",
                             flexShrink: 0
                         }} />
@@ -283,16 +283,18 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
     const scrollRef = React.useRef(null);
     const [activeIndex, setActiveIndex] = useState(items.indexOf(value) !== -1 ? items.indexOf(value) : 0);
     const scrollTimeout = React.useRef(null);
+    const isScrollingRef = React.useRef(false);
 
     useEffect(() => {
         const index = items.indexOf(value);
-        if (index !== -1 && scrollRef.current && activeIndex !== index) {
+        if (index !== -1 && scrollRef.current && activeIndex !== index && !isScrollingRef.current) {
             scrollRef.current.scrollTop = index * 40;
             setActiveIndex(index);
         }
     }, [value, items]);
 
     const handleScroll = (e) => {
+        isScrollingRef.current = true;
         const scrollTop = e.target.scrollTop;
         const index = Math.round(scrollTop / 40);
         if (index !== activeIndex && index >= 0 && index < items.length) {
@@ -304,6 +306,7 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
 
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => {
+            isScrollingRef.current = false;
             const finalIndex = Math.round(scrollRef.current.scrollTop / 40);
             if (disabledItems.includes(items[finalIndex])) {
                 let validIndex = items.findIndex(item => !disabledItems.includes(item));
@@ -320,7 +323,18 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
         <div className="ios-wheel-column" ref={scrollRef} onScroll={handleScroll} style={{ flex }}>
             <div style={{ height: '80px', flexShrink: 0 }} />
             {items.map((item, idx) => (
-                <div key={idx} className={`ios-wheel-item ${idx === activeIndex ? 'active' : ''} ${disabledItems.includes(item) ? 'disabled' : ''}`}>
+                <div
+                    key={idx}
+                    className={`ios-wheel-item ${idx === activeIndex ? 'active' : ''} ${disabledItems.includes(item) ? 'disabled' : ''}`}
+                    onClick={() => {
+                        if (!disabledItems.includes(item)) {
+                            scrollRef.current.scrollTo({ top: idx * 40, behavior: 'smooth' });
+                            setActiveIndex(idx);
+                            onChange(item);
+                        }
+                    }}
+                    style={{ cursor: disabledItems.includes(item) ? 'not-allowed' : 'pointer' }}
+                >
                     {item}
                 </div>
             ))}
@@ -331,65 +345,49 @@ const WheelColumn = ({ items, value, onChange, disabledItems = [], flex = 1 }) =
 
 const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
     const [isOpen, setIsOpen] = useState(false);
-    
+
     // Default value if not set
     const defaultDate = new Date();
     defaultDate.setMinutes(0); // Optional rounding
-    const dateObj = value && value.includes("T") ? new Date(value) : defaultDate;
-    
+    const dateObj = value ? new Date(value.includes("T") ? value : value + "T00:00:00") : defaultDate;
+
     const dates = [];
     const dateValues = [];
     const disabledDates = [];
-    
+
     const minDate = minDateRaw ? new Date(minDateRaw) : new Date();
     const startDate = new Date(minDate);
-    startDate.setHours(0,0,0,0);
-    
+    startDate.setHours(0, 0, 0, 0);
+
     const todayLabel = new Date();
-    todayLabel.setHours(0,0,0,0);
+    todayLabel.setHours(0, 0, 0, 0);
 
     for (let i = -60; i < 90; i++) {
         const d = new Date(startDate);
         d.setDate(startDate.getDate() + i);
         const ymd = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         dateValues.push(ymd);
-        
+
         let dLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         if (d.getTime() === todayLabel.getTime() && !minDateRaw) {
             dLabel = "Today";
         }
-        
+
         dates.push(dLabel);
         if (d.getTime() < startDate.getTime()) {
             disabledDates.push(dLabel);
         }
     }
 
-    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-    const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
-    const periods = ["AM", "PM"];
-
     let currentDateVal = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
     if (!dateValues.includes(currentDateVal)) currentDateVal = dateValues[0]; // fallback
-    
-    const currentHour24 = dateObj.getHours();
-    const currentHour12 = (currentHour24 % 12 || 12).toString();
-    const currentMinute = (Math.round(dateObj.getMinutes() / 5) * 5 % 60).toString().padStart(2, '0');
-    const currentPeriod = currentHour24 >= 12 ? "PM" : "AM";
 
     const updateValue = (newPart) => {
         const parts = {
             date: currentDateVal,
-            hour: currentHour12,
-            min: currentMinute,
-            period: currentPeriod,
             ...newPart
         };
-        let h = parseInt(parts.hour);
-        if (parts.period === "PM" && h < 12) h += 12;
-        if (parts.period === "AM" && h === 12) h = 0;
-        const newStr = `${parts.date}T${h.toString().padStart(2, '0')}:${parts.min}`;
-        onChange(newStr);
+        onChange(parts.date);
     };
 
     useEffect(() => {
@@ -398,15 +396,15 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
         }
     }, [isOpen]);
 
-    const displayStr = value ? new Date(value).toLocaleString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-    }) : 'Select Date & Time';
+    const displayStr = value ? new Date(value.includes("T") ? value : value + "T00:00:00").toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric'
+    }) : 'Select Date';
 
     return (
         <div style={{ position: "relative" }}>
             <span style={S.formLabel}>{label}</span>
-            <div 
-                className="booking-input" 
+            <div
+                className="booking-input"
                 onClick={() => setIsOpen(!isOpen)}
                 style={{ ...S.input, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", height: "54px", boxSizing: "border-box" }}
             >
@@ -421,7 +419,7 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
                     boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", overflow: "hidden"
                 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#64748b" }}>Select Date & Time</span>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#64748b" }}>Select Date</span>
                         <button onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} style={{ color: "#6366f1", fontWeight: 600, border: "none", background: "none", cursor: "pointer", fontSize: "1rem" }}>Done</button>
                     </div>
                     <div className="ios-datepicker-container" style={{ margin: 0, borderRadius: 0, gap: 0 }}>
@@ -430,9 +428,6 @@ const IOSDateTimePickerPopup = ({ label, value, onChange, minDateRaw }) => {
                             <div className="ios-wheel-gradient-top" />
                             <div className="ios-wheel-gradient-bottom" />
                             <WheelColumn flex={1.8} items={dates} value={dates[dateValues.indexOf(currentDateVal)] || dates[dates.findIndex(d => !disabledDates.includes(d))]} onChange={(val) => updateValue({ date: dateValues[dates.indexOf(val)] })} disabledItems={disabledDates} />
-                            <WheelColumn flex={0.7} items={hours} value={currentHour12} onChange={(val) => updateValue({ hour: val })} />
-                            <WheelColumn flex={0.7} items={minutes} value={currentMinute} onChange={(val) => updateValue({ min: val })} />
-                            <WheelColumn flex={0.7} items={periods} value={currentPeriod} onChange={(val) => updateValue({ period: val })} />
                         </div>
                     </div>
                 </div>
@@ -453,6 +448,7 @@ export default function HotelBooking() {
     const [startDate, setStartDate] = useState(checkIn || "");
     const [endDate, setEndDate] = useState(checkOut || "");
     const [guests, setGuests] = useState(2);
+    const [children, setChildren] = useState(0);
     const [roomsBooked, setRoomsBooked] = useState(1);
     const [error, setError] = useState(null);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -465,7 +461,14 @@ export default function HotelBooking() {
     const [reviewComment, setReviewComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [couponCode, setCouponCode] = useState("");
+    const [appliedCoupon, setAppliedCoupon] = useState("");
     const [availableCoupons, setAvailableCoupons] = useState([]);
+
+    // Guest booking flow
+    const [showGuestModal, setShowGuestModal] = useState(false);
+    const [bookingFor, setBookingFor] = useState(null); // "self" | "other"
+    const [guestName, setGuestName] = useState("");
+    const [guestPhone, setGuestPhone] = useState("");
     const [priceDetails, setPriceDetails] = useState({
         total_original_price: 0,
         discount_amount: 0,
@@ -476,19 +479,51 @@ export default function HotelBooking() {
     const isMobile = useMediaQuery("(max-width:768px)");
     const isTablet = useMediaQuery("(max-width:1024px)");
 
-    const updateGuests = (val) => {
-        const newVal = Math.max(1, val);
-        setGuests(newVal);
-        const autoRooms = Math.ceil(newVal / 2);
-        const maxR = remainingRooms != null ? Math.min(newVal, remainingRooms) : newVal;
-        setRoomsBooked(Math.min(autoRooms, maxR));
+    const getCapacity = () => room && room.adults ? room.adults : 2;
+    const getChildrenCapacity = () => room && room.children ? room.children : 0;
+
+    const updateChildren = (val) => {
+        const newVal = Math.max(0, val);
+        const childCap = getChildrenCapacity();
+        if (childCap > 0) {
+            const maxChildrenAllowed = childCap * roomsBooked;
+            if (newVal > maxChildrenAllowed) return;
+        } else if (childCap === 0 && newVal > 0) {
+            return; // No children allowed
+        }
+        setChildren(newVal);
     };
 
-    const maxRooms = remainingRooms != null ? Math.min(guests, remainingRooms) : guests;
+    const updateGuests = (val) => {
+        const capacity = getCapacity();
+        if (remainingRooms != null) {
+            if (val > remainingRooms * capacity) return;
+        }
+        const newVal = Math.max(1, val);
+        setGuests(newVal);
+        const autoRooms = Math.ceil(newVal / capacity);
+        const childCap = getChildrenCapacity();
+        let childNeededRooms = 0;
+        if (childCap > 0 && children > 0) {
+            childNeededRooms = Math.ceil(children / childCap);
+        }
+        const neededRooms = Math.max(autoRooms, childNeededRooms);
+        const maxR = remainingRooms != null ? Math.min(newVal, remainingRooms) : newVal;
+        setRoomsBooked(Math.min(neededRooms, maxR));
+    };
+
+    const maxRooms = remainingRooms != null ? Math.min(guests + children, remainingRooms) : guests;
 
     const updateRooms = (val) => {
         const newVal = Math.max(1, val);
-        if (newVal < Math.ceil(guests / 2)) return;
+        const capacity = getCapacity();
+        const childCap = getChildrenCapacity();
+        const minRoomsForAdults = Math.ceil(guests / capacity);
+        let minRoomsForChildren = 0;
+        if (childCap > 0 && children > 0) {
+            minRoomsForChildren = Math.ceil(children / childCap);
+        }
+        if (newVal < Math.max(minRoomsForAdults, minRoomsForChildren)) return;
         if (newVal > maxRooms) return;
         setRoomsBooked(newVal);
     };
@@ -520,16 +555,16 @@ export default function HotelBooking() {
         if (startDate && endDate && hotel) {
             const fetchPricePreview = async () => {
                 try {
-                    const payload = { hotel: hotel.id, check_in: startDate.split("T")[0], check_out: endDate.split("T")[0], rooms_booked: roomsBooked, coupon_code: couponCode };
+                    const payload = { hotel: hotel.id, check_in: startDate.split("T")[0], check_out: endDate.split("T")[0], rooms_booked: roomsBooked, coupon_code: appliedCoupon };
                     if (room) payload.room = room.id;
                     const res = await AxiosInstance.post("api/bookings/price_preview/", payload);
                     setPriceDetails(res.data);
-                } catch (err) {}
+                } catch (err) { }
             };
             const timer = setTimeout(fetchPricePreview, 500);
             return () => clearTimeout(timer);
         }
-    }, [startDate, endDate, roomsBooked, hotel, room, couponCode]);
+    }, [startDate, endDate, roomsBooked, hotel, room, appliedCoupon]);
 
     useEffect(() => {
         if (id) {
@@ -540,7 +575,7 @@ export default function HotelBooking() {
                     const res = await AxiosInstance.get(url);
                     const data = res.data;
                     setAvailableCoupons(Array.isArray(data) ? data : (data.results || []));
-                } catch (error) {}
+                } catch (error) { }
             };
             fetchAvailableCoupons();
         }
@@ -559,18 +594,38 @@ export default function HotelBooking() {
         </div>
     );
 
-    const handleBooking = async () => {
-        if (!startDate || !endDate) { setError("Please select Check-in and Check-out dates."); return; }
+    const handleConfirmClick = () => {
+        if (!startDate || !endDate) { setError("Please select Check-in and Check-out dates."); setShowErrorModal(true); return; }
         const today = new Date().toISOString().split("T")[0];
         const sdDate = startDate.split("T")[0];
         const edDate = endDate.split("T")[0];
-        if (sdDate < today) { setError("Check-in date cannot be in the past."); return; }
-        if (sdDate >= edDate) { setError("Check-out date must be after check-in date."); return; }
+        if (sdDate < today) { setError("Check-in date cannot be in the past."); setShowErrorModal(true); return; }
+        if (sdDate >= edDate) { setError("Check-out date must be after check-in date."); setShowErrorModal(true); return; }
+        setShowGuestModal(true);
+    };
+
+    const handleGuestContinue = (type) => {
+        if (type === "other" && (!guestName.trim() || !guestPhone.trim())) {
+            toast.error("Please enter guest name and phone number.");
+            return;
+        }
+        setBookingFor(type);
+        setShowGuestModal(false);
+        handleBooking(type);
+    };
+
+    const handleBooking = async (type) => {
         setIsBooking(true);
         setError(null);
         try {
-            const payload = { hotel: hotel.id, check_in: sdDate, check_out: edDate, number_of_guests: guests, rooms_booked: roomsBooked, coupon_code: couponCode };
+            const sdDate = startDate.split("T")[0];
+            const edDate = endDate.split("T")[0];
+            const payload = { hotel: hotel.id, check_in: sdDate, check_out: edDate, number_of_guests: guests, number_of_children: children, rooms_booked: roomsBooked, coupon_code: appliedCoupon };
             if (room) payload.room = room.id;
+            if (type === "other") {
+                payload.guest_name = guestName.trim();
+                payload.guest_phone = guestPhone.trim();
+            }
             const bookingRes = await AxiosInstance.post("api/bookings/", payload);
             const bookingId = bookingRes.data.id;
             const orderRes = await AxiosInstance.post("api/razorpay/order/", { amount: Math.round(Number(priceDetails.final_price) * 1.02), booking_type: 'hotel', booking_id: bookingId });
@@ -593,8 +648,8 @@ export default function HotelBooking() {
                 },
                 theme: { color: "#6366f1" }
             };
-            const rzp = new window.Razorpay({ ...options, modal: { ondismiss: async function () { try { await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: "Payment was cancelled by the user." }); } catch (err) {} } } });
-            rzp.on('payment.failed', async function (response) { toast.error(`Payment failed: ${response.error.description}`); try { await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: response.error.description }); } catch (err) {} });
+            const rzp = new window.Razorpay({ ...options, modal: { ondismiss: async function () { try { await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: "Payment was cancelled by the user." }); } catch (err) { } } } });
+            rzp.on('payment.failed', async function (response) { toast.error(`Payment failed: ${response.error.description}`); try { await AxiosInstance.post("api/razorpay/failure/", { razorpay_order_id: order.id, error_description: response.error.description }); } catch (err) { } });
             rzp.open();
         } catch (err) {
             let msg = "Booking failed. Please try again.";
@@ -623,10 +678,63 @@ export default function HotelBooking() {
     const handleDownloadReceipt = () => {
         if (!bookingDetails) return;
         const printWindow = window.open('', '_blank');
-        const content = `<html><head><title>Booking Receipt - ${hotel.name}</title><style>body { font-family: 'Poppins', sans-serif; padding: 40px; color: #333; }.header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }.details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }.item { margin-bottom: 15px; }.label { font-weight: bold; color: #666; font-size: 0.9rem; text-transform: uppercase; }.val { font-size: 1.1rem; margin-top: 5px; }.total { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: right; }.price { font-size: 2rem; color: #6366f1; font-weight: bold; }</style></head><body><div class="header"><h1>ServNex Hotels</h1><p>Booking Confirmation Receipt</p></div><div class="details"><div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div><div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div><div class="item"><div class="label">Check In</div><div class="val">${startDate.split("T")[0]}</div></div><div class="item"><div class="label">Check Out</div><div class="val">${endDate.split("T")[0]}</div></div><div class="item"><div class="label">Guests</div><div class="val">${guests}</div></div><div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div></div><div class="total"><div class="label">Total Amount Paid</div><div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.02).toLocaleString()}</div></div><p style="margin-top: 50px; font-size: 0.8rem; color: #888;">Thank you for choosing ServNex. This is an electronically generated confirmation.</p></body></html>`;
+        const content = `<html>
+        <head>
+            <title>Booking Receipt - ${hotel.name}</title>
+            <style>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: auto; }
+                .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;}
+                .header h1 { margin: 0; color: #6366f1; font-size: 28px; }
+                .header p { margin: 5px 0 0 0; color: #888; font-size: 14px; }
+                .status { background: #10b981; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+                .details { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; background: #f8fafc; padding: 30px; border-radius: 16px; margin-bottom: 30px; }
+                .item { display: flex; flex-direction: column; }
+                .label { font-weight: bold; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+                .val { font-size: 1.1rem; color: #0f172a; font-weight: 500; }
+                .total-section { display: flex; justify-content: flex-end; margin-top: 40px; }
+                .total-box { background: #6366f1; color: white; padding: 30px; border-radius: 16px; text-align: right; min-width: 300px; }
+                .total-box .label { color: rgba(255,255,255,0.8); }
+                .total-box .price { font-size: 2.5rem; font-weight: bold; margin-top: 10px; }
+                .footer { margin-top: 50px; font-size: 0.85rem; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+            </style>
+        </head>
+        <body onload="window.print(); window.setTimeout(window.close, 500);">
+            <div class="header">
+                <div>
+                    <h1>ServNex Hotels</h1>
+                    <p>Booking Confirmation Receipt</p>
+                </div>
+                <div class="status">CONFIRMED</div>
+            </div>
+            <div class="details">
+                <div class="item"><div class="label">Hotel</div><div class="val">${hotel.name}</div></div>
+                <div class="item"><div class="label">Booking ID</div><div class="val">#SNX-HTL-${bookingDetails.id}</div></div>
+                <div class="item"><div class="label">Check In</div><div class="val">${startDate.split("T")[0]}</div></div>
+                <div class="item"><div class="label">Check Out</div><div class="val">${endDate.split("T")[0]}</div></div>
+                <div class="item"><div class="label">Room Type</div><div class="val">${room ? room.room_type : 'Standard'}</div></div>
+                <div class="item"><div class="label">Rooms Booked</div><div class="val">${roomsBooked}</div></div>
+                <div class="item"><div class="label">Adults</div><div class="val">${guests} (Room Cap: ${getCapacity()})</div></div>
+                <div class="item"><div class="label">Children</div><div class="val">${children} (Room Cap: ${getChildrenCapacity()})</div></div>
+                ${bookingFor === "other" ? `
+                <div class="item" style="grid-column: span 2; background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px solid #fde68a;">
+                    <div class="label" style="color: #d97706;">Booked For (Guest)</div>
+                    <div class="val">${guestName} &bull; ${guestPhone}</div>
+                </div>` : ''}
+                <div class="item"><div class="label">Booked Date</div><div class="val">${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</div></div>
+            </div>
+            <div class="total-section">
+                <div class="total-box">
+                    <div class="label">Total Amount Paid</div>
+                    <div class="price">₹${Math.round(Number(priceDetails.final_price) * 1.02).toLocaleString()}</div>
+                </div>
+            </div>
+            <div class="footer">
+                Thank you for choosing ServNex. This is an electronically generated confirmation ticket.
+            </div>
+        </body>
+        </html>`;
         printWindow.document.write(content);
         printWindow.document.close();
-        printWindow.print();
     };
 
     const totalCost = Math.round(Number(priceDetails.final_price) * 1.02);
@@ -690,35 +798,43 @@ export default function HotelBooking() {
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Clock size={20} color="#6366f1" /> Stay Duration</div>
                             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "24px" }}>
-                                <IOSDateTimePickerPopup 
-                                    label="Check-In" 
-                                    value={startDate} 
+                                <IOSDateTimePickerPopup
+                                    label="Check-In"
+                                    value={startDate}
                                     onChange={(newIn) => {
                                         setStartDate(newIn);
-                                        const d = new Date(newIn);
+                                        const d = new Date(newIn.includes("T") ? newIn : newIn + "T00:00:00");
                                         d.setDate(d.getDate() + 1);
-                                        const nextDay = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}T12:00`;
+                                        const nextDay = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                                         if (!endDate || endDate <= newIn) setEndDate(nextDay);
-                                    }} 
+                                    }}
                                 />
-                                <IOSDateTimePickerPopup 
-                                    label="Check-Out" 
-                                    value={endDate} 
-                                    onChange={setEndDate} 
-                                    minDateRaw={startDate ? startDate.split("T")[0] : null} 
+                                <IOSDateTimePickerPopup
+                                    label="Check-Out"
+                                    value={endDate}
+                                    onChange={setEndDate}
+                                    minDateRaw={startDate ? startDate.split("T")[0] : null}
                                 />
                             </div>
                         </div>
 
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Zap size={20} color="#6366f1" /> Guests & Rooms</div>
-                            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? "16px" : "24px" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: isMobile ? "16px" : "24px" }}>
                                 <div style={{ textAlign: "center", padding: isMobile ? "16px" : "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
                                     <div style={{ ...S.formLabel, textAlign: "center", fontSize: isMobile ? "0.75rem" : "0.8rem" }}>Number of Guests</div>
                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: isMobile ? "12px" : "20px", marginTop: "12px" }}>
                                         <button className="counter-btn" style={S.counterBtn} disabled={guests <= 1} onClick={() => updateGuests(guests - 1)}><Minus size={isMobile ? 14 : 16} /></button>
                                         <span style={{ fontSize: isMobile ? "1.1rem" : "1.2rem", fontWeight: 600, minWidth: isMobile ? "40px" : "80px", textAlign: "center" }}>{guests}</span>
-                                        <button className="counter-btn" style={S.counterBtn} onClick={() => updateGuests(guests + 1)}><Plus size={isMobile ? 14 : 16} /></button>
+                                        <button className="counter-btn" style={S.counterBtn} disabled={remainingRooms != null && guests >= remainingRooms * getCapacity()} onClick={() => updateGuests(guests + 1)}><Plus size={isMobile ? 14 : 16} /></button>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: "center", padding: isMobile ? "16px" : "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
+                                    <div style={{ ...S.formLabel, textAlign: "center", fontSize: isMobile ? "0.75rem" : "0.8rem" }}>Number of Children</div>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: isMobile ? "12px" : "20px", marginTop: "12px" }}>
+                                        <button className="counter-btn" style={S.counterBtn} disabled={children <= 0} onClick={() => updateChildren(children - 1)}><Minus size={isMobile ? 14 : 16} /></button>
+                                        <span style={{ fontSize: isMobile ? "1.1rem" : "1.2rem", fontWeight: 600, minWidth: isMobile ? "40px" : "80px", textAlign: "center" }}>{children}</span>
+                                        <button className="counter-btn" style={S.counterBtn} disabled={(getChildrenCapacity() > 0 && children >= getChildrenCapacity() * roomsBooked) || getChildrenCapacity() === 0} onClick={() => updateChildren(children + 1)}><Plus size={isMobile ? 14 : 16} /></button>
                                     </div>
                                 </div>
                                 <div style={{ textAlign: "center", padding: isMobile ? "16px" : "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
@@ -750,8 +866,8 @@ export default function HotelBooking() {
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Info size={20} color="#6366f1" /> Cancellation Policy</div>
                             <p style={{ color: "#64748b", fontSize: "0.9rem", lineHeight: 1.6, margin: 0 }}>
-                                We understand that plans can change. You can cancel your reservation free of charge up to 24 hours before your scheduled check-in time. 
-                                Cancellations made within 24 hours of check-in will be charged for the first night of the stay. 
+                                We understand that plans can change. You can cancel your reservation free of charge up to 24 hours before your scheduled check-in time.
+                                Cancellations made within 24 hours of check-in will be charged for the first night of the stay.
                                 For special events or non-refundable rates, different policies may apply.
                             </p>
                         </div>
@@ -761,13 +877,16 @@ export default function HotelBooking() {
                     <div style={S.sidebar}>
                         <div style={S.summaryCard}>
                             <h3 style={{ fontSize: "1.2rem", fontWeight: 600, marginBottom: "24px", color: "#0f172a" }}>Booking Summary</h3>
-                            
+
                             <div style={{ background: "#f8fafc", borderRadius: "16px", padding: "20px", marginBottom: "24px" }}>
                                 <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
                                     <img src={room ? room.image : hotel.image} style={{ width: "80px", height: "60px", borderRadius: "10px", objectFit: "cover" }} alt="Small" />
                                     <div>
                                         <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>{hotel.name}</div>
                                         <div style={{ fontSize: "0.8rem", color: "#64748b" }}>{room ? room.room_type : "Standard Room"}</div>
+                                        {room && room.bed_type && (
+                                            <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "2px" }}>🛏 {room.bed_type} Bed</div>
+                                        )}
                                     </div>
                                 </div>
                                 <Divider sx={{ my: 2, opacity: 0.05 }} />
@@ -786,32 +905,32 @@ export default function HotelBooking() {
                             <div style={{ marginBottom: "24px" }}>
                                 <div style={S.formLabel}>Promo Code</div>
                                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Enter code" 
-                                        style={{ 
-                                            ...S.input, 
+                                    <input
+                                        type="text"
+                                        placeholder="Enter code"
+                                        style={{
+                                            ...S.input,
                                             width: "auto",
-                                            padding: "0 16px", 
-                                            height: "50px", 
+                                            padding: "0 16px",
+                                            height: "50px",
                                             flex: 1,
                                             boxSizing: "border-box",
                                             margin: 0
-                                        }} 
-                                        value={couponCode} 
-                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())} 
+                                        }}
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                     />
-                                    <button 
-                                        style={{ 
+                                    <button
+                                        style={{
                                             height: "50px",
                                             width: "auto",
                                             flex: 1,
                                             padding: "0 16px",
-                                            borderRadius: "12px", 
-                                            background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", 
-                                            color: "#fff", 
-                                            border: "none", 
-                                            fontSize: "0.85rem", 
+                                            borderRadius: "12px",
+                                            background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                                            color: "#fff",
+                                            border: "none",
+                                            fontSize: "0.85rem",
                                             fontWeight: 700,
                                             letterSpacing: "0.05em",
                                             cursor: "pointer",
@@ -831,6 +950,7 @@ export default function HotelBooking() {
                                             e.currentTarget.style.transform = "translateY(0)";
                                             e.currentTarget.style.boxShadow = "0 4px 15px rgba(99, 102, 241, 0.25)";
                                         }}
+                                        onClick={() => setAppliedCoupon(couponCode)}
                                     >
                                         APPLY
                                     </button>
@@ -864,7 +984,7 @@ export default function HotelBooking() {
                             </div>
 
                             <div style={{ marginTop: "32px" }}>
-                                <button className="premium-btn" onClick={handleBooking} disabled={isBooking}>
+                                <button className="premium-btn" onClick={handleConfirmClick} disabled={isBooking}>
                                     <span>{isBooking ? "Processing..." : "Confirm Reservation "}</span>
                                 </button>
                             </div>
@@ -875,11 +995,11 @@ export default function HotelBooking() {
                             </div>
                         </div>
 
-                            <div style={{ display: "flex", justifyContent: "center", gap: "20px", opacity: 0.5, marginTop: "24px" }}>
-                                <CreditCard size={24} />
-                                <ShieldCheck size={24} />
-                                <Zap size={24} />
-                            </div>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "20px", opacity: 0.5, marginTop: "24px" }}>
+                            <CreditCard size={24} />
+                            <ShieldCheck size={24} />
+                            <Zap size={24} />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -896,21 +1016,137 @@ export default function HotelBooking() {
             </Modal>
 
             <Modal open={showSuccessModal} onClose={() => navigate("/my-bookings")}>
-                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: { xs: '90%', sm: 500 }, bgcolor: '#fff', p: 5, borderRadius: "24px", textAlign: 'center', outline: 'none' }}>
+                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: { xs: '95%', sm: 600 }, bgcolor: '#fff', p: { xs: 3, sm: 5 }, borderRadius: "24px", textAlign: 'center', outline: 'none', maxHeight: '90vh', overflowY: 'auto' }}>
                     <AnimatedCheck /><Typography variant="h4" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", color: "#10b981", mb: 1 }}>Confirmed!</Typography>
                     <Typography sx={{ color: '#64748b', fontSize: '1rem', mb: 3, fontFamily: "'Poppins', sans-serif" }}>Your stay at <strong>{hotel?.name}</strong> is reserved.</Typography>
                     {bookingDetails && (
-                        <Box sx={{ background: "#f8fafc", p: 2.5, borderRadius: "16px", mb: 3, textAlign: "left" }}>
-                            <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>ID: #SNX-${bookingDetails.id}</Typography>
-                            <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>Paid: ₹{totalCost.toLocaleString()}</Typography>
+                        <Box sx={{ background: "#f8fafc", p: 3, borderRadius: "16px", mb: 4, textAlign: "left", border: "1px solid #f1f5f9" }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>BOOKING ID</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", mb: 1.5 }}>#SNX-${bookingDetails.id}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>BOOKED DATE</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", mb: 1.5 }}>{new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>CHECK-IN</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", mb: 1.5 }}>{startDate.split("T")[0]}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>CHECK-OUT</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", mb: 1.5 }}>{endDate.split("T")[0]}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>ROOMS</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", mb: 1.5 }}>{roomsBooked} x {room ? room.room_type : 'Standard'}</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>GUESTS</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif", mb: 1.5 }}>{guests} Adults, {children} Children</Typography>
+                                </div>
+                                {bookingFor === "other" && (
+                                    <div style={{ gridColumn: 'span 2', background: '#fffbeb', padding: '12px', borderRadius: '8px', border: '1px solid #fde68a' }}>
+                                        <Typography variant="caption" sx={{ color: '#d97706', fontWeight: 600, letterSpacing: '0.05em' }}>BOOKED FOR (GUEST)</Typography>
+                                        <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>{guestName} • {guestPhone}</Typography>
+                                    </div>
+                                )}
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>CAPACITY / ROOM</Typography>
+                                    <Typography variant="body2" fontWeight="600" sx={{ fontFamily: "'Poppins', sans-serif" }}>Max {getCapacity()} Adults, {getChildrenCapacity()} Children</Typography>
+                                </div>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>TOTAL PAID</Typography>
+                                    <Typography variant="body1" fontWeight="700" sx={{ fontFamily: "'Poppins', sans-serif", color: '#6366f1' }}>₹{totalCost.toLocaleString()}</Typography>
+                                </div>
+                            </div>
                         </Box>
                     )}
-                        <button className="premium-btn" onClick={() => navigate('/my-bookings')} >
-                            <span className="d-flex align-items-center gap-1">
-                                Go to My Bookings
-                                <ChevronsRight size={18} />
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: isMobile ? 'nowrap' : 'wrap', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'center' }}>
+                        <button className="premium-btn" onClick={handleDownloadReceipt} style={{ background: "#fff", color: "#1e293b", border: "1px solid #e2e8f0", flex: 1, minWidth: "200px" }}>
+                            <span className="d-flex align-items-center gap-2">
+                                <Download size={18} color="#6366f1" /> Download Ticket (PDF)
                             </span>
                         </button>
+                        <button className="premium-btn" onClick={() => navigate('/my-bookings')} style={{ flex: 1, minWidth: "200px" }}>
+                            <span className="d-flex align-items-center gap-1">
+                                Go to My Bookings <ChevronsRight size={18} />
+                            </span>
+                        </button>
+                    </Box>
+                </Box>
+            </Modal>
+
+            {/* Guest Selection Modal */}
+            <Modal open={showGuestModal} onClose={() => setShowGuestModal(false)}>
+                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: { xs: '90%', sm: 480 }, bgcolor: '#fff', p: { xs: 3, sm: 5 }, borderRadius: '24px', outline: 'none', maxHeight: '90vh', overflowY: 'auto' }}>
+                    <Typography variant="h5" fontWeight="700" sx={{ fontFamily: "'Poppins', sans-serif", textAlign: 'center', mb: 1 }}>Who is this booking for?</Typography>
+                    <Typography sx={{ color: '#64748b', textAlign: 'center', mb: 4, fontSize: '0.9rem', fontFamily: "'Poppins', sans-serif" }}>Select whether you're booking for yourself or someone else</Typography>
+
+                    <div style={{ display: 'flex', gap: '16px', marginBottom: bookingFor === 'other' ? '24px' : '0', flexDirection: isMobile ? 'column' : 'row' }}>
+                        <div
+                            onClick={() => { setBookingFor('self'); }}
+                            style={{
+                                flex: 1, padding: '20px', borderRadius: '16px', cursor: 'pointer', textAlign: 'center',
+                                border: bookingFor === 'self' ? '2px solid #6366f1' : '2px solid #e2e8f0',
+                                background: bookingFor === 'self' ? '#f0f0ff' : '#fff',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🙋</div>
+                            <div style={{ fontWeight: 600, fontFamily: "'Poppins', sans-serif", fontSize: '0.95rem' }}>For Myself</div>
+                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>I am the guest</div>
+                        </div>
+                        <div
+                            onClick={() => { setBookingFor('other'); }}
+                            style={{
+                                flex: 1, padding: '20px', borderRadius: '16px', cursor: 'pointer', textAlign: 'center',
+                                border: bookingFor === 'other' ? '2px solid #6366f1' : '2px solid #e2e8f0',
+                                background: bookingFor === 'other' ? '#f0f0ff' : '#fff',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>👤</div>
+                            <div style={{ fontWeight: 600, fontFamily: "'Poppins', sans-serif", fontSize: '0.95rem' }}>For Someone Else</div>
+                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>Booking as a gift or for another person</div>
+                        </div>
+                    </div>
+
+                    {bookingFor === 'other' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                            <div>
+                                <label style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block', fontFamily: "'Poppins', sans-serif" }}>Guest Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="Full name of the guest"
+                                    value={guestName}
+                                    onChange={(e) => setGuestName(e.target.value)}
+                                    style={{ ...S.input, height: '50px', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block', fontFamily: "'Poppins', sans-serif" }}>Guest Phone Number</label>
+                                <input
+                                    type="tel"
+                                    placeholder="+91 XXXXX XXXXX"
+                                    value={guestPhone}
+                                    onChange={(e) => setGuestPhone(e.target.value)}
+                                    style={{ ...S.input, height: '50px', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {bookingFor && (
+                        <button
+                            className="premium-btn"
+                            onClick={() => handleGuestContinue(bookingFor)}
+                            style={{ width: '100%', marginTop: bookingFor === 'self' ? '24px' : '0' }}
+                        >
+                            <span>Continue to Payment</span>
+                        </button>
+                    )}
                 </Box>
             </Modal>
         </div>
