@@ -21,6 +21,8 @@ export default function SaloonDashboard() {
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
   
   // Services Management
   const [services, setServices] = useState([]);
@@ -41,7 +43,7 @@ export default function SaloonDashboard() {
 
   // Manual Queue Entry States
   const [showManualQueueModal, setShowManualQueueModal] = useState(false);
-  const [manualQueueForm, setManualQueueForm] = useState({ guest_name: "", guest_phone: "", service_id: "" });
+  const [manualQueueForm, setManualQueueForm] = useState({ guest_name: "", guest_phone: "", service_ids: [] });
   const [isAddingToQueue, setIsAddingToQueue] = useState(false);
 
   const theme = {
@@ -59,7 +61,20 @@ export default function SaloonDashboard() {
 
   useEffect(() => { 
     fetchMySaloon(); 
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoadingStats(true);
+      const res = await AxiosInstance.get("api/salons/dashboard_stats/");
+      setStats(res.data);
+    } catch (error) {
+      console.error("Stats error:", error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const fetchMySaloon = async () => {
     try {
@@ -96,6 +111,18 @@ export default function SaloonDashboard() {
       console.error("Records error:", error);
     } finally {
       setLoadingRecords(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      setLoadingReviews(true);
+      const res = await AxiosInstance.get("api/reviews/?mine=true");
+      setReviews(Array.isArray(res.data) ? res.data : (res.data.results || []));
+    } catch (error) {
+      console.error("Reviews error:", error);
+    } finally {
+      setLoadingReviews(false);
     }
   };
 
@@ -143,8 +170,8 @@ export default function SaloonDashboard() {
 
   const handleMarkInService = async (id) => {
     try {
-      await AxiosInstance.patch(`api/queue/${id}/`, { status: "In Service" });
-      setQueue(prev => prev.map((q) => q.id === id ? { ...q, status: "In Service" } : q));
+      await AxiosInstance.patch(`api/queue/${id}/`, { status: "in_progress" });
+      setQueue(prev => prev.map((q) => q.id === id ? { ...q, status: "in_progress" } : q));
     } catch (error) {
       toast.error("Failed to update status.");
     }
@@ -312,8 +339,8 @@ export default function SaloonDashboard() {
 
   const handleAddManualQueue = async (e) => {
     e.preventDefault();
-    if (!manualQueueForm.guest_name || !manualQueueForm.service_id) {
-        toast.warn("Name and Service are required");
+    if (!manualQueueForm.guest_name || manualQueueForm.service_ids.length === 0) {
+        toast.warn("Name and at least one Service are required");
         return;
     }
     try {
@@ -321,8 +348,9 @@ export default function SaloonDashboard() {
         const res = await AxiosInstance.post(`api/salons/${mySaloon.id}/join-queue/`, manualQueueForm);
         toast.success("Customer added to queue!");
         setShowManualQueueModal(false);
-        setManualQueueForm({ guest_name: "", guest_phone: "", service_id: "" });
+        setManualQueueForm({ guest_name: "", guest_phone: "", service_ids: [] });
         fetchQueue();
+        fetchStats(); // Refresh stats too
     } catch (error) {
         toast.error(error.response?.data?.error || "Failed to add to queue");
     } finally {
@@ -333,9 +361,9 @@ export default function SaloonDashboard() {
   if (loading) return <div className="p-5 text-center"><div className="spinner-border me-2" />Loading Dashboard...</div>;
   if (!mySaloon) return <div className="p-5 text-center">No Saloon Profile Found.</div>;
 
-  const tabs = ["dashboard", "queue", "services", "records", "edit"];
-  const tabIcons = { dashboard: "🏠", queue: "👥", services: "✂️", records: "📋", edit: "⚙️" };
-  const tabLabels = { dashboard: "Dashboard", queue: "Live Queue", services: "Services", records: "Previous Records", edit: "Edit Profile" };
+  const tabs = ["dashboard", "queue", "services", "records", "gallery", "reviews", "edit"];
+  const tabIcons = { dashboard: "🏠", queue: "👥", services: "✂️", records: "📋", gallery: "🖼️", reviews: "⭐", edit: "⚙️" };
+  const tabLabels = { dashboard: "Dashboard", queue: "Live Queue", services: "Services", records: "Previous Records", gallery: "Gallery", reviews: "Reviews", edit: "Edit Profile" };
 
   return (
     <>
@@ -414,6 +442,9 @@ export default function SaloonDashboard() {
               <button className={"sidebar-tab-btn " + (activeTab === "gallery" ? "active" : "")} onClick={() => { setActiveTab("gallery"); fetchGallery(); setSidebarOpen(false); }}>
                 <Image size={20} /> Gallery
               </button>
+              <button className={"sidebar-tab-btn " + (activeTab === "reviews" ? "active" : "")} onClick={() => { setActiveTab("reviews"); fetchReviews(); setSidebarOpen(false); }}>
+                <Star size={20} /> Reviews
+              </button>
               <button className={"sidebar-tab-btn " + (activeTab === "edit" ? "active" : "")} onClick={() => { handleOpenEdit(); setSidebarOpen(false); }}>
                 <Settings size={20} /> Edit Profile
               </button>
@@ -454,6 +485,7 @@ export default function SaloonDashboard() {
                   {activeTab === "services" && "Manage Services"}
                   {activeTab === "records" && "Previous Records"}
                   {activeTab === "gallery" && "Salon Gallery"}
+                  {activeTab === "reviews" && "Customer Reviews"}
                   {activeTab === "edit" && "Update Salon Profile"}
                 </h5>
               </div>
@@ -501,27 +533,59 @@ export default function SaloonDashboard() {
                     <div className="col-md-6 col-lg-4">
                       <div className="stat-card shadow-sm bg-white" style={{ borderLeft: `4px solid ${theme.primary}` }}>
                         <div className="stat-icon-wrapper text-primary"><Users /></div>
-                        <div style={{ fontSize: "2.5rem", fontWeight: 800, color: theme.primary, lineHeight: "1" }}>{queue.length}</div>
-                        <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Total in Queue</div>
+                        <div style={{ fontSize: "2.5rem", fontWeight: 800, color: theme.primary, lineHeight: "1" }}>
+                            {loadingStats ? <div className="spinner-border spinner-border-sm" /> : (stats?.active_queue || 0)}
+                        </div>
+                        <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Active Queue</div>
                       </div>
                     </div>
                     <div className="col-md-6 col-lg-4">
                       <div className="stat-card shadow-sm bg-white" style={{ borderLeft: `4px solid #10b981` }}>
                         <div className="stat-icon-wrapper text-success"><Scissors /></div>
                         <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#059669", lineHeight: "1" }}>
-                            {queue.filter(q => q.status === 'In Service').length}
+                            {loadingStats ? <div className="spinner-border spinner-border-sm" /> : (stats?.today_completed || 0)}
                         </div>
-                        <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Currently Serving</div>
+                        <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Completed Today</div>
                       </div>
                     </div>
                     <div className="col-md-6 col-lg-4">
                       <div className="stat-card shadow-sm bg-white" style={{ borderLeft: `4px solid #f59e0b` }}>
-                        <div className="stat-icon-wrapper text-warning"><CheckCircle /></div>
+                        <div className="stat-icon-wrapper text-warning"><Star /></div>
                         <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#d97706", lineHeight: "1" }}>
-                            {previousRecords.length}
+                            {loadingStats ? <div className="spinner-border spinner-border-sm" /> : (stats?.average_rating || "0.0")}
                         </div>
-                        <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Completed Today</div>
+                        <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Average Rating</div>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="row g-4 mb-4">
+                    <div className="col-md-6 col-lg-4">
+                        <div className="stat-card shadow-sm bg-white" style={{ borderLeft: `4px solid #8b5cf6` }}>
+                            <div className="stat-icon-wrapper text-purple"><ClipboardList /></div>
+                            <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#7c3aed", lineHeight: "1" }}>
+                                {loadingStats ? <div className="spinner-border spinner-border-sm" /> : (stats?.total_bookings || 0)}
+                            </div>
+                            <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Total Bookings</div>
+                        </div>
+                    </div>
+                    <div className="col-md-6 col-lg-4">
+                        <div className="stat-card shadow-sm bg-white" style={{ borderLeft: `4px solid #ef4444` }}>
+                            <div className="stat-icon-wrapper text-danger"><Star size={24} /></div>
+                            <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#dc2626", lineHeight: "1" }}>
+                                {loadingStats ? <div className="spinner-border spinner-border-sm" /> : (stats?.total_reviews || 0)}
+                            </div>
+                            <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Total Reviews</div>
+                        </div>
+                    </div>
+                    <div className="col-md-6 col-lg-4">
+                        <div className="stat-card shadow-sm bg-white" style={{ borderLeft: `4px solid #10b981` }}>
+                            <div className="stat-icon-wrapper text-success">₹</div>
+                            <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#059669", lineHeight: "1" }}>
+                                ₹{loadingStats ? <div className="spinner-border spinner-border-sm" /> : (stats?.today_revenue || 0)}
+                            </div>
+                            <div className="text-secondary fw-semibold mt-2 text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>Today's Revenue</div>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -568,7 +632,7 @@ export default function SaloonDashboard() {
                               <div>
                                   <h5 className="fw-bold mb-1" style={{ color: "#1e293b" }}>{q.user_name}</h5>
                                   <div className="d-flex align-items-center gap-2">
-                                      <span className="lux-badge bg-light text-secondary border"><Scissors size={14} className="me-1" />{q.service_name || q.service}</span>
+                                      <span className="lux-badge bg-light text-secondary border"><Scissors size={14} className="me-1" />{q.service_names || q.service_name || "Multiple Services"}</span>
                                       <span className="text-muted small">Arrived at {new Date(q.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                   </div>
                                   <div className="text-muted small mt-1 d-flex align-items-center gap-1">
@@ -823,6 +887,60 @@ export default function SaloonDashboard() {
                 </div>
               )}
 
+              {/* REVIEWS TAB */}
+              {activeTab === "reviews" && (
+                <div className="card shadow-sm border-0 p-4 p-md-5 rounded-4 animate__animated animate__fadeIn">
+                  <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                      <h4 className="mb-0 fw-bold" style={{ color: "#1e293b" }}>Customer Reviews</h4>
+                      <div className="d-flex align-items-center gap-2">
+                        <Star size={20} fill="#fbbf24" stroke="#fbbf24" />
+                        <span className="fw-bold fs-5">{stats?.average_rating || "0.0"}</span>
+                        <span className="text-muted">({stats?.total_reviews || 0} reviews)</span>
+                      </div>
+                  </div>
+
+                  {loadingReviews ? (
+                    <div className="text-center py-5"><Loader2 size={32} className="spin text-primary" /></div>
+                  ) : reviews.length === 0 ? (
+                    <div className="text-center py-5">
+                      <Star size={48} color="#cbd5e1" className="mb-3" />
+                      <h5 className="text-muted fw-semibold">No reviews yet</h5>
+                      <p className="text-muted small">Reviews from your customers will appear here.</p>
+                    </div>
+                  ) : (
+                    <div className="d-flex flex-column gap-4">
+                      {reviews.map((rev) => (
+                        <div key={rev.id} className="p-4 rounded-4 border bg-white shadow-sm hover-scale transition-all">
+                          <div className="d-flex justify-content-between align-items-start mb-3">
+                            <div className="d-flex align-items-center gap-3">
+                              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: 48, height: 48, fontSize: "1.2rem" }}>
+                                {rev.user_name?.charAt(0) || "U"}
+                              </div>
+                              <div>
+                                <h6 className="fw-bold mb-0">{rev.user_name}</h6>
+                                <small className="text-muted">{new Date(rev.created_at).toLocaleDateString()}</small>
+                              </div>
+                            </div>
+                            <div className="d-flex align-items-center gap-1 bg-warning bg-opacity-10 px-3 py-1 rounded-pill">
+                              <Star size={16} fill="#fbbf24" stroke="#fbbf24" />
+                              <span className="fw-bold text-dark">{rev.rating}.0</span>
+                            </div>
+                          </div>
+                          <p className="mb-0 text-secondary" style={{ fontStyle: "italic" }}>"{rev.comment}"</p>
+                          {rev.images && rev.images.length > 0 && (
+                            <div className="d-flex gap-2 mt-3 overflow-auto pb-2">
+                              {rev.images.map((img, idx) => (
+                                <img key={idx} src={img.image} alt="Review" className="rounded-3" style={{ width: 80, height: 80, objectFit: "cover" }} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* EDIT TAB */}
               {activeTab === "edit" && editForm && (
                 <div className="card shadow-sm border-0 p-4 p-md-5 rounded-4 animate__animated animate__fadeIn">
@@ -928,7 +1046,7 @@ export default function SaloonDashboard() {
                                   <div className="d-flex justify-content-between align-items-center">
                                       <div>
                                           <h6 className="fw-bold mb-1">{r.user_name}</h6>
-                                          <p className="text-muted small mb-0">Service: {r.service_name}</p>
+                                          <p className="text-muted small mb-0">Service: {r.service_names || r.service_name}</p>
                                       </div>
                                       <span className="lux-badge bg-success bg-opacity-10 text-success"><CheckCircle size={14} className="me-1"/> Completed</span>
                                   </div>
@@ -990,18 +1108,33 @@ export default function SaloonDashboard() {
                         />
                       </div>
                       <div className="mb-4">
-                        <label className="form-label small fw-bold text-uppercase tracking-wider text-secondary mb-2">Select Service</label>
-                        <select 
-                          className="form-select form-select-lg rounded-3 shadow-sm"
-                          value={manualQueueForm.service_id}
-                          onChange={(e) => setManualQueueForm({...manualQueueForm, service_id: e.target.value})}
-                          required
-                        >
-                          <option value="">Select a service...</option>
+                        <label className="form-label small fw-bold text-uppercase tracking-wider text-secondary mb-2">Select Services</label>
+                        <div className="rounded-3 shadow-sm border p-3" style={{ maxHeight: "200px", overflowY: "auto" }}>
                           {services.map(s => (
-                            <option key={s.id} value={s.id}>{s.name} (₹{s.price})</option>
+                            <div key={s.id} className="form-check mb-2">
+                              <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                id={`service-${s.id}`}
+                                checked={manualQueueForm.service_ids.includes(s.id)}
+                                onChange={(e) => {
+                                  const ids = [...manualQueueForm.service_ids];
+                                  if (e.target.checked) {
+                                    ids.push(s.id);
+                                  } else {
+                                    const index = ids.indexOf(s.id);
+                                    if (index > -1) ids.splice(index, 1);
+                                  }
+                                  setManualQueueForm({...manualQueueForm, service_ids: ids});
+                                }}
+                              />
+                              <label className="form-check-label d-flex justify-content-between w-100" htmlFor={`service-${s.id}`}>
+                                <span>{s.name}</span>
+                                <span className="text-primary fw-bold">₹{s.price}</span>
+                              </label>
+                            </div>
                           ))}
-                        </select>
+                        </div>
                       </div>
 
                       <div className="d-flex gap-3 pt-2">

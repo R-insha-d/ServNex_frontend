@@ -298,7 +298,8 @@ export default function SaloonList() {
                                         />
                                         <div className="position-absolute top-0 end-0 m-3 px-2 py-1 bg-white rounded shadow-sm text-dark d-flex align-items-center gap-1">
                                             <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
-                                            <span className="fw-bold small">{saloon.rating || "4.5"}</span>
+                                            <span className="fw-bold small">{saloon.average_rating || saloon.rating || "0.0"}</span>
+                                            {saloon.reviews_count > 0 && <span className="text-muted" style={{ fontSize: '0.65rem' }}>({saloon.reviews_count})</span>}
                                         </div>
                                     </div>
                                     <div className="card-body p-4 d-flex flex-column">
@@ -311,7 +312,9 @@ export default function SaloonList() {
                                         </p>
 
                                         <div className="d-flex align-items-center justify-content-between mt-auto">
-                                            <div className="text-success small fw-bold">Open now</div>
+                                            <div className={saloon.is_open ? "text-success small fw-bold" : "text-danger small fw-bold"}>
+                                                {saloon.is_open ? "Open now" : "Closed"}
+                                            </div>
                                             <Link to={`/salon/${saloon.id}`} className="btn btn-primary px-4 rounded-pill fw-medium">
                                                 Join Queue
                                             </Link>

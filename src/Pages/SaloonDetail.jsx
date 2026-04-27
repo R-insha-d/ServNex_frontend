@@ -19,7 +19,7 @@ export default function SaloonDetail() {
     
     const [modalOpen, setModalOpen] = useState(false);
     const [joinSuccess, setJoinSuccess] = useState(false);
-    const [selectedService, setSelectedService] = useState("");
+    const [selectedServices, setSelectedServices] = useState([]);
 
     useEffect(() => {
         setLoading(true);
@@ -59,13 +59,14 @@ export default function SaloonDetail() {
             navigate("/auth");
             return;
         }
-        if (!selectedService) {
-            toast.warning("Please select a service first.");
+        if (selectedServices.length === 0) {
+            toast.warning("Please select at least one service.");
             return;
         }
 
         setIsJoining(true);
-        AxiosInstance.post(`api/salons/${id}/join-queue/`, { service: selectedService })
+        const serviceIds = selectedServices.map(s => s.id);
+        AxiosInstance.post(`api/salons/${id}/join-queue/`, { service_ids: serviceIds })
             .then(res => {
                 setJoinSuccess(true);
                 toast.success("Successfully joined the queue!");
@@ -78,10 +79,26 @@ export default function SaloonDetail() {
             .finally(() => setIsJoining(false));
     };
 
+    const toggleService = (srv) => {
+        const isSelected = selectedServices.some(s => s.id === srv.id);
+        if (isSelected) {
+            setSelectedServices(selectedServices.filter(s => s.id !== srv.id));
+        } else {
+            setSelectedServices([...selectedServices, srv]);
+        }
+    };
+
+    const calculateAdditionalWait = () => {
+        return selectedServices.reduce((acc, s) => {
+            const d = parseInt(s.duration.replace(/[^0-9]/g, '') || "20");
+            return acc + d;
+        }, 0);
+    };
+
     const handleCloseModal = () => {
         setModalOpen(false);
         setJoinSuccess(false);
-        setSelectedService("");
+        setSelectedServices([]);
     };
 
     if (loading) return (
@@ -136,22 +153,25 @@ export default function SaloonDetail() {
                             
                             <h4 className="fw-bold mb-4">Services Menu</h4>
                             <div className="services-grid">
-                                {services.map((srv, idx) => (
-                                    <div 
-                                        key={idx} 
-                                        className={`service-item-card ${selectedService === srv.name ? 'selected' : ''}`}
-                                        onClick={() => setSelectedService(srv.name)}
-                                    >
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <h6 className="mb-0 fw-bold">{srv.name}</h6>
-                                            {selectedService === srv.name && <CheckCircle2 size={18} className="text-primary" />}
+                                {services.map((srv, idx) => {
+                                    const isSelected = selectedServices.some(s => s.id === srv.id);
+                                    return (
+                                        <div 
+                                            key={srv.id} 
+                                            className={`service-item-card ${isSelected ? 'selected' : ''}`}
+                                            onClick={() => toggleService(srv)}
+                                        >
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <h6 className="mb-0 fw-bold">{srv.name}</h6>
+                                                {isSelected && <CheckCircle2 size={18} className="text-primary" />}
+                                            </div>
+                                            <div className="text-muted small mt-2 d-flex justify-content-between">
+                                                <span><Clock size={14} className="me-1" /> {srv.duration}</span>
+                                                <span className="fw-bold text-dark">₹{srv.price}</span>
+                                            </div>
                                         </div>
-                                        <div className="text-muted small mt-2 d-flex justify-content-between">
-                                            <span><Clock size={14} className="me-1" /> {srv.duration}</span>
-                                            <span className="fw-bold text-dark">{srv.price}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -174,10 +194,27 @@ export default function SaloonDetail() {
                                 </div>
                                 <div className="vr"></div>
                                 <div className="text-center">
-                                    <h2 className="fw-bold text-warning mb-0">{queueStatus?.estimated_wait_time || 0}<span className="fs-6"> m</span></h2>
+                                    <h2 className="fw-bold text-warning mb-0">{(queueStatus?.estimated_wait_time || 0)}<span className="fs-6"> m</span></h2>
                                     <span className="small text-secondary">Est. Wait</span>
                                 </div>
                             </div>
+
+                            {selectedServices.length > 0 && (
+                                <div className="mb-3 p-3 rounded-3" style={{ background: "#f5f3ff", border: "1px solid #ddd6fe" }}>
+                                    <h6 className="fw-bold text-primary small mb-2 text-uppercase">Your Selection</h6>
+                                    <div className="d-flex flex-wrap gap-2 mb-2">
+                                        {selectedServices.map(s => (
+                                            <span key={s.id} className="badge bg-white text-primary border border-primary border-opacity-25 py-2 px-2 rounded-3 small">
+                                                {s.name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div className="d-flex justify-content-between small fw-bold pt-2 border-top">
+                                        <span>Total Duration:</span>
+                                        <span>{calculateAdditionalWait()} mins</span>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="alert alert-info bg-opacity-10 border-0 rounded-3 small d-flex gap-2">
                                 <Clock size={40} className="text-info flex-shrink-0" />
@@ -187,10 +224,69 @@ export default function SaloonDetail() {
                             <button 
                                 className="btn btn-primary w-100 py-3 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2 mt-3 queue-btn"
                                 onClick={() => setModalOpen(true)}
-                                disabled={!selectedService}
+                                disabled={selectedServices.length === 0}
                             >
-                                {selectedService ? "Join Queue Now" : "Select a Service First"} <ArrowRight size={18} />
+                                {selectedServices.length > 0 ? "Join Queue Now" : "Select Services First"} <ArrowRight size={18} />
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Reviews Section */}
+                <div className="row mt-5">
+                    <div className="col-12">
+                        <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                            <div className="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+                                <div>
+                                    <h3 className="fw-bold mb-1">Guest Reviews</h3>
+                                    <p className="text-muted mb-0">See what others are saying about their experience.</p>
+                                </div>
+                                <div className="d-flex align-items-center gap-4">
+                                    <div className="text-center">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <h2 className="fw-bold mb-0">{saloon.average_rating || saloon.rating || "0.0"}</h2>
+                                            <div className="d-flex text-warning">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={20} fill={i < Math.floor(saloon.average_rating || saloon.rating || 0) ? "#fbbf24" : "transparent"} stroke="#fbbf24" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <span className="text-muted small">{saloon.reviews_count || 0} reviews</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {saloon.reviews && saloon.reviews.length > 0 ? (
+                                <div className="row g-4">
+                                    {saloon.reviews.map((rev) => (
+                                        <div key={rev.id} className="col-md-6">
+                                            <div className="p-4 rounded-4 bg-light border h-100">
+                                                <div className="d-flex justify-content-between mb-3">
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <div className="bg-white rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary shadow-sm" style={{ width: 40, height: 40 }}>
+                                                            {rev.user_name?.charAt(0) || "U"}
+                                                        </div>
+                                                        <div>
+                                                            <h6 className="fw-bold mb-0">{rev.user_name}</h6>
+                                                            <small className="text-muted">{new Date(rev.created_at).toLocaleDateString()}</small>
+                                                        </div>
+                                                    </div>
+                                                    <div className="d-flex align-items-center gap-1">
+                                                        <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
+                                                        <span className="fw-bold">{rev.rating}.0</span>
+                                                    </div>
+                                                </div>
+                                                <p className="mb-0 text-secondary" style={{ fontStyle: "italic" }}>"{rev.comment}"</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-5">
+                                    <Star size={48} className="text-muted mb-3 opacity-25" />
+                                    <h5 className="text-muted">No reviews yet. Be the first to leave one!</h5>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -208,8 +304,12 @@ export default function SaloonDetail() {
                                     <span className="fw-bold">{saloon.name}</span>
                                 </div>
                                 <div className="d-flex justify-content-between mb-2">
-                                    <span className="text-muted">Service:</span>
-                                    <span className="fw-bold text-primary">{selectedService}</span>
+                                    <span className="text-muted">Services:</span>
+                                    <div className="text-end">
+                                        {selectedServices.map(s => (
+                                            <div key={s.id} className="fw-bold text-primary small">{s.name}</div>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="d-flex justify-content-between">
                                     <span className="text-muted">Estimated Wait:</span>

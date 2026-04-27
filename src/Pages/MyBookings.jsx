@@ -150,7 +150,7 @@ export default function MyBookings() {
                 <div class="item"><div class="label">Salon</div><div class="val">${item.salon_name}</div></div>
                 <div class="item"><div class="label">Ticket ID</div><div class="val">#SNX-SLN-${item.id}</div></div>
                 <div class="item"><div class="label">Joined At</div><div class="val">${new Date(item.joined_at).toLocaleString()}</div></div>
-                <div class="item"><div class="label">Service</div><div class="val">${item.service_name}</div></div>
+                <div class="item"><div class="label">Service</div><div class="val">${item.service_names || item.service_name}</div></div>
                 <div class="item"><div class="label">Location</div><div class="val">${item.salon_area || ""}, ${item.salon_city || ""}</div></div>
             `;
         } else {
@@ -679,7 +679,7 @@ export default function MyBookings() {
                                                 {q.salon_area}, {q.salon_city}
                                             </div>
                                             <div className="mb-3">
-                                                <Chip icon={<Scissors size={14} />} label={q.service_name} variant="outlined" size="small" />
+                                                <Chip icon={<Scissors size={14} />} label={q.service_names || q.service_name} variant="outlined" size="small" />
                                             </div>
 
                                             <Box display="flex" flexDirection="column" gap={1.5} className="lux-details-box">
@@ -801,7 +801,7 @@ export default function MyBookings() {
                                     </div>
                                     <div>
                                         <Typography variant="caption" color="text.secondary">Service</Typography>
-                                        <Typography variant="body2" fontWeight="600">{detailsModal.service_name}</Typography>
+                                        <Typography variant="body2" fontWeight="600">{detailsModal.service_names || detailsModal.service_name}</Typography>
                                     </div>
                                     <div>
                                         <Typography variant="caption" color="text.secondary">Status</Typography>
