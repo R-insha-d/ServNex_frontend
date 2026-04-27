@@ -891,7 +891,7 @@ export default function RestaurantDetail() {
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={S.infoItem}>
                     <Sparkles size={18} style={{ color: "#f59e0b" }} />
-                    <span style={{ fontStyle: "italic", color: "#64748b" }}>Redefining Dining Excellence</span>
+                    <span style={{ fontStyle: "italic", color: "#64748b" }}>Crafted with Passion, Served with Pride</span>
                 </div>
             </div>
 
@@ -939,7 +939,7 @@ export default function RestaurantDetail() {
                         {/* Amenities */}
                         <div className="section-card reveal active" data-reveal-id="features">
                             <h2 className="section-title">Amenities & Features</h2>
-                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" }, gap: 2 }}>
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" },alignItems: "start",whiteSpace:"nowrap" , gap: 2 }}>
                                 {[
                                     { name: "Home Delivery", icon: <Bike size={20} /> },
                                     { name: "Air Condition", icon: <Wind size={20} /> },

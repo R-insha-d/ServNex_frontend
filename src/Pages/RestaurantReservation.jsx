@@ -47,6 +47,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
+import Header from "../Component/Header";
 
 const S = {
     page: {
@@ -108,9 +109,9 @@ const S = {
         boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
     },
     body: {
-        maxWidth: "1300px",
+        maxWidth: "1400px",
         margin: "0 auto",
-        padding: "40px 24px",
+        padding: "40px 15px",
     },
     mainGrid: {
         display: "grid",
@@ -907,13 +908,7 @@ const handleDecrement = (cap) => {
                 .table-type-card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
             `}</style>
 
-            <header style={S.header}>
-                <Link to="/" style={S.logoWrap}>
-                    <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
-                    <span style={S.logoText}>ServNex</span>
-                </Link>
-                <NotificationDropdown />
-            </header>
+            <Header />
 
             <div style={S.body}>
                 <div style={isMobile ? { display: "flex", flexDirection: "column" } : S.mainGrid}>
@@ -961,7 +956,10 @@ const handleDecrement = (cap) => {
 
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Utensils size={20} color="#6366f1" /> Select Table Type</div>
-                           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: "16px" }}>
+                           <div style={{ display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                                gap: isMobile ? "16px" : "24px",
+                                width: "100%"}}>
     {[2, 4, 6, 8, 10].map(cap => {
     const count = tableSelection[cap];
     // const isAvailable = availability[cap] > 0;
@@ -1017,6 +1015,7 @@ const handleDecrement = (cap) => {
                     onClick={() => handleDecrement(cap)}
                     disabled={count === 0}
                     className="counter-btn"
+                    style={{width:"40px",padding:"10px",borderRadius:"50%",marginRight:"25px"}}
                 >
                     <Minus size={14} />
                 </button>
@@ -1027,6 +1026,7 @@ const handleDecrement = (cap) => {
                     onClick={() => handleIncrement(cap)}
                     disabled={!isAvailable}
                     className="counter-btn"
+                    style={{width:"40px",padding:"10px",borderRadius:"50%",marginLeft:"25px"}}
                 >
                     <Plus size={14} />
                 </button>

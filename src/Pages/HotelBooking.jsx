@@ -38,6 +38,7 @@ import StarIcon from "@mui/icons-material/Star";
 import AxiosInstance from "../Component/AxiosInstance";
 import { toast } from "react-toastify";
 import NotificationDropdown from "../Component/NotificationDropdown";
+import Header from "../Component/Header";
 
 /* ─── inline styles ─── */
 const S = {
@@ -99,10 +100,15 @@ const S = {
         border: "1px solid #eef2f6",
         boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
     },
+    counterBtn:{
+        width:"40px",
+        padding:"10px",
+        borderRadius:"50%"
+    },
     body: {
-        maxWidth: "1300px",
+        maxWidth: "1400px",
         margin: "0 auto",
-        padding: "40px 24px",
+        padding: "40px 15px",
     },
     mainGrid: {
         display: "grid",
@@ -768,13 +774,7 @@ export default function HotelBooking() {
                 .ios-wheel-gradient-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to top, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%); pointer-events: none; z-index: 2; }
             `}</style>
 
-            <header style={S.header}>
-                <Link to="/" style={S.logoWrap}>
-                    <img src="/logo.jpeg" alt="ServNex Logo" style={S.logoImg} />
-                    <span style={S.logoText}>ServNex</span>
-                </Link>
-                <NotificationDropdown />
-            </header>
+            <Header />
 
             <div style={S.body}>
                 <StepIndicator currentStep={0} isMobile={isMobile} />
@@ -820,7 +820,12 @@ export default function HotelBooking() {
 
                         <div style={S.sectionCard}>
                             <div style={S.sectionTitle}><Zap size={20} color="#6366f1" /> Guests & Rooms</div>
-                            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: isMobile ? "16px" : "24px" }}>
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                                gap: isMobile ? "16px" : "24px",
+                                width: "100%"
+                            }}>
                                 <div style={{ textAlign: "center", padding: isMobile ? "16px" : "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
                                     <div style={{ ...S.formLabel, textAlign: "center", fontSize: isMobile ? "0.75rem" : "0.8rem" }}>Number of Guests</div>
                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: isMobile ? "12px" : "20px", marginTop: "12px" }}>
@@ -924,7 +929,8 @@ export default function HotelBooking() {
                                         style={{
                                             height: "50px",
                                             width: "auto",
-                                            flex: 1,
+                                            display:"flex",
+                                            flexWrap:"wrap",
                                             padding: "0 16px",
                                             borderRadius: "12px",
                                             background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
