@@ -655,11 +655,11 @@ export default function RestaurantReservation() {
     const [time, setTime] = useState(reservationTime || "");
     // const [selectedTable, setSelectedTable] = useState(passedTableCapacity || 4);
     const [tableSelection, setTableSelection] = useState({
-  2: 0,
-  4: 0,
-  6: 0,
-  8: 0,
-  10: 0
+  2: passedTableCapacity === 2 ? 1 : 0,
+  4: passedTableCapacity === 4 ? 1 : 0,
+  6: passedTableCapacity === 6 ? 1 : 0,
+  8: passedTableCapacity === 8 ? 1 : 0,
+  10: passedTableCapacity === 10 ? 1 : 0
 });
 
 const totalSeats = Object.entries(tableSelection)
