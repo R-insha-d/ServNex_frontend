@@ -498,7 +498,7 @@ function CustomDatePicker({ value, onChange, min }) {
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
 export default function RestaurantDetail() {
-    
+
     /* ── Menu modal state (unchanged) ── */
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -517,7 +517,7 @@ export default function RestaurantDetail() {
     /* ── Reservation modal state (unchanged) ── */
     const [open, setOpen] = useState(false);
     const [reservationDate, setReservationDate] = useState(() => new Date().toISOString().split("T")[0]);
-    const [tableCapacity, setTableCapacity] = useState(4);
+    const [tableCapacity, setTableCapacity] = useState(2);
     const [timeHour, setTimeHour] = useState(() => String(getInitTime().initHour).padStart(2, "0"));
     const [timeMinute, setTimeMinute] = useState(() => String(new Date().getMinutes()).padStart(2, "0"));
     const [timePeriod, setTimePeriod] = useState(() => getInitTime().initPeriod);
@@ -713,7 +713,7 @@ export default function RestaurantDetail() {
         }
         return { ...p, disabled };
     });
-    const tableOptions = [2,4, 6, 8, 10].map(n => ({
+    const tableOptions = [2, 4, 6, 8, 10].map(n => ({
         value: n,
         label: `${n}-Seater Table${availability[n] !== undefined
             ? ` (${availability[n] === 0 ? "Full" : `${availability[n]} available`})`
@@ -871,11 +871,13 @@ export default function RestaurantDetail() {
                     <span>{restaurant.area?.slice(0, 25)}, {restaurant.city}</span>
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
-                <div style={S.infoItem}>
-                    <StarIcon style={{ ...S.infoIcon, color: "#f59e0b" }} />
-                    <strong style={{ color: "#0f172a" }}>{restaurant.average_rating || "4.5"}</strong>
-                    <span style={{ color: "#94a3b8" }}>({restaurant.reviews_count || "0"} reviews)</span>
-                </div>
+                <a href='#reviews' style={{ textDecoration: "none" }}>
+                    <div style={S.infoItem}>
+                        <StarIcon style={{ ...S.infoIcon, color: "#f59e0b" }} />
+                        <strong style={{ color: "#0f172a" }}>{restaurant.average_rating || "4.5"}</strong>
+                        <span style={{ color: "#94a3b8" }}>({restaurant.reviews_count || "0"} reviews)</span>
+                    </div>
+                </a>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={S.infoItem}>
                     <Chip
@@ -888,11 +890,8 @@ export default function RestaurantDetail() {
                         }}
                     />
                 </div>
-                {!isMobile && <div style={S.infoSep} />}
-                <div style={S.infoItem}>
-                    <Sparkles size={18} style={{ color: "#f59e0b" }} />
-                    <span style={{ fontStyle: "italic", color: "#64748b" }}>Crafted with Passion, Served with Pride</span>
-                </div>
+                {!isMobile && <div />}
+
             </div>
 
             {/* ── Main body ── */}
@@ -939,7 +938,7 @@ export default function RestaurantDetail() {
                         {/* Amenities */}
                         <div className="section-card reveal active" data-reveal-id="features">
                             <h2 className="section-title">Amenities & Features</h2>
-                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" },alignItems: "start",whiteSpace:"nowrap" , gap: 2 }}>
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" }, alignItems: "start", whiteSpace: "nowrap", gap: 2 }}>
                                 {[
                                     { name: "Home Delivery", icon: <Bike size={20} /> },
                                     { name: "Air Condition", icon: <Wind size={20} /> },
@@ -964,7 +963,7 @@ export default function RestaurantDetail() {
 
                         {/* Reviews */}
                         <div className="section-card reveal active" data-reveal-id="reviews">
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }} id="reviews">
                                 <h2 className="section-title" style={{ marginBottom: 0 }}>Guest Voices</h2>
                                 <Button
                                     variant="outlined"
@@ -1091,38 +1090,38 @@ export default function RestaurantDetail() {
                             </Box>
 
 
-{/* ------------- */}
+                            {/* ------------- */}
 
-                                <button
-    onClick={() => setMenuOpen(true)}
-    style={{
-        width: "100%",
-        marginTop: "6px",
-        marginBottom: "18px",
-        padding: "14px",
-        borderRadius: "14px",
-        border: "1.5px solid #6366f1",
-        background: "#fff",
-        color: "#6366f1",
-        fontFamily: "'Poppins', sans-serif",
-        fontSize: "0.95rem",
-        fontWeight: 600,
-        cursor: "pointer",
-        transition: "all 0.3s ease",
-    }}
-    onMouseEnter={e => {
-        e.currentTarget.style.background = "#6366f1";
-        e.currentTarget.style.color = "#fff";
-    }}
-    onMouseLeave={e => {
-        e.currentTarget.style.background = "#fff";
-        e.currentTarget.style.color = "#6366f1";
-    }}
->
-    View Menu
-</button>
+                            <button
+                                onClick={() => setMenuOpen(true)}
+                                style={{
+                                    width: "100%",
+                                    marginTop: "6px",
+                                    marginBottom: "18px",
+                                    padding: "14px",
+                                    borderRadius: "14px",
+                                    border: "1.5px solid #6366f1",
+                                    background: "#fff",
+                                    color: "#6366f1",
+                                    fontFamily: "'Poppins', sans-serif",
+                                    fontSize: "0.95rem",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    transition: "all 0.3s ease",
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = "#6366f1";
+                                    e.currentTarget.style.color = "#fff";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = "#fff";
+                                    e.currentTarget.style.color = "#6366f1";
+                                }}
+                            >
+                                View Menu
+                            </button>
 
-{/* ------------- */}
+                            {/* ------------- */}
 
                             <button
                                 className="reserve-main-btn"
@@ -1396,78 +1395,78 @@ export default function RestaurantDetail() {
             </Modal>
 
 
-        <Modal open={menuOpen} onClose={() => setMenuOpen(false)}>
-    <Box
-        sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "95%", sm: "85%", md: "70%" },
-            maxHeight: "90vh",
-            bgcolor: "#fff",
-            borderRadius: "24px",
-            boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
-            overflow: "hidden",
-            outline: "none",
-            animation: "modalIn 0.25s ease",
-        }}
-    >
-        {/* Close Button */}
-        <IconButton
-            onClick={() => setMenuOpen(false)}
-            sx={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                bgcolor: "rgba(0,0,0,0.4)",
-                color: "#fff",
-                "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
-                zIndex: 2
-            }}
-        >
-            <IoClose size={22} />
-        </IconButton>
+            <Modal open={menuOpen} onClose={() => setMenuOpen(false)}>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: { xs: "95%", sm: "85%", md: "70%" },
+                        maxHeight: "90vh",
+                        bgcolor: "#fff",
+                        borderRadius: "24px",
+                        boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
+                        overflow: "hidden",
+                        outline: "none",
+                        animation: "modalIn 0.25s ease",
+                    }}
+                >
+                    {/* Close Button */}
+                    <IconButton
+                        onClick={() => setMenuOpen(false)}
+                        sx={{
+                            position: "absolute",
+                            top: 12,
+                            right: 12,
+                            bgcolor: "rgba(0,0,0,0.4)",
+                            color: "#fff",
+                            "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
+                            zIndex: 2
+                        }}
+                    >
+                        <IoClose size={22} />
+                    </IconButton>
 
-        {/* Header */}
-        <Box
-            sx={{
-                p: 2,
-                textAlign: "center",
-                borderBottom: "1px solid #f1f5f9",
-                fontWeight: 700,
-                fontSize: "1.1rem",
-                color: "#0f172a"
-            }}
-        >
-            Restaurant Menu
-        </Box>
+                    {/* Header */}
+                    <Box
+                        sx={{
+                            p: 2,
+                            textAlign: "center",
+                            borderBottom: "1px solid #f1f5f9",
+                            fontWeight: 700,
+                            fontSize: "1.1rem",
+                            color: "#0f172a"
+                        }}
+                    >
+                        Restaurant Menu
+                    </Box>
 
-        {/* Image Container */}
-        <Box
-            sx={{
-                maxHeight: "75vh",
-                overflowY: "auto",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                background: "#f8fafc",
-                p: 2
-            }}
-        >
-            <img
-                src={restaurant.menu_image || "https://via.placeholder.com/800x1200?text=Menu+Not+Available"}
-                alt="Menu"
-                style={{
-                    width: "100%",
-                    maxWidth: "700px",
-                    borderRadius: "16px",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)"
-                }}
-            />
-        </Box>
-    </Box>
-</Modal>
+                    {/* Image Container */}
+                    <Box
+                        sx={{
+                            maxHeight: "75vh",
+                            overflowY: "auto",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            background: "#f8fafc",
+                            p: 2
+                        }}
+                    >
+                        <img
+                            src={restaurant.menu_image || "https://via.placeholder.com/800x1200?text=Menu+Not+Available"}
+                            alt="Menu"
+                            style={{
+                                width: "100%",
+                                maxWidth: "700px",
+                                borderRadius: "16px",
+                                boxShadow: "0 10px 30px rgba(0,0,0,0.1)"
+                            }}
+                        />
+                    </Box>
+                </Box>
+            </Modal>
 
 
         </div>
