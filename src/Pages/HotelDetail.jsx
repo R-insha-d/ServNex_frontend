@@ -1204,7 +1204,7 @@ export default function HotelDetails() {
                     width: isMobile ? "100%" : "auto"
                 }}>
                     <span style={{ fontSize: "1.4rem" }}>✨</span>
-                    <span style={{ fontStyle: "italic", color: "#64748b" }}>Redefining Luxury & Comfort</span>
+                    <span style={{ fontStyle: "italic", color: "#64748b" }}>Crafted for Those Who Expect the Best</span>
                 </div>
             </div>
 
@@ -1664,30 +1664,17 @@ function RoomCard({ room, onBook }) {
                 {/* Price + Adults + Bed Type */}
                 <div style={{
                     display: "flex",
+                    justifyContent:"center",
                     gap: isMobile ? "8px" : "10px",
                     marginBottom: "16px",
                     flexWrap: "wrap",
-                    flexDirection: isMobile ? "column" : "row"
+                    flexDirection: isMobile ? "row" : "row"
                 }}>
+                    
                     <div style={{
-                        flex: 1,
+                        width:"48%",
                         textAlign: "center",
-                        padding: "6px 12px",
-                        borderRadius: "8px",
-                        border: "1px solid #f1f5f9",
-                        fontSize: "0.8rem",
-                        color: "#64748b",
-                        fontFamily: "'Poppins', sans-serif",
-                        background: "#f8fafc",
-                        whiteSpace: "nowrap",
-                        fontWeight: 400
-                    }}>
-                        Price : ₹{room.price}
-                    </div>
-                    <div style={{
-                        flex: 1,
-                        textAlign: "center",
-                        padding: "6px 12px",
+                        padding: "6px 10px",
                         borderRadius: "8px",
                         border: "1px solid #f1f5f9",
                         fontSize: "0.8rem",
@@ -1700,9 +1687,9 @@ function RoomCard({ room, onBook }) {
                     </div>
                     {room.bed_type && (
                         <div style={{
-                            flex: 1,
+                            width:"48%",
                             textAlign: "center",
-                            padding: "6px 12px",
+                            padding: "6px 10px",
                             borderRadius: "8px",
                             border: "1px solid #f1f5f9",
                             fontSize: "0.8rem",
@@ -1714,6 +1701,23 @@ function RoomCard({ room, onBook }) {
                             Bed : {room.bed_type}
                         </div>
                     )}
+
+                    <div style={{
+                        width:"48%",
+                        textAlign: "center",
+                        padding: "6px 10px",
+                        borderRadius: "8px",
+                        border: "1px solid #f1f5f9",
+                        fontSize: "0.8rem",
+                        color: "#64748b",
+                        fontFamily: "'Poppins', sans-serif",
+                        background: "#f8fafc",
+                        whiteSpace: "nowrap",
+                        fontWeight: 400
+                    }}>
+                       Price : ₹{Math.round(room.price)}
+                    </div>
+
                 </div>
 
                 <div style={{ marginTop: "auto" }}>
