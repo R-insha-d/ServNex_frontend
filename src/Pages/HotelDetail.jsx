@@ -1191,11 +1191,13 @@ export default function HotelDetails() {
                     {hotel.area.slice(0, 25)}...  &nbsp;, {hotel.city}
                 </div>
                 {!isMobile && <div style={S.infoSep} />}
+                <a href='#review' style={{textDecoration:"none"}}>
                 <div style={{ ...S.infoItem, fontSize: isMobile ? "0.9rem" : S.infoItem.fontSize }}>
                     <StarIcon style={{ ...S.infoIcon, color: "#f59e0b", fontSize: "1.2rem" }} />
                     <strong>{hotel.average_rating || "0.0"}</strong>
                     <span style={{ fontWeight: 400, color: "#94a3b8" }}>({hotel.reviews_count || "0"} reviews)</span>
                 </div>
+                </a>
                 {!isMobile && <div style={S.infoSep} />}
                 <div style={{
                     ...S.infoItem,
@@ -1203,7 +1205,6 @@ export default function HotelDetails() {
                     textAlign: isMobile ? "center" : "left",
                     width: isMobile ? "100%" : "auto"
                 }}>
-                    <span style={{ fontSize: "1.4rem" }}>✨</span>
                     <span style={{ fontStyle: "italic", color: "#64748b" }}>Crafted for Those Who Expect the Best</span>
                 </div>
             </div>
@@ -1304,7 +1305,7 @@ export default function HotelDetails() {
                         </div>
 
                         {/* Reviews Section */}
-                        <div className="section-card reveal active" data-reveal-id="reviews">
+                        <div className="section-card reveal active" data-reveal-id="reviews" id="review">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
                                 <h2 className="section-title" style={{ marginBottom: 0 }}>Guest Voices</h2>
                                 <Button
@@ -1564,6 +1565,16 @@ export default function HotelDetails() {
                             resize: "none", outline: "none", marginBottom: "16px", color: "#334155"
                         }}
                     />
+                    <div style={{
+                        textAlign: "right",
+                        fontSize: "0.75rem",
+                        color: reviewComment.length >= 1000 ? "#ef4444" :
+                            reviewComment.length >= 800 ? "#f97316" : "#94a3b8",  // red at 500, orange at 400
+                        marginTop: "-12px",
+                        marginBottom: "16px"
+                    }}>
+                        {reviewComment.length} / 1000   {/* ← was /100, fix to match your actual limit */}
+                    </div>
 
                     <div style={{ marginBottom: "20px", textAlign: "left" }}>
                         <label style={{ fontSize: "0.8rem", fontWeight: 500, color: "#6366f1", display: "block", marginBottom: "8px" }}>
@@ -1572,6 +1583,7 @@ export default function HotelDetails() {
                         <input
                             type="file"
                             accept="image/*"
+                            multiple
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 setReviewImages(file ? [file] : []);
@@ -1664,15 +1676,15 @@ function RoomCard({ room, onBook }) {
                 {/* Price + Adults + Bed Type */}
                 <div style={{
                     display: "flex",
-                    justifyContent:"center",
+                    justifyContent: "center",
                     gap: isMobile ? "8px" : "10px",
                     marginBottom: "16px",
                     flexWrap: "wrap",
                     flexDirection: isMobile ? "row" : "row"
                 }}>
-                    
+
                     <div style={{
-                        width:"48%",
+                        width: "48%",
                         textAlign: "center",
                         padding: "6px 10px",
                         borderRadius: "8px",
@@ -1687,7 +1699,7 @@ function RoomCard({ room, onBook }) {
                     </div>
                     {room.bed_type && (
                         <div style={{
-                            width:"48%",
+                            width: "48%",
                             textAlign: "center",
                             padding: "6px 10px",
                             borderRadius: "8px",
@@ -1703,7 +1715,7 @@ function RoomCard({ room, onBook }) {
                     )}
 
                     <div style={{
-                        width:"48%",
+                        width: "48%",
                         textAlign: "center",
                         padding: "6px 10px",
                         borderRadius: "8px",
@@ -1715,7 +1727,7 @@ function RoomCard({ room, onBook }) {
                         whiteSpace: "nowrap",
                         fontWeight: 400
                     }}>
-                       Price : ₹{Math.round(room.price)}
+                        Price : ₹{Math.round(room.price)}
                     </div>
 
                 </div>
