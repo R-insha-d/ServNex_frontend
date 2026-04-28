@@ -333,7 +333,7 @@ export default function SaloonDetail() {
                             </div>
                             <h3 className="fw-bold text-success mb-2">You're in the Queue!</h3>
                             <p className="text-muted mb-4">Your virtual ticket has been generated. Keep an eye on your dashboard or SMS for your turn.</p>
-                            <Link to="/my-bookings" className="btn btn-outline-primary rounded-pill px-4">View My Queue Ticket</Link>
+                            <Link to="/my-bookings" state={{service:'saloon'}}  className="btn btn-outline-primary rounded-pill px-4">View My Queue Ticket</Link>
                         </div>
                     )}
                 </Box>

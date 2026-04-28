@@ -1181,9 +1181,9 @@ export default function RestaurantReservation() {
                             </div>
                         </Box>
                     )}
-                    <button className="premium-btn" onClick={() => navigate("/my-bookings")}>
+                    <Link className="premium-btn" to="/my-bookings" state={{service:'restaurant'}}>
                         <span className="d-flex align-items-center gap-1">Go to My Bookings <ChevronsRight size={18} /></span>
-                    </button>
+                    </Link>
                 </Box>
             </Modal>
         </div>

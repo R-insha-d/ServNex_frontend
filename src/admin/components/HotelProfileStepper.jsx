@@ -13,6 +13,11 @@ import RoomServiceIcon from "@mui/icons-material/RoomService";
 import LocalLaundryServiceIcon from "@mui/icons-material/LocalLaundryService";
 import TvIcon from "@mui/icons-material/Tv";
 import KitchenIcon from "@mui/icons-material/Kitchen";
+import { IoBonfire } from "react-icons/io5";
+import { TbTrekking } from "react-icons/tb";
+
+
+
 
 const availableAmenities = [
   { name: "Free Wifi", icon: <WifiIcon fontSize="small" />, value: "Wifi" },
@@ -27,6 +32,8 @@ const availableAmenities = [
   { name: "Laundry", icon: <LocalLaundryServiceIcon fontSize="small" />, value: "Laundry" },
   { name: "TV", icon: <TvIcon fontSize="small" />, value: "TV" },
   { name: "Kitchen", icon: <KitchenIcon fontSize="small" />, value: "Kitchen" },
+  { name: "Trekking Guide", icon: <TbTrekking fontSize="small" />, value: "Trekking Guide" },
+  { name: "Bonfire Area", icon: <IoBonfire fontSize="small" />, value: "Bonfire Area" },
 ];
 
 export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
@@ -87,7 +94,7 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
   };
 
   const toggleAmenity = (amenityValue) => {
-    let currentAmenities = [];
+    let currentAmenities = [];  
     if (form.amenities) {
       if (Array.isArray(form.amenities)) {
         currentAmenities = [...form.amenities];
@@ -212,6 +219,8 @@ export default function HotelProfileStepper({ hotel, fetchMyHotel, theme }) {
                 <option value="Luxury Stays">Luxury Stays</option>
                 <option value="Cheap & Best">Cheap & Best</option>
                 <option value="Dormitory">Dormitory</option>
+                <option value="Beach Resort">Beach Resort</option>
+                <option value="Eco Stay">Eco Stay</option>
               </select>
             </div>
             <div className="col-12">

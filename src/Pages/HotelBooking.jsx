@@ -1075,11 +1075,11 @@ export default function HotelBooking() {
                                 <Download size={18} color="#6366f1" /> Download Ticket (PDF)
                             </span>
                         </button>
-                        <button className="premium-btn" onClick={() => navigate('/my-bookings')} style={{ flex: 1, minWidth: "200px" }}>
+                        <Link className="premium-btn" to="/my-bookings" state={{service:'hotels'}}  style={{ flex: 1, minWidth: "200px" }}>
                             <span className="d-flex align-items-center gap-1">
                                 Go to My Bookings <ChevronsRight size={18} />
                             </span>
-                        </button>
+                        </Link>
                     </Box>
                 </Box>
             </Modal>
@@ -1145,7 +1145,7 @@ export default function HotelBooking() {
                     )}
 
                     {bookingFor && (
-                        <button
+                        <button 
                             className="premium-btn"
                             onClick={() => handleGuestContinue(bookingFor)}
                             style={{ width: '100%', marginTop: bookingFor === 'self' ? '24px' : '0' }}

@@ -328,9 +328,9 @@ export default function SaloonList() {
                     <div className="text-center py-5">
                         <h4>No saloons found matching your criteria.</h4>
                         <p className="text-muted">Try removing some filters to see more results.</p>
-                        <button className="btn btn-outline-primary mt-3" onClick={() => { setSearch(""); setCity("All"); setServiceFilter("All"); }}>
+                        <Link className="btn btn-outline-primary mt-3" onClick={() => { setSearch(""); setCity("All"); setServiceFilter("All"); }}>
                             Clear Filters
-                        </button>
+                        </Link>
                     </div>
                 )}
             </main>

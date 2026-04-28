@@ -874,7 +874,7 @@ export default function RestaurantDetail() {
                 <a href='#reviews' style={{ textDecoration: "none" }}>
                     <div style={S.infoItem}>
                         <StarIcon style={{ ...S.infoIcon, color: "#f59e0b" }} />
-                        <strong style={{ color: "#0f172a" }}>{restaurant.average_rating || "4.5"}</strong>
+                        <strong style={{ color: "#0f172a" }}>{restaurant.average_rating || "0"}</strong>
                         <span style={{ color: "#94a3b8" }}>({restaurant.reviews_count || "0"} reviews)</span>
                     </div>
                 </a>
